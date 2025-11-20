@@ -1,0 +1,183 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  STAFF
+}
+
+enum PledgeStatus {
+  PLEDGED
+  RECEIVED
+  CANCELLED
+}
+
+enum EventStatus {
+  DRAFT
+  PUBLISHED
+  COMPLETED
+  CANCELLED
+}
+
+enum MetricSource {
+  ETAPESTRY
+  EVENTBRITE
+  GA4
+  INTERNAL
+}
+
+enum CampaignStatus {
+  DRAFT
+  SCHEDULED
+  SENT
+  FAILED
+}
+
+enum EmailLogStatus {
+  QUEUED
+  SENT
+  FAILED
+}
+
+model User {
+  id          String   @id @default(cuid())
+  name        String?
+  email       String   @unique
+  image       String?
+  role        UserRole @default(STAFF)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  lastLoginAt DateTime?
+}
+
+model Donor {
+  id          String    @id @default(cuid())
+  externalId  String?   @unique
+  name        String
+  email       String?   @unique
+  phone       String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  totalPledged Decimal   @default(0)
+  totalGiven  Decimal   @default(0)
+  lastGiftDate DateTime?
+  pledges     Pledge[]
+  attendance  EventAttendance[]
+}
+
+model Pledge {
+  id        String       @id @default(cuid())
+  externalId String?     @unique
+  donorId   String
+  donor     Donor        @relation(fields: [donorId], references: [id])
+  amount    Decimal
+  date      DateTime
+  campaign  String?
+  status    PledgeStatus @default(PLEDGED)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+}
+
+model Event {
+  id           String          @id @default(cuid())
+  externalId   String?         @unique
+  name         String
+  startDate    DateTime
+  endDate      DateTime
+  venue        String?
+  status       EventStatus     @default(DRAFT)
+  ticketsTotal Int             @default(0)
+  ticketsSold  Int             @default(0)
+  grossRevenue Decimal         @default(0)
+  netRevenue   Decimal         @default(0)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  attendance   EventAttendance[]
+}
+
+model EventAttendance {
+  id            String   @id @default(cuid())
+  eventId       String
+  event         Event    @relation(fields: [eventId], references: [id])
+  donorId       String?
+  donor         Donor?   @relation(fields: [donorId], references: [id])
+  attendeeEmail String
+  ticketType    String?
+  ticketsCount  Int      @default(1)
+  orderTotal    Decimal  @default(0)
+  createdAt     DateTime @default(now())
+}
+
+model CachedMetric {
+  id        String       @id @default(cuid())
+  key       String
+  value     Json
+  fromDate  DateTime
+  toDate    DateTime
+  source    MetricSource
+  createdAt DateTime     @default(now())
+
+  @@index([key])
+}
+
+model EmailTemplate {
+  id                 String         @id @default(cuid())
+  name               String
+  subject            String
+  html               String
+  text               String
+  isDefaultThankYou  Boolean        @default(false)
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+  campaigns          EmailCampaign[]
+
+  @@unique([name])
+}
+
+model AudienceSegment {
+  id         String          @id @default(cuid())
+  name       String
+  filters    Json
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+  campaigns  EmailCampaign[]
+
+  @@unique([name])
+}
+
+model EmailCampaign {
+  id                String        @id @default(cuid())
+  name              String
+  templateId        String
+  template          EmailTemplate @relation(fields: [templateId], references: [id])
+  audienceSegmentId String
+  audienceSegment   AudienceSegment @relation(fields: [audienceSegmentId], references: [id])
+  status            CampaignStatus  @default(DRAFT)
+  scheduledFor      DateTime?
+  sentAt            DateTime?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  logs              EmailLog[]
+}
+
+model EmailLog {
+  id                 String         @id @default(cuid())
+  campaignId         String
+  campaign           EmailCampaign  @relation(fields: [campaignId], references: [id])
+  recipientEmail     String
+  status             EmailLogStatus @default(QUEUED)
+  providerMessageId  String?
+  errorMessage       String?
+  sentAt             DateTime?
+  createdAt          DateTime       @default(now())
+
+  @@index([campaignId])
+  @@index([recipientEmail])
+}
+
