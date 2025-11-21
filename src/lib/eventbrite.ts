@@ -4,6 +4,7 @@ import { addDays, subDays } from 'date-fns';
 import { withMetricCache } from '@/lib/cache-metrics';
 import { env } from '@/lib/env';
 import { prisma } from '@/lib/prisma';
+import { invalidateMetricsForSources, recordIntegrationSync } from '@/lib/integration-sync';
 
 interface FetchParams {
   from: Date;
@@ -262,7 +263,10 @@ export async function syncEventsToDb(range?: Partial<FetchParams>) {
     });
   }
 
-  return { synced: events.length };
+  const summary = { synced: events.length };
+  await invalidateMetricsForSources([MetricSource.EVENTBRITE]);
+  await recordIntegrationSync(MetricSource.EVENTBRITE, summary);
+  return summary;
 }
 
 export async function getEventKpis(range: FetchParams) {

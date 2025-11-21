@@ -5,6 +5,7 @@ import { XMLParser } from 'fast-xml-parser';
 import { withMetricCache } from '@/lib/cache-metrics';
 import { env } from '@/lib/env';
 import { prisma } from '@/lib/prisma';
+import { invalidateMetricsForSources, recordIntegrationSync } from '@/lib/integration-sync';
 import { getMonthlyBuckets } from '@/lib/time-series';
 
 interface FetchParams {
@@ -458,7 +459,11 @@ export async function syncPledgesToDb(range?: Partial<FetchParams>) {
 
   await refreshLifetimeValues();
 
-  return { synced: pledges.length };
+  const summary = { synced: pledges.length };
+  await invalidateMetricsForSources([MetricSource.ETAPESTRY]);
+  await recordIntegrationSync(MetricSource.ETAPESTRY, summary);
+
+  return summary;
 }
 
 async function refreshLifetimeValues() {
