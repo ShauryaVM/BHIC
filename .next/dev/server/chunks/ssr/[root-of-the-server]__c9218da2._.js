@@ -201,6 +201,7 @@ __turbopack_context__.s([
 ]);
 var __TURBOPACK__imported__module__$5b$externals$5d2f40$prisma$2f$client__$5b$external$5d$__$2840$prisma$2f$client$2c$__cjs$29$__ = __turbopack_context__.i("[externals]/@prisma/client [external] (@prisma/client, cjs)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$subDays$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/date-fns/subDays.js [app-rsc] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$fast$2d$xml$2d$parser$2f$src$2f$xmlparser$2f$XMLParser$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__$3c$export__default__as__XMLParser$3e$__ = __turbopack_context__.i("[project]/node_modules/fast-xml-parser/src/xmlparser/XMLParser.js [app-rsc] (ecmascript) <export default as XMLParser>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$cache$2d$metrics$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/cache-metrics.ts [app-rsc] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$env$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/env.ts [app-rsc] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/prisma.ts [app-rsc] (ecmascript)");
@@ -211,11 +212,172 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$time$2d$series
 ;
 ;
 ;
+;
 const allowedStatuses = new Set(Object.values(__TURBOPACK__imported__module__$5b$externals$5d2f40$prisma$2f$client__$5b$external$5d$__$2840$prisma$2f$client$2c$__cjs$29$__["PledgeStatus"]));
+const xmlParser = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$fast$2d$xml$2d$parser$2f$src$2f$xmlparser$2f$XMLParser$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__$3c$export__default__as__XMLParser$3e$__["XMLParser"]({
+    ignoreAttributes: false,
+    attributeNamePrefix: '',
+    textNodeName: 'text',
+    removeNSPrefix: false
+});
+const soapEndpoint = (()=>{
+    try {
+        const url = new URL(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$env$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["env"].ETAPESTRY_WSDL_URL);
+        url.search = '';
+        return url.toString();
+    } catch  {
+        return __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$env$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["env"].ETAPESTRY_WSDL_URL.replace(/\?wsdl$/i, '').replace(/\?WSDL$/i, '');
+    }
+})();
+let sessionPromise = null;
+class SoapFaultError extends Error {
+    faultCode;
+    detail;
+    raw;
+}
+class SoapHttpError extends Error {
+    status;
+    body;
+    constructor(message, status, body){
+        super(message);
+        this.status = status;
+        this.body = body;
+    }
+}
+function escapeXml(value) {
+    return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+}
+function buildEnvelope(innerBody, sessionId) {
+    const header = sessionId ? `<soap:Header><sessionId xmlns="etapestryAPI/service" xsi:type="xsd:string">${escapeXml(sessionId)}</sessionId></soap:Header>` : '<soap:Header/>';
+    return `<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:tns="etapestryAPI/service">
+  ${header}
+  <soap:Body soap:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+    ${innerBody}
+  </soap:Body>
+</soap:Envelope>`;
+}
 function mapStatus(status) {
     if (!status) return __TURBOPACK__imported__module__$5b$externals$5d2f40$prisma$2f$client__$5b$external$5d$__$2840$prisma$2f$client$2c$__cjs$29$__["PledgeStatus"].PLEDGED;
     const normalized = status.toUpperCase();
     return allowedStatuses.has(normalized) ? normalized : __TURBOPACK__imported__module__$5b$externals$5d2f40$prisma$2f$client__$5b$external$5d$__$2840$prisma$2f$client$2c$__cjs$29$__["PledgeStatus"].PLEDGED;
+}
+async function sendSoapRequest(method, innerBody, sessionId) {
+    const response = await fetch(soapEndpoint, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'text/xml; charset=utf-8',
+            SOAPAction: method
+        },
+        body: buildEnvelope(innerBody, sessionId)
+    });
+    const text = await response.text();
+    if (!response.ok) {
+        throw new SoapHttpError(`SOAP ${method} failed with status ${response.status}`, response.status, text);
+    }
+    const body = parseSoapBody(text);
+    return body;
+}
+function parseSoapBody(xml) {
+    const document = xmlParser.parse(xml);
+    const envelope = document['soap:Envelope'] ?? document['env:Envelope'] ?? document.Envelope;
+    if (!envelope) {
+        throw new Error('Invalid SOAP response: missing envelope');
+    }
+    const body = envelope['soap:Body'] ?? envelope['env:Body'] ?? envelope.Body;
+    if (!body) {
+        throw new Error('Invalid SOAP response: missing body');
+    }
+    const fault = body['soap:Fault'] ?? body['env:Fault'] ?? body.Fault;
+    if (fault) {
+        const error = new SoapFaultError(fault.faultstring ?? 'SOAP fault');
+        error.faultCode = fault.faultcode;
+        error.detail = fault.detail;
+        error.raw = xml;
+        throw error;
+    }
+    return body;
+}
+function findResponseNode(body, method) {
+    const expected = method.endsWith('Response') ? method : `${method}Response`;
+    for (const [key, value] of Object.entries(body)){
+        const simpleKey = key.includes(':') ? key.split(':').pop() ?? key : key;
+        if (simpleKey === expected) {
+            return value;
+        }
+    }
+    return body;
+}
+function firstText(node) {
+    if (node == null) return undefined;
+    if (typeof node === 'string' || typeof node === 'number' || typeof node === 'boolean') {
+        return String(node);
+    }
+    if (Array.isArray(node)) {
+        for (const entry of node){
+            const value = firstText(entry);
+            if (value) return value;
+        }
+        return undefined;
+    }
+    if (typeof node === 'object') {
+        for (const value of Object.values(node)){
+            const result = firstText(value);
+            if (result) return result;
+        }
+    }
+    return undefined;
+}
+function normalizeRecordKeys(record) {
+    const normalized = {};
+    for (const [key, value] of Object.entries(record)){
+        const simpleKey = key.includes(':') ? key.split(':').pop() ?? key : key;
+        if (normalized[simpleKey] === undefined) {
+            normalized[simpleKey] = value;
+        } else {
+            const current = normalized[simpleKey];
+            if (Array.isArray(current)) {
+                normalized[simpleKey] = current.concat(value);
+            } else {
+                normalized[simpleKey] = [
+                    current,
+                    value
+                ];
+            }
+        }
+    }
+    return normalized;
+}
+async function getSessionId() {
+    if (!sessionPromise) {
+        sessionPromise = login();
+    }
+    return sessionPromise;
+}
+async function login() {
+    try {
+        const innerBody = `<tns:connect>
+  <ConnectRequest_1 xsi:type="tns:ConnectRequest">
+    <applicationContext xmlns="" xsi:type="xsd:string">${escapeXml(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$env$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["env"].ETAPESTRY_APPLICATION_CONTEXT)}</applicationContext>
+    <databaseId xmlns="" xsi:type="xsd:string">${escapeXml(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$env$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["env"].ETAPESTRY_DATABASE_ID)}</databaseId>
+    <password xmlns="" xsi:type="xsd:string">${escapeXml(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$env$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["env"].ETAPESTRY_API_KEY)}</password>
+  </ConnectRequest_1>
+</tns:connect>`;
+        const body = await sendSoapRequest('connect', innerBody);
+        const responseNode = findResponseNode(body, 'connectResponse');
+        const sessionId = firstText(responseNode);
+        if (!sessionId) {
+            throw new Error('eTapestry connect did not return a session id.');
+        }
+        return sessionId;
+    } catch (error) {
+        sessionPromise = null;
+        console.error('Failed to authenticate with eTapestry', error);
+        throw error;
+    }
+}
+function invalidateSession() {
+    sessionPromise = null;
 }
 function pledgeSyncRange(range) {
     const now = new Date();
@@ -224,31 +386,206 @@ function pledgeSyncRange(range) {
         to: range?.to ?? now
     };
 }
-function jsonFetch(url) {
-    return fetch(url, {
-        headers: {
-            Authorization: `Bearer ${__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$env$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["env"].ETAPESTRY_API_TOKEN}`,
-            'Content-Type': 'application/json'
-        },
-        cache: 'no-store'
-    });
+async function fetchQueryRows(start, count) {
+    const sessionId = await getSessionId();
+    const queryString = `${__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$env$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["env"].ETAPESTRY_QUERY_CATEGORY}:${__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$env$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["env"].ETAPESTRY_QUERY_NAME}`;
+    const innerBody = `<tns:getExistingQueryResults>
+  <PagedExistingQueryResultsRequest_1 xsi:type="tns:PagedExistingQueryResultsRequest">
+    <clearCache xmlns="" xsi:type="xsd:boolean">false</clearCache>
+    <count xmlns="" xsi:type="xsd:int">${count}</count>
+    <start xmlns="" xsi:type="xsd:int">${start}</start>
+    <accountType xmlns="" xsi:type="xsd:int">0</accountType>
+    <query xmlns="" xsi:type="xsd:string">${escapeXml(queryString)}</query>
+    <sortOptions xmlns="" xsi:nil="true" />
+  </PagedExistingQueryResultsRequest_1>
+</tns:getExistingQueryResults>`;
+    try {
+        const body = await sendSoapRequest('getExistingQueryResults', innerBody, sessionId);
+        const responseNode = findResponseNode(body, 'getExistingQueryResultsResponse');
+        const resultNode = responseNode?.result ?? responseNode;
+        if (!resultNode || typeof resultNode !== 'object') {
+            return [];
+        }
+        return extractRows(resultNode);
+    } catch (error) {
+        if (error instanceof SoapFaultError && error.faultCode?.toLowerCase().includes('session')) {
+            invalidateSession();
+        }
+        throw error;
+    }
 }
-async function fetchPledges(range) {
-    const url = new URL('/pledges', __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$env$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["env"].ETAPESTRY_BASE_URL);
-    url.searchParams.set('from', range.from.toISOString());
-    url.searchParams.set('to', range.to.toISOString());
-    const response = await jsonFetch(url);
-    if (!response.ok) {
-        throw new Error(`Failed to fetch pledges: ${response.statusText}`);
-    }
-    const data = await response.json();
-    if (Array.isArray(data)) {
-        return data;
-    }
-    if ('pledges' in data && Array.isArray(data.pledges)) {
-        return data.pledges;
+function getFieldCollection(entry) {
+    if (!entry) return [];
+    if (Array.isArray(entry)) return entry;
+    if (typeof entry === 'object' && entry !== null) {
+        if ('fieldValue' in entry && Array.isArray(entry.fieldValue)) return entry.fieldValue;
+        if ('value' in entry && Array.isArray(entry.value)) return entry.value;
     }
     return [];
+}
+function normalizePrimitive(value) {
+    if (value == null) return undefined;
+    if (typeof value === 'string' || typeof value === 'number') {
+        return String(value);
+    }
+    if (typeof value === 'object' && value !== null && 'value' in value) {
+        return normalizePrimitive(value.value);
+    }
+    return undefined;
+}
+function resolveField(row, candidates) {
+    const target = candidates.map((candidate)=>candidate.toLowerCase());
+    for (const [key, value] of Object.entries(row)){
+        if (target.includes(key.toLowerCase())) {
+            const primitive = normalizePrimitive(value);
+            if (primitive) return primitive;
+        }
+    }
+    for (const collection of [
+        row.fieldValues,
+        row.values
+    ]){
+        const entries = getFieldCollection(collection);
+        for (const entry of entries){
+            const key = entry.name ?? entry.fieldName;
+            if (key && target.includes(key.toLowerCase())) {
+                const primitive = normalizePrimitive(entry.value);
+                if (primitive) return primitive;
+            }
+        }
+    }
+    return undefined;
+}
+function parseCurrency(value) {
+    if (!value) return undefined;
+    const normalized = value.replace(/[^0-9.-]/g, '');
+    const amount = Number(normalized);
+    return Number.isNaN(amount) ? undefined : amount;
+}
+function parseDateValue(value) {
+    if (!value) return undefined;
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) return undefined;
+    return parsed;
+}
+function mapSoapRowToPledge(row) {
+    const id = resolveField(row, [
+        'id',
+        'pledgeid',
+        'ref',
+        'accountref'
+    ]);
+    const amount = parseCurrency(resolveField(row, [
+        'amount',
+        'pledgeamount',
+        'giftamount'
+    ]));
+    const date = parseDateValue(resolveField(row, [
+        'date',
+        'pledgedate',
+        'giftdate',
+        'entrydate'
+    ]));
+    if (!id || amount == null || !date) {
+        return null;
+    }
+    const donorName = resolveField(row, [
+        'donorname',
+        'name',
+        'accountname'
+    ]) ?? 'BHIC donor';
+    const donorExternalId = resolveField(row, [
+        'donorid',
+        'accountnumber',
+        'constituentid'
+    ]);
+    const donorEmail = resolveField(row, [
+        'email',
+        'emailaddress',
+        'primaryemail'
+    ]);
+    const donorPhone = resolveField(row, [
+        'phone',
+        'phonenumber'
+    ]);
+    const lastGiftDate = parseDateValue(resolveField(row, [
+        'lastgiftdate',
+        'lastgivingdate'
+    ]));
+    const campaign = resolveField(row, [
+        'campaign',
+        'fund',
+        'appeal'
+    ]);
+    const status = resolveField(row, [
+        'status',
+        'pledgestatus'
+    ]);
+    return {
+        id,
+        amount,
+        date: date.toISOString(),
+        campaign: campaign ?? undefined,
+        status: status ?? undefined,
+        donor: {
+            externalId: donorExternalId ?? undefined,
+            name: donorName,
+            email: donorEmail ?? undefined,
+            phone: donorPhone ?? undefined,
+            lastGiftDate: lastGiftDate ? lastGiftDate.toISOString() : undefined
+        }
+    };
+}
+function extractRows(payload) {
+    if (!payload) return [];
+    if (Array.isArray(payload)) {
+        return payload.filter((item)=>typeof item === 'object' && item !== null);
+    }
+    if (typeof payload !== 'object') return [];
+    const record = normalizeRecordKeys(payload);
+    const candidates = [
+        'queryResults',
+        'rows',
+        'row',
+        'return',
+        'value',
+        'results',
+        'data',
+        'collection',
+        'item',
+        'items'
+    ];
+    for (const key of candidates){
+        const nested = record[key];
+        if (Array.isArray(nested)) {
+            return nested.filter((item)=>typeof item === 'object' && item !== null);
+        }
+        if (nested && typeof nested === 'object') {
+            const rows = extractRows(nested);
+            if (rows.length) {
+                return rows;
+            }
+        }
+    }
+    return [];
+}
+async function fetchPledges(range) {
+    const pageSize = 500;
+    let start = 0;
+    const collected = [];
+    while(start < 5000){
+        const rows = await fetchQueryRows(start, pageSize);
+        const pledges = rows.map((row)=>mapSoapRowToPledge(row)).filter((pledge)=>Boolean(pledge));
+        collected.push(...pledges);
+        if (rows.length < pageSize) {
+            break;
+        }
+        start += pageSize;
+    }
+    return collected.filter((pledge)=>{
+        const date = new Date(pledge.date);
+        return date >= range.from && date <= range.to;
+    });
 }
 async function syncPledgesToDb(range) {
     const window = pledgeSyncRange(range);
@@ -437,33 +774,79 @@ function mapStatus(status) {
     }
 }
 async function fetchEventAttendees(eventId) {
-    const url = new URL(`/events/${eventId}/attendees/`, API_BASE);
-    const response = await fetch(url, {
-        headers: withAuthHeaders(),
-        cache: 'no-store'
-    });
-    if (!response.ok) {
-        throw new Error(`Failed to fetch attendees for ${eventId}`);
+    const attendees = [];
+    let continuation;
+    let page = 1;
+    while(true){
+        const url = new URL(`/events/${eventId}/attendees/`, API_BASE);
+        url.searchParams.set('status', 'attending');
+        url.searchParams.set('expand', 'profile');
+        if (continuation) {
+            url.searchParams.set('continuation', continuation);
+        } else {
+            url.searchParams.set('page', String(page));
+        }
+        const response = await fetch(url, {
+            headers: withAuthHeaders(),
+            cache: 'no-store'
+        });
+        if (!response.ok) {
+            throw new Error(`Failed to fetch attendees for ${eventId}: ${response.statusText}`);
+        }
+        const body = await response.json();
+        attendees.push(...body.attendees ?? []);
+        const pagination = body.pagination;
+        if (pagination?.has_more_items) {
+            if (pagination.continuation) {
+                continuation = pagination.continuation;
+            } else {
+                continuation = undefined;
+                page += 1;
+            }
+        } else {
+            break;
+        }
     }
-    const body = await response.json();
-    return body.attendees ?? [];
+    return attendees;
 }
 async function fetchEvents(range) {
-    const url = new URL('/organizations/me/events/', API_BASE);
-    url.searchParams.set('order_by', 'start_desc');
-    url.searchParams.set('time_filter', 'custom');
-    url.searchParams.set('start_date.range_start', range.from.toISOString());
-    url.searchParams.set('start_date.range_end', range.to.toISOString());
-    url.searchParams.set('expand', 'ticket_availability,venue');
-    const response = await fetch(url, {
-        headers: withAuthHeaders(),
-        cache: 'no-store'
-    });
-    if (!response.ok) {
-        throw new Error(`Failed to fetch Eventbrite events: ${response.statusText}`);
+    const events = [];
+    let continuation;
+    let page = 1;
+    while(true){
+        const url = new URL(`/organizations/${__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$env$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["env"].EVENTBRITE_ORGANIZATION_ID}/events/`, API_BASE);
+        url.searchParams.set('order_by', 'start_desc');
+        url.searchParams.set('time_filter', 'custom');
+        url.searchParams.set('start_date.range_start', range.from.toISOString());
+        url.searchParams.set('start_date.range_end', range.to.toISOString());
+        url.searchParams.set('expand', 'ticket_availability,venue');
+        url.searchParams.set('page_size', '50');
+        if (continuation) {
+            url.searchParams.set('continuation', continuation);
+        } else {
+            url.searchParams.set('page', String(page));
+        }
+        const response = await fetch(url, {
+            headers: withAuthHeaders(),
+            cache: 'no-store'
+        });
+        if (!response.ok) {
+            throw new Error(`Failed to fetch Eventbrite events: ${response.statusText}`);
+        }
+        const data = await response.json();
+        events.push(...data.events ?? []);
+        const pagination = data.pagination;
+        if (pagination?.has_more_items) {
+            if (pagination.continuation) {
+                continuation = pagination.continuation;
+            } else {
+                continuation = undefined;
+                page += 1;
+            }
+        } else {
+            break;
+        }
     }
-    const data = await response.json();
-    const events = data.events ?? [];
     const withAttendees = await Promise.all(events.map(async (event)=>({
             ...event,
             attendees: await fetchEventAttendees(event.id)

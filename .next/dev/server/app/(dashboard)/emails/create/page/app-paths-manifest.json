@@ -1,0 +1,3 @@
+{
+  "/(dashboard)/emails/create/page": "app/(dashboard)/emails/create/page.js"
+}

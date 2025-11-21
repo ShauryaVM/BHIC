@@ -9,7 +9,10 @@
     "lint": "next lint",
     "seed": "tsx prisma/seed.ts",
     "prisma:generate": "prisma generate",
-    "prisma:migrate": "prisma migrate dev"
+    "prisma:migrate": "prisma migrate dev",
+    "sync:etapestry": "tsx scripts/sync-etapestry.ts",
+    "sync:eventbrite": "tsx scripts/sync-eventbrite.ts",
+    "sync:all": "tsx scripts/sync-integrations.ts"
   },
   "keywords": [],
   "author": "",
@@ -22,6 +25,7 @@
     "@prisma/client": "^5.16.2",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
+    "fast-xml-parser": "^5.3.2",
     "google-auth-library": "^10.5.0",
     "lucide-react": "^0.454.0",
     "next": "^16.0.3",

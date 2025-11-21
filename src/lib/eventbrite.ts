@@ -26,6 +26,13 @@ interface EventbriteTicketAvailability {
   capacity?: number;
 }
 
+interface EventbritePagination {
+  has_more_items?: boolean;
+  page_number?: number;
+  page_count?: number;
+  continuation?: string | null;
+}
+
 interface EventbriteEvent {
   id: string;
   name?: EventbriteName;
@@ -49,6 +56,16 @@ interface EventbriteAttendee {
     major_value?: string;
   };
   ticket_class_name?: string;
+}
+
+interface EventbriteEventsResponse {
+  events?: EventbriteEvent[];
+  pagination?: EventbritePagination;
+}
+
+interface EventbriteAttendeesResponse {
+  attendees?: EventbriteAttendee[];
+  pagination?: EventbritePagination;
 }
 
 const API_BASE = 'https://www.eventbriteapi.com/v3';
@@ -82,39 +99,91 @@ function mapStatus(status?: string): EventStatus {
 }
 
 async function fetchEventAttendees(eventId: string): Promise<EventbriteAttendee[]> {
-  const url = new URL(`/events/${eventId}/attendees/`, API_BASE);
-  const response = await fetch(url, {
-    headers: withAuthHeaders(),
-    cache: 'no-store'
-  });
+  const attendees: EventbriteAttendee[] = [];
+  let continuation: string | undefined;
+  let page = 1;
 
-  if (!response.ok) {
-    throw new Error(`Failed to fetch attendees for ${eventId}`);
+  while (true) {
+    const url = new URL(`/events/${eventId}/attendees/`, API_BASE);
+    url.searchParams.set('status', 'attending');
+    url.searchParams.set('expand', 'profile');
+    if (continuation) {
+      url.searchParams.set('continuation', continuation);
+    } else {
+      url.searchParams.set('page', String(page));
+    }
+
+    const response = await fetch(url, {
+      headers: withAuthHeaders(),
+      cache: 'no-store'
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch attendees for ${eventId}: ${response.statusText}`);
+    }
+
+    const body = (await response.json()) as EventbriteAttendeesResponse;
+    attendees.push(...(body.attendees ?? []));
+
+    const pagination = body.pagination;
+    if (pagination?.has_more_items) {
+      if (pagination.continuation) {
+        continuation = pagination.continuation;
+      } else {
+        continuation = undefined;
+        page += 1;
+      }
+    } else {
+      break;
+    }
   }
 
-  const body = (await response.json()) as { attendees?: EventbriteAttendee[] };
-  return body.attendees ?? [];
+  return attendees;
 }
 
 export async function fetchEvents(range: FetchParams): Promise<Array<EventbriteEvent & { attendees: EventbriteAttendee[] }>> {
-  const url = new URL('/organizations/me/events/', API_BASE);
-  url.searchParams.set('order_by', 'start_desc');
-  url.searchParams.set('time_filter', 'custom');
-  url.searchParams.set('start_date.range_start', range.from.toISOString());
-  url.searchParams.set('start_date.range_end', range.to.toISOString());
-  url.searchParams.set('expand', 'ticket_availability,venue');
+  const events: EventbriteEvent[] = [];
+  let continuation: string | undefined;
+  let page = 1;
 
-  const response = await fetch(url, {
-    headers: withAuthHeaders(),
-    cache: 'no-store'
-  });
+  while (true) {
+    const url = new URL(`/organizations/${env.EVENTBRITE_ORGANIZATION_ID}/events/`, API_BASE);
+    url.searchParams.set('order_by', 'start_desc');
+    url.searchParams.set('time_filter', 'custom');
+    url.searchParams.set('start_date.range_start', range.from.toISOString());
+    url.searchParams.set('start_date.range_end', range.to.toISOString());
+    url.searchParams.set('expand', 'ticket_availability,venue');
+    url.searchParams.set('page_size', '50');
+    if (continuation) {
+      url.searchParams.set('continuation', continuation);
+    } else {
+      url.searchParams.set('page', String(page));
+    }
 
-  if (!response.ok) {
-    throw new Error(`Failed to fetch Eventbrite events: ${response.statusText}`);
+    const response = await fetch(url, {
+      headers: withAuthHeaders(),
+      cache: 'no-store'
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch Eventbrite events: ${response.statusText}`);
+    }
+
+    const data = (await response.json()) as EventbriteEventsResponse;
+    events.push(...(data.events ?? []));
+
+    const pagination = data.pagination;
+    if (pagination?.has_more_items) {
+      if (pagination.continuation) {
+        continuation = pagination.continuation;
+      } else {
+        continuation = undefined;
+        page += 1;
+      }
+    } else {
+      break;
+    }
   }
-
-  const data = (await response.json()) as { events?: EventbriteEvent[] };
-  const events = data.events ?? [];
 
   const withAttendees = await Promise.all(
     events.map(async (event) => ({
