@@ -4,12 +4,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
 import type { LucideIcon } from "lucide-react";
-import { Activity, CalendarDays, Gauge, Mail, Users2 } from "lucide-react";
+import { Activity, CalendarDays, Gauge, Lightbulb, Mail, Users2 } from "lucide-react";
 
 const navItems: Array<{ href: string; label: string; icon: LucideIcon }> = [
   { href: "/", label: "Dashboard", icon: Gauge },
   { href: "/donors", label: "Donors", icon: Users2 },
   { href: "/events", label: "Events", icon: CalendarDays },
+  { href: "/insights", label: "Insights", icon: Lightbulb },
   { href: "/analytics", label: "Analytics", icon: Activity },
   { href: "/emails", label: "Emails", icon: Mail }
 ];
