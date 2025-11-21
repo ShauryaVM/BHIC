@@ -55,11 +55,17 @@ export function CampaignWizard({ data, action }: CampaignWizardProps) {
   }, [data.templates, form.templateId, form.templateMode, form.newTemplate]);
 
   function nextStep() {
-    setStep((current) => Math.min(3, (current + 1) as Step));
+    setStep((current) => {
+      const next = current + 1;
+      return (next > 3 ? 3 : (next as Step));
+    });
   }
 
   function prevStep() {
-    setStep((current) => Math.max(0, (current - 1) as Step));
+    setStep((current) => {
+      const prev = current - 1;
+      return (prev < 0 ? 0 : (prev as Step));
+    });
   }
 
   function renderPreview(content?: string | null) {
