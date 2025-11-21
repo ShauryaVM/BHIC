@@ -6,19 +6,31 @@ import { defaultEventFilters, getEventsData } from '@/lib/events-data';
 import { formatCurrency, formatDate, formatNumber } from '@/lib/format';
 import { PageHeader, PageHeaderMeta } from '@/components/layout/page-header';
 
-interface EventsPageProps {
-  searchParams?: {
-    from?: string;
-    to?: string;
-  };
+interface SearchParams {
+  from?: string;
+  to?: string;
 }
 
+interface EventsPageProps {
+  searchParams?: Promise<SearchParams> | SearchParams;
+}
+
+export const dynamic = 'force-dynamic';
+
 export default async function EventsPage({ searchParams }: EventsPageProps) {
+  const resolvedSearchParams = (await Promise.resolve(searchParams)) ?? {};
   const defaults = defaultEventFilters();
-  const filters = {
-    from: searchParams?.from ? new Date(searchParams.from) : defaults.from,
-    to: searchParams?.to ? new Date(searchParams.to) : defaults.to
+
+  const parseDate = (value?: string) => {
+    if (!value) return undefined;
+    const candidate = new Date(value);
+    return Number.isNaN(candidate.getTime()) ? undefined : candidate;
   };
+
+  const from = parseDate(resolvedSearchParams.from) ?? defaults.from;
+  const to = parseDate(resolvedSearchParams.to) ?? defaults.to;
+
+  const filters = { from, to };
 
   const data = await getEventsData(filters);
 
@@ -40,7 +52,7 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
         />
       </PageHeader>
 
-      <EventsFilters initialFrom={searchParams?.from} initialTo={searchParams?.to} />
+      <EventsFilters initialFrom={from.toISOString().slice(0, 10)} initialTo={to.toISOString().slice(0, 10)} />
 
       <Card title="Event performance" description="Revenue and tickets by event">
         <div className="overflow-x-auto">

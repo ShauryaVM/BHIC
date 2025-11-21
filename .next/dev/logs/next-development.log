@@ -1,3 +1,211 @@
-[00:00:28.843] Server  LOG      ○ Compiling middleware ...
-[00:00:35.578] Server  LOG      ✓ Ready in 24.4s
-[00:02:40.945] Server  LOG      ○ Compiling / ...
+[00:00:03.195] Server  LOG      ✓ Ready in 2.4s
+[00:00:06.290] Server  LOG      ○ Compiling / ...
+[00:00:24.113] Server  LOG     prisma:query "BEGIN"
+[00:00:24.148] Server  LOG     prisma:query "DEALLOCATE ALL"
+[00:00:24.205] Server  LOG     prisma:query "SELECT \"public\".\"CachedMetric\".\"id\", \"public\".\"CachedMetric\".\"key\", \"public\".\"CachedMetric\".\"value\", \"public\".\"CachedMetric\".\"fromDate\", \"public\".\"CachedMetric\".\"toDate\", \"public\".\"CachedMetric\".\"source\"::text, \"public\".\"CachedMetric\".\"createdAt\" FROM \"public\".\"CachedMetric\" WHERE \"public\".\"CachedMetric\".\"key\" = $1 ORDER BY \"public\".\"CachedMetric\".\"createdAt\" DESC LIMIT $2 OFFSET $3"
+[00:00:24.243] Server  LOG     prisma:query "ROLLBACK"
+[00:00:24.273] Server  LOG     prisma:error "\nInvalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__[\"prisma\"].cachedMetric.findFirst()` invocation in\nC:\\Users\\Shaurya\\Documents\\GitHub\\BHIC\\.next\\dev\\server\\chunks\\ssr\\[root-of-the-server]__c9218da2._.js:133:172\n\n  130     return fetcher();\n  131 }\n  132 try {\n→ 133     const existing = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__[\"prisma\"].cachedMetric.findFirst(\nThe table `public.CachedMetric` does not exist in the current database."
+[00:00:24.276] Server  WARN    Metric cache unavailable, falling back to live fetch "\nInvalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__[\"prisma\"].cachedMetric.findFirst()` invocation in\nC:\\Users\\Shaurya\\Documents\\GitHub\\BHIC\\.next\\dev\\server\\chunks\\ssr\\[root-of-the-server]__c9218da2._.js:133:172\n\n  130     return fetcher();\n  131 }\n  132 try {\n→ 133     const existing = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__[\"prisma\"].cachedMetric.findFirst(\nThe table `public.CachedMetric` does not exist in the current database."
+[00:00:24.325] Server  LOG     prisma:query "BEGIN"
+[00:00:24.392] Server  LOG     prisma:query "DEALLOCATE ALL"
+[00:00:24.395] Server  LOG     prisma:query "BEGIN"
+[00:00:24.414] Server  LOG     prisma:query "DEALLOCATE ALL"
+[00:00:24.416] Server  LOG     prisma:query "SELECT \"public\".\"Pledge\".\"id\", \"public\".\"Pledge\".\"amount\", \"public\".\"Pledge\".\"date\" FROM \"public\".\"Pledge\" WHERE (\"public\".\"Pledge\".\"date\" >= $1 AND \"public\".\"Pledge\".\"date\" <= $2) OFFSET $3"
+[00:00:24.417] Server  LOG     prisma:query "BEGIN"
+[00:00:24.430] Server  LOG     prisma:query "SELECT \"public\".\"CachedMetric\".\"id\", \"public\".\"CachedMetric\".\"key\", \"public\".\"CachedMetric\".\"value\", \"public\".\"CachedMetric\".\"fromDate\", \"public\".\"CachedMetric\".\"toDate\", \"public\".\"CachedMetric\".\"source\"::text, \"public\".\"CachedMetric\".\"createdAt\" FROM \"public\".\"CachedMetric\" WHERE \"public\".\"CachedMetric\".\"key\" = $1 ORDER BY \"public\".\"CachedMetric\".\"createdAt\" DESC LIMIT $2 OFFSET $3"
+[00:00:24.438] Server  LOG     prisma:query "BEGIN"
+[00:00:24.439] Server  LOG     prisma:query "ROLLBACK"
+[00:00:24.443] Server  LOG     prisma:query "BEGIN"
+[00:00:24.444] Server  LOG     prisma:query "DEALLOCATE ALL"
+[00:00:24.452] Server  LOG     prisma:error "\nInvalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__[\"prisma\"].pledge.findMany()` invocation in\nC:\\Users\\Shaurya\\Documents\\GitHub\\BHIC\\.next\\dev\\server\\chunks\\ssr\\[root-of-the-server]__c9218da2._.js:362:169\n\n  359 to: range.to,\n  360 source: __TURBOPACK__imported__module__$5b$externals$5d2f40$prisma$2f$client__$5b$external$5d$__$2840$prisma$2f$client$2c$__cjs$29$__[\"MetricSource\"].ETAPESTRY,\n  361 fetcher: async ()=>{\n→ 362     const pledges = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__[\"prisma\"].pledge.findMany(\nThe table `public.Pledge` does not exist in the current database."
+[00:00:24.490] Server  ERROR   C:\Users\Shaurya\Documents\GitHub\BHIC\.next\dev\server\chunks\ssr\[root-of-the-server]__c9218da2._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:00:24.507] Server  ERROR   Failed to load dashboard data PrismaClientKnownRequestError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].pledge.findMany()` invocation in
+C:\Users\Shaurya\Documents\GitHub\BHIC\.next\dev\server\chunks\ssr\[root-of-the-server]__c9218da2._.js:362:169
+
+  359 to: range.to,
+  360 source: __TURBOPACK__imported__module__$5b$externals$5d2f40$prisma$2f$client__$5b$external$5d$__$2840$prisma$2f$client$2c$__cjs$29$__["MetricSource"].ETAPESTRY,
+  361 fetcher: async ()=>{
+→ 362     const pledges = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].pledge.findMany(
+The table `public.Pledge` does not exist in the current database.
+[00:00:25.372] Server  LOG     prisma:query "BEGIN"
+[00:00:25.373] Server  LOG     prisma:query "BEGIN"
+[00:00:25.374] Server  LOG     prisma:query "ROLLBACK"
+[00:00:25.375] Server  LOG     prisma:query "DEALLOCATE ALL"
+[00:00:25.377] Server  LOG     prisma:query "DEALLOCATE ALL"
+[00:00:25.378] Server  LOG     prisma:query "SELECT COUNT(*) FROM (SELECT \"public\".\"Donor\".\"id\" FROM \"public\".\"Donor\" WHERE 1=1 OFFSET $1) AS \"sub\""
+[00:00:25.379] Server  LOG     prisma:query "DEALLOCATE ALL"
+[00:00:25.381] Server  LOG     prisma:query "DEALLOCATE ALL"
+[00:00:25.383] Server  LOG     prisma:query "SELECT COUNT(*) FROM (SELECT \"public\".\"Donor\".\"id\" FROM \"public\".\"Donor\" WHERE \"public\".\"Donor\".\"lastGiftDate\" >= $1 OFFSET $2) AS \"sub\""
+[00:00:25.385] Server  LOG     prisma:query "SELECT \"public\".\"EventAttendance\".\"id\", \"public\".\"EventAttendance\".\"ticketsCount\", \"public\".\"EventAttendance\".\"createdAt\" FROM \"public\".\"EventAttendance\" WHERE (\"public\".\"EventAttendance\".\"createdAt\" >= $1 AND \"public\".\"EventAttendance\".\"createdAt\" <= $2) OFFSET $3"
+[00:00:25.389] Server  LOG     prisma:query "ROLLBACK"
+[00:00:25.393] Server  LOG     prisma:query "SELECT SUM(\"amount\") FROM (SELECT \"public\".\"Pledge\".\"amount\" FROM \"public\".\"Pledge\" WHERE (\"public\".\"Pledge\".\"date\" >= $1 AND \"public\".\"Pledge\".\"date\" <= $2 AND \"public\".\"Pledge\".\"status\" IN (CAST($3::text AS \"public\".\"PledgeStatus\"),CAST($4::text AS \"public\".\"PledgeStatus\"))) OFFSET $5) AS \"sub\""
+[00:00:25.396] Server  LOG     prisma:query "SELECT \"public\".\"CachedMetric\".\"id\", \"public\".\"CachedMetric\".\"key\", \"public\".\"CachedMetric\".\"value\", \"public\".\"CachedMetric\".\"fromDate\", \"public\".\"CachedMetric\".\"toDate\", \"public\".\"CachedMetric\".\"source\"::text, \"public\".\"CachedMetric\".\"createdAt\" FROM \"public\".\"CachedMetric\" WHERE \"public\".\"CachedMetric\".\"key\" = $1 ORDER BY \"public\".\"CachedMetric\".\"createdAt\" DESC LIMIT $2 OFFSET $3"
+[00:00:25.397] Server  LOG     prisma:query "ROLLBACK"
+[00:00:25.398] Server  LOG     prisma:query "ROLLBACK"
+[00:00:25.400] Server  LOG     prisma:query "ROLLBACK"
+[00:00:25.404] Server  LOG     prisma:query "ROLLBACK"
+[00:00:26.117] Server  LOG     prisma:query "BEGIN"
+[00:00:26.118] Server  LOG     prisma:query "DEALLOCATE ALL"
+[00:00:26.121] Server  LOG     prisma:query "SELECT \"public\".\"Event\".\"id\", \"public\".\"Event\".\"externalId\", \"public\".\"Event\".\"name\", \"public\".\"Event\".\"startDate\", \"public\".\"Event\".\"endDate\", \"public\".\"Event\".\"venue\", \"public\".\"Event\".\"status\"::text, \"public\".\"Event\".\"ticketsTotal\", \"public\".\"Event\".\"ticketsSold\", \"public\".\"Event\".\"grossRevenue\", \"public\".\"Event\".\"netRevenue\", \"public\".\"Event\".\"createdAt\", \"public\".\"Event\".\"updatedAt\" FROM \"public\".\"Event\" WHERE (\"public\".\"Event\".\"startDate\" >= $1 AND \"public\".\"Event\".\"startDate\" <= $2) OFFSET $3"
+[00:00:26.124] Server  LOG     prisma:query "ROLLBACK"
+[00:00:27.594] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:00:39.135] Server  LOG      ○ Compiling /donors ...
+[00:00:43.355] Server  LOG     prisma:query "SELECT 1"
+[00:00:43.357] Server  LOG     prisma:query "SELECT 1"
+[00:00:43.358] Server  LOG     prisma:query "SELECT 1"
+[00:00:43.359] Server  LOG     prisma:query "SELECT 1"
+[00:00:43.361] Server  LOG     prisma:query "SELECT 1"
+[00:00:43.362] Server  LOG     prisma:query "SELECT 1"
+[00:00:43.365] Server  LOG     prisma:query "SELECT 1"
+[00:00:43.570] Server  LOG     prisma:query "BEGIN"
+[00:00:43.571] Server  LOG     prisma:query "BEGIN"
+[00:00:43.573] Server  LOG     prisma:query "BEGIN"
+[00:00:43.574] Server  LOG     prisma:query "BEGIN"
+[00:00:43.575] Server  LOG     prisma:query "BEGIN"
+[00:00:43.576] Server  LOG     prisma:query "BEGIN"
+[00:00:43.577] Server  LOG     prisma:query "BEGIN"
+[00:00:43.579] Server  LOG     prisma:query "DEALLOCATE ALL"
+[00:00:43.584] Server  LOG     prisma:query "DEALLOCATE ALL"
+[00:00:43.587] Server  LOG     prisma:query "DEALLOCATE ALL"
+[00:00:43.590] Server  LOG     prisma:query "DEALLOCATE ALL"
+[00:00:43.592] Server  LOG     prisma:query "DEALLOCATE ALL"
+[00:00:43.594] Server  LOG     prisma:query "DEALLOCATE ALL"
+[00:00:43.595] Server  LOG     prisma:query "DEALLOCATE ALL"
+[00:00:43.597] Server  LOG     prisma:query "SELECT COUNT(*) FROM (SELECT \"public\".\"Donor\".\"id\" FROM \"public\".\"Donor\" WHERE 1=1 OFFSET $1) AS \"sub\""
+[00:00:43.601] Server  LOG     prisma:query "SELECT COUNT(*) FROM (SELECT \"public\".\"Donor\".\"id\" FROM \"public\".\"Donor\" WHERE 1=1 OFFSET $1) AS \"sub\""
+[00:00:43.603] Server  LOG     prisma:query "SELECT COUNT(*) FROM (SELECT \"public\".\"Donor\".\"id\" FROM \"public\".\"Donor\" WHERE \"public\".\"Donor\".\"lastGiftDate\" >= $1 OFFSET $2) AS \"sub\""
+[00:00:43.610] Server  LOG     prisma:query "SELECT \"public\".\"Donor\".\"id\", \"public\".\"Donor\".\"name\", \"public\".\"Donor\".\"email\", \"public\".\"Donor\".\"phone\", \"public\".\"Donor\".\"totalGiven\", \"public\".\"Donor\".\"totalPledged\", \"public\".\"Donor\".\"lastGiftDate\" FROM \"public\".\"Donor\" WHERE 1=1 ORDER BY \"public\".\"Donor\".\"totalGiven\" DESC LIMIT $1 OFFSET $2"
+[00:00:43.613] Server  LOG     prisma:query "SELECT AVG(\"totalGiven\") FROM (SELECT \"public\".\"Donor\".\"totalGiven\" FROM \"public\".\"Donor\" WHERE 1=1 OFFSET $1) AS \"sub\""
+[00:00:43.616] Server  LOG     prisma:query "SELECT \"public\".\"Donor\".\"id\", \"public\".\"Donor\".\"totalGiven\" FROM \"public\".\"Donor\" WHERE 1=1 OFFSET $1"
+[00:00:43.618] Server  LOG     prisma:query "SELECT \"public\".\"Donor\".\"id\", \"public\".\"Donor\".\"createdAt\" FROM \"public\".\"Donor\" WHERE \"public\".\"Donor\".\"createdAt\" >= $1 OFFSET $2"
+[00:00:43.619] Server  LOG     prisma:query "ROLLBACK"
+[00:00:43.622] Server  LOG     prisma:query "ROLLBACK"
+[00:00:43.626] Server  LOG     prisma:query "ROLLBACK"
+[00:00:43.627] Server  LOG     prisma:query "ROLLBACK"
+[00:00:43.631] Server  LOG     prisma:query "ROLLBACK"
+[00:00:43.635] Server  LOG     prisma:query "ROLLBACK"
+[00:00:43.638] Server  LOG     prisma:query "ROLLBACK"
+[00:00:43.640] Server  LOG     prisma:query "BEGIN"
+[00:00:43.643] Server  LOG     prisma:query "BEGIN"
+[00:00:43.645] Server  LOG     prisma:query "BEGIN"
+[00:00:43.651] Server  LOG     prisma:query "BEGIN"
+[00:00:43.653] Server  LOG     prisma:query "BEGIN"
+[00:00:43.656] Server  LOG     prisma:query "BEGIN"
+[00:00:43.658] Server  LOG     prisma:query "BEGIN"
+[00:00:43.667] Server  LOG     prisma:query "DEALLOCATE ALL"
+[00:00:43.668] Server  LOG     prisma:query "DEALLOCATE ALL"
+[00:00:43.670] Server  LOG     prisma:query "DEALLOCATE ALL"
+[00:00:43.674] Server  LOG     prisma:query "DEALLOCATE ALL"
+[00:00:43.676] Server  LOG     prisma:query "DEALLOCATE ALL"
+[00:00:43.678] Server  LOG     prisma:query "DEALLOCATE ALL"
+[00:00:43.680] Server  LOG     prisma:query "DEALLOCATE ALL"
+[00:00:43.690] Server  LOG     prisma:error "\nInvalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__[\"prisma\"].donor.count()` invocation in\nC:\\Users\\Shaurya\\Documents\\GitHub\\BHIC\\.next\\dev\\server\\chunks\\ssr\\[root-of-the-server]__5140f04d._.js:459:146\n\n  456         lastGiftDate: true\n  457     }\n  458 }),\n→ 459 __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__[\"prisma\"].donor.count(\nThe table `public.Donor` does not exist in the current database."
+[00:00:43.700] Server  ERROR   C:\Users\Shaurya\Documents\GitHub\BHIC\.next\dev\server\chunks\ssr\[root-of-the-server]__5140f04d._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:00:43.708] Server  ERROR   Failed to load donor list data. Serving fallback dataset. PrismaClientKnownRequestError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].donor.count()` invocation in
+C:\Users\Shaurya\Documents\GitHub\BHIC\.next\dev\server\chunks\ssr\[root-of-the-server]__5140f04d._.js:459:146
+
+  456         lastGiftDate: true
+  457     }
+  458 }),
+→ 459 __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].donor.count(
+The table `public.Donor` does not exist in the current database.
+[00:00:43.733] Server  LOG     prisma:error "\nInvalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__[\"prisma\"].donor.count()` invocation in\nC:\\Users\\Shaurya\\Documents\\GitHub\\BHIC\\.next\\dev\\server\\chunks\\ssr\\[root-of-the-server]__5140f04d._.js:460:146\n\n  457     }\n  458 }),\n  459 __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__[\"prisma\"].donor.count(),\n→ 460 __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__[\"prisma\"].donor.count(\nThe table `public.Donor` does not exist in the current database."
+[00:00:43.739] Server  LOG     prisma:error "\nInvalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__[\"prisma\"].donor.count()` invocation in\nC:\\Users\\Shaurya\\Documents\\GitHub\\BHIC\\.next\\dev\\server\\chunks\\ssr\\[root-of-the-server]__5140f04d._.js:439:146\n\n  436 }\n  437 try {\n  438     const [totalMatching, donors, totalDonors, activeDonors, averageLifetimeValue, acquisitionSource, lifetimeValues] = await Promise.all([\n→ 439         __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__[\"prisma\"].donor.count(\nThe table `public.Donor` does not exist in the current database."
+[00:00:43.745] Server  LOG     prisma:error "\nInvalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__[\"prisma\"].donor.findMany()` invocation in\nC:\\Users\\Shaurya\\Documents\\GitHub\\BHIC\\.next\\dev\\server\\chunks\\ssr\\[root-of-the-server]__5140f04d._.js:442:146\n\n  439 __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__[\"prisma\"].donor.count({\n  440     where\n  441 }),\n→ 442 __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__[\"prisma\"].donor.findMany(\nThe table `public.Donor` does not exist in the current database."
+[00:00:43.755] Server  LOG     prisma:error "\nInvalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__[\"prisma\"].donor.aggregate()` invocation in\nC:\\Users\\Shaurya\\Documents\\GitHub\\BHIC\\.next\\dev\\server\\chunks\\ssr\\[root-of-the-server]__5140f04d._.js:467:146\n\n  464         }\n  465     }\n  466 }),\n→ 467 __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__[\"prisma\"].donor.aggregate(\nThe table `public.Donor` does not exist in the current database."
+[00:00:43.764] Server  LOG     prisma:error "\nInvalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__[\"prisma\"].donor.findMany()` invocation in\nC:\\Users\\Shaurya\\Documents\\GitHub\\BHIC\\.next\\dev\\server\\chunks\\ssr\\[root-of-the-server]__5140f04d._.js:482:146\n\n  479         createdAt: true\n  480     }\n  481 }),\n→ 482 __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__[\"prisma\"].donor.findMany(\nThe table `public.Donor` does not exist in the current database."
+[00:00:43.772] Server  LOG     prisma:error "\nInvalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__[\"prisma\"].donor.findMany()` invocation in\nC:\\Users\\Shaurya\\Documents\\GitHub\\BHIC\\.next\\dev\\server\\chunks\\ssr\\[root-of-the-server]__5140f04d._.js:472:146\n\n  469         totalGiven: true\n  470     }\n  471 }),\n→ 472 __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__[\"prisma\"].donor.findMany(\nThe table `public.Donor` does not exist in the current database."
+[00:00:43.835] Server  LOG     prisma:query "SELECT COUNT(*) FROM (SELECT \"public\".\"Donor\".\"id\" FROM \"public\".\"Donor\" WHERE 1=1 OFFSET $1) AS \"sub\""
+[00:00:43.836] Server  LOG     prisma:query "SELECT COUNT(*) FROM (SELECT \"public\".\"Donor\".\"id\" FROM \"public\".\"Donor\" WHERE \"public\".\"Donor\".\"lastGiftDate\" >= $1 OFFSET $2) AS \"sub\""
+[00:00:43.838] Server  LOG     prisma:query "SELECT \"public\".\"Donor\".\"id\", \"public\".\"Donor\".\"totalGiven\" FROM \"public\".\"Donor\" WHERE 1=1 OFFSET $1"
+[00:00:43.839] Server  LOG     prisma:query "SELECT \"public\".\"Donor\".\"id\", \"public\".\"Donor\".\"createdAt\" FROM \"public\".\"Donor\" WHERE \"public\".\"Donor\".\"createdAt\" >= $1 OFFSET $2"
+[00:00:43.840] Server  LOG     prisma:query "SELECT COUNT(*) FROM (SELECT \"public\".\"Donor\".\"id\" FROM \"public\".\"Donor\" WHERE 1=1 OFFSET $1) AS \"sub\""
+[00:00:43.841] Server  LOG     prisma:query "ROLLBACK"
+[00:00:43.842] Server  LOG     prisma:query "ROLLBACK"
+[00:00:43.843] Server  LOG     prisma:query "SELECT AVG(\"totalGiven\") FROM (SELECT \"public\".\"Donor\".\"totalGiven\" FROM \"public\".\"Donor\" WHERE 1=1 OFFSET $1) AS \"sub\""
+[00:00:43.844] Server  LOG     prisma:query "SELECT \"public\".\"Donor\".\"id\", \"public\".\"Donor\".\"name\", \"public\".\"Donor\".\"email\", \"public\".\"Donor\".\"phone\", \"public\".\"Donor\".\"totalGiven\", \"public\".\"Donor\".\"totalPledged\", \"public\".\"Donor\".\"lastGiftDate\" FROM \"public\".\"Donor\" WHERE 1=1 ORDER BY \"public\".\"Donor\".\"totalGiven\" DESC LIMIT $1 OFFSET $2"
+[00:00:43.845] Server  LOG     prisma:query "ROLLBACK"
+[00:00:43.846] Server  LOG     prisma:query "ROLLBACK"
+[00:00:43.849] Server  LOG     prisma:query "ROLLBACK"
+[00:00:43.851] Server  LOG     prisma:query "ROLLBACK"
+[00:00:43.853] Server  LOG     prisma:query "ROLLBACK"
+[00:00:43.861] Server  LOG     prisma:error "\nInvalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__[\"prisma\"].donor.count()` invocation in\nC:\\Users\\Shaurya\\Documents\\GitHub\\BHIC\\.next\\dev\\server\\chunks\\ssr\\[root-of-the-server]__5140f04d._.js:439:146\n\n  436 }\n  437 try {\n  438     const [totalMatching, donors, totalDonors, activeDonors, averageLifetimeValue, acquisitionSource, lifetimeValues] = await Promise.all([\n→ 439         __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__[\"prisma\"].donor.count(\nThe table `public.Donor` does not exist in the current database."
+[00:00:43.866] Server  ERROR   C:\Users\Shaurya\Documents\GitHub\BHIC\.next\dev\server\chunks\ssr\[root-of-the-server]__5140f04d._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:00:43.871] Server  ERROR   Failed to load donor list data. Serving fallback dataset. PrismaClientKnownRequestError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].donor.count()` invocation in
+C:\Users\Shaurya\Documents\GitHub\BHIC\.next\dev\server\chunks\ssr\[root-of-the-server]__5140f04d._.js:439:146
+
+  436 }
+  437 try {
+  438     const [totalMatching, donors, totalDonors, activeDonors, averageLifetimeValue, acquisitionSource, lifetimeValues] = await Promise.all([
+→ 439         __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].donor.count(
+The table `public.Donor` does not exist in the current database.
+[00:00:43.888] Server  LOG     prisma:error "\nInvalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__[\"prisma\"].donor.count()` invocation in\nC:\\Users\\Shaurya\\Documents\\GitHub\\BHIC\\.next\\dev\\server\\chunks\\ssr\\[root-of-the-server]__5140f04d._.js:460:146\n\n  457     }\n  458 }),\n  459 __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__[\"prisma\"].donor.count(),\n→ 460 __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__[\"prisma\"].donor.count(\nThe table `public.Donor` does not exist in the current database."
+[00:00:43.892] Server  LOG     prisma:error "\nInvalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__[\"prisma\"].donor.findMany()` invocation in\nC:\\Users\\Shaurya\\Documents\\GitHub\\BHIC\\.next\\dev\\server\\chunks\\ssr\\[root-of-the-server]__5140f04d._.js:482:146\n\n  479         createdAt: true\n  480     }\n  481 }),\n→ 482 __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__[\"prisma\"].donor.findMany(\nThe table `public.Donor` does not exist in the current database."
+[00:00:43.900] Server  LOG     prisma:error "\nInvalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__[\"prisma\"].donor.findMany()` invocation in\nC:\\Users\\Shaurya\\Documents\\GitHub\\BHIC\\.next\\dev\\server\\chunks\\ssr\\[root-of-the-server]__5140f04d._.js:472:146\n\n  469         totalGiven: true\n  470     }\n  471 }),\n→ 472 __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__[\"prisma\"].donor.findMany(\nThe table `public.Donor` does not exist in the current database."
+[00:00:43.906] Server  LOG     prisma:error "\nInvalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__[\"prisma\"].donor.count()` invocation in\nC:\\Users\\Shaurya\\Documents\\GitHub\\BHIC\\.next\\dev\\server\\chunks\\ssr\\[root-of-the-server]__5140f04d._.js:459:146\n\n  456         lastGiftDate: true\n  457     }\n  458 }),\n→ 459 __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__[\"prisma\"].donor.count(\nThe table `public.Donor` does not exist in the current database."
+[00:00:43.912] Server  LOG     prisma:error "\nInvalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__[\"prisma\"].donor.aggregate()` invocation in\nC:\\Users\\Shaurya\\Documents\\GitHub\\BHIC\\.next\\dev\\server\\chunks\\ssr\\[root-of-the-server]__5140f04d._.js:467:146\n\n  464         }\n  465     }\n  466 }),\n→ 467 __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__[\"prisma\"].donor.aggregate(\nThe table `public.Donor` does not exist in the current database."
+[00:00:43.918] Server  LOG     prisma:error "\nInvalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__[\"prisma\"].donor.findMany()` invocation in\nC:\\Users\\Shaurya\\Documents\\GitHub\\BHIC\\.next\\dev\\server\\chunks\\ssr\\[root-of-the-server]__5140f04d._.js:442:146\n\n  439 __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__[\"prisma\"].donor.count({\n  440     where\n  441 }),\n→ 442 __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__[\"prisma\"].donor.findMany(\nThe table `public.Donor` does not exist in the current database."
+[00:00:44.143] Server  LOG     prisma:query "BEGIN"
+[00:00:44.145] Server  LOG     prisma:query "BEGIN"
+[00:00:44.146] Server  LOG     prisma:query "BEGIN"
+[00:00:44.147] Server  LOG     prisma:query "BEGIN"
+[00:00:44.149] Server  LOG     prisma:query "BEGIN"
+[00:00:44.150] Server  LOG     prisma:query "BEGIN"
+[00:00:44.151] Server  LOG     prisma:query "BEGIN"
+[00:00:44.169] Server  LOG     prisma:query "DEALLOCATE ALL"
+[00:00:44.172] Server  LOG     prisma:query "DEALLOCATE ALL"
+[00:00:44.173] Server  LOG     prisma:query "DEALLOCATE ALL"
+[00:00:44.174] Server  LOG     prisma:query "DEALLOCATE ALL"
+[00:00:44.177] Server  LOG     prisma:query "DEALLOCATE ALL"
+[00:00:44.181] Server  LOG     prisma:query "DEALLOCATE ALL"
+[00:00:44.183] Server  LOG     prisma:query "DEALLOCATE ALL"
+[00:00:44.185] Server  LOG     prisma:query "SELECT COUNT(*) FROM (SELECT \"public\".\"Donor\".\"id\" FROM \"public\".\"Donor\" WHERE 1=1 OFFSET $1) AS \"sub\""
+[00:00:44.187] Server  LOG     prisma:query "SELECT COUNT(*) FROM (SELECT \"public\".\"Donor\".\"id\" FROM \"public\".\"Donor\" WHERE 1=1 OFFSET $1) AS \"sub\""
+[00:00:44.188] Server  LOG     prisma:query "SELECT COUNT(*) FROM (SELECT \"public\".\"Donor\".\"id\" FROM \"public\".\"Donor\" WHERE \"public\".\"Donor\".\"lastGiftDate\" >= $1 OFFSET $2) AS \"sub\""
+[00:00:44.189] Server  LOG     prisma:query "SELECT \"public\".\"Donor\".\"id\", \"public\".\"Donor\".\"name\", \"public\".\"Donor\".\"email\", \"public\".\"Donor\".\"phone\", \"public\".\"Donor\".\"totalGiven\", \"public\".\"Donor\".\"totalPledged\", \"public\".\"Donor\".\"lastGiftDate\" FROM \"public\".\"Donor\" WHERE 1=1 ORDER BY \"public\".\"Donor\".\"totalGiven\" DESC LIMIT $1 OFFSET $2"
+[00:00:44.191] Server  LOG     prisma:query "SELECT \"public\".\"Donor\".\"id\", \"public\".\"Donor\".\"createdAt\" FROM \"public\".\"Donor\" WHERE \"public\".\"Donor\".\"createdAt\" >= $1 OFFSET $2"
+[00:00:44.192] Server  LOG     prisma:query "SELECT \"public\".\"Donor\".\"id\", \"public\".\"Donor\".\"totalGiven\" FROM \"public\".\"Donor\" WHERE 1=1 OFFSET $1"
+[00:00:44.194] Server  LOG     prisma:query "SELECT AVG(\"totalGiven\") FROM (SELECT \"public\".\"Donor\".\"totalGiven\" FROM \"public\".\"Donor\" WHERE 1=1 OFFSET $1) AS \"sub\""
+[00:00:44.235] Server  LOG     prisma:query "ROLLBACK"
+[00:00:44.237] Server  LOG     prisma:query "ROLLBACK"
+[00:00:44.240] Server  LOG     prisma:query "ROLLBACK"
+[00:00:44.242] Server  LOG     prisma:query "ROLLBACK"
+[00:00:44.243] Server  LOG     prisma:query "ROLLBACK"
+[00:00:44.243] Server  LOG     prisma:query "ROLLBACK"
+[00:00:44.245] Server  LOG     prisma:query "ROLLBACK"
+[00:00:44.254] Server  LOG     prisma:error "\nInvalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__[\"prisma\"].donor.count()` invocation in\nC:\\Users\\Shaurya\\Documents\\GitHub\\BHIC\\.next\\dev\\server\\chunks\\ssr\\[root-of-the-server]__5140f04d._.js:459:146\n\n  456         lastGiftDate: true\n  457     }\n  458 }),\n→ 459 __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__[\"prisma\"].donor.count(\nThe table `public.Donor` does not exist in the current database."
+[00:00:44.268] Server  ERROR   C:\Users\Shaurya\Documents\GitHub\BHIC\.next\dev\server\chunks\ssr\[root-of-the-server]__5140f04d._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:00:44.273] Server  ERROR   Failed to load donor list data. Serving fallback dataset. PrismaClientKnownRequestError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].donor.count()` invocation in
+C:\Users\Shaurya\Documents\GitHub\BHIC\.next\dev\server\chunks\ssr\[root-of-the-server]__5140f04d._.js:459:146
+
+  456         lastGiftDate: true
+  457     }
+  458 }),
+→ 459 __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].donor.count(
+The table `public.Donor` does not exist in the current database.
+[00:00:44.292] Server  LOG     prisma:error "\nInvalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__[\"prisma\"].donor.findMany()` invocation in\nC:\\Users\\Shaurya\\Documents\\GitHub\\BHIC\\.next\\dev\\server\\chunks\\ssr\\[root-of-the-server]__5140f04d._.js:442:146\n\n  439 __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__[\"prisma\"].donor.count({\n  440     where\n  441 }),\n→ 442 __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__[\"prisma\"].donor.findMany(\nThe table `public.Donor` does not exist in the current database."
+[00:00:44.297] Server  LOG     prisma:error "\nInvalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__[\"prisma\"].donor.count()` invocation in\nC:\\Users\\Shaurya\\Documents\\GitHub\\BHIC\\.next\\dev\\server\\chunks\\ssr\\[root-of-the-server]__5140f04d._.js:460:146\n\n  457     }\n  458 }),\n  459 __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__[\"prisma\"].donor.count(),\n→ 460 __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__[\"prisma\"].donor.count(\nThe table `public.Donor` does not exist in the current database."
+[00:00:44.306] Server  LOG     prisma:error "\nInvalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__[\"prisma\"].donor.count()` invocation in\nC:\\Users\\Shaurya\\Documents\\GitHub\\BHIC\\.next\\dev\\server\\chunks\\ssr\\[root-of-the-server]__5140f04d._.js:439:146\n\n  436 }\n  437 try {\n  438     const [totalMatching, donors, totalDonors, activeDonors, averageLifetimeValue, acquisitionSource, lifetimeValues] = await Promise.all([\n→ 439         __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__[\"prisma\"].donor.count(\nThe table `public.Donor` does not exist in the current database."
+[00:00:44.310] Server  LOG     prisma:error "\nInvalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__[\"prisma\"].donor.findMany()` invocation in\nC:\\Users\\Shaurya\\Documents\\GitHub\\BHIC\\.next\\dev\\server\\chunks\\ssr\\[root-of-the-server]__5140f04d._.js:472:146\n\n  469         totalGiven: true\n  470     }\n  471 }),\n→ 472 __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__[\"prisma\"].donor.findMany(\nThe table `public.Donor` does not exist in the current database."
+[00:00:44.316] Server  LOG     prisma:error "\nInvalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__[\"prisma\"].donor.findMany()` invocation in\nC:\\Users\\Shaurya\\Documents\\GitHub\\BHIC\\.next\\dev\\server\\chunks\\ssr\\[root-of-the-server]__5140f04d._.js:482:146\n\n  479         createdAt: true\n  480     }\n  481 }),\n→ 482 __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__[\"prisma\"].donor.findMany(\nThe table `public.Donor` does not exist in the current database."
+[00:00:44.329] Server  LOG     prisma:error "\nInvalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__[\"prisma\"].donor.aggregate()` invocation in\nC:\\Users\\Shaurya\\Documents\\GitHub\\BHIC\\.next\\dev\\server\\chunks\\ssr\\[root-of-the-server]__5140f04d._.js:467:146\n\n  464         }\n  465     }\n  466 }),\n→ 467 __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__[\"prisma\"].donor.aggregate(\nThe table `public.Donor` does not exist in the current database."
+[00:00:55.326] Server  LOG      ○ Compiling /events ...
+[00:00:56.721] Server  LOG     prisma:query "BEGIN"
+[00:00:56.733] Server  LOG     prisma:query "DEALLOCATE ALL"
+[00:00:56.900] Server  LOG     prisma:query "SELECT \"public\".\"Event\".\"id\", \"public\".\"Event\".\"externalId\", \"public\".\"Event\".\"name\", \"public\".\"Event\".\"startDate\", \"public\".\"Event\".\"endDate\", \"public\".\"Event\".\"venue\", \"public\".\"Event\".\"status\"::text, \"public\".\"Event\".\"ticketsTotal\", \"public\".\"Event\".\"ticketsSold\", \"public\".\"Event\".\"grossRevenue\", \"public\".\"Event\".\"netRevenue\", \"public\".\"Event\".\"createdAt\", \"public\".\"Event\".\"updatedAt\" FROM \"public\".\"Event\" WHERE (\"public\".\"Event\".\"startDate\" >= $1 AND \"public\".\"Event\".\"startDate\" <= $2) ORDER BY \"public\".\"Event\".\"startDate\" DESC OFFSET $3"
+[00:00:56.908] Server  LOG     prisma:query "ROLLBACK"
+[00:00:56.937] Server  LOG     prisma:error "\nInvalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__[\"prisma\"].event.findMany()` invocation in\nC:\\Users\\Shaurya\\Documents\\GitHub\\BHIC\\.next\\dev\\server\\chunks\\ssr\\[root-of-the-server]__6669acd8._.js:276:169\n\n  273 async function getEventsData(filters = {}) {\n  274     const where = buildWhere(filters);\n  275     try {\n→ 276         const eventRecords = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__[\"prisma\"].event.findMany(\nThe table `public.Event` does not exist in the current database."
+[00:00:56.941] Server  WARN    Unable to load events data, returning empty snapshot "\nInvalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__[\"prisma\"].event.findMany()` invocation in\nC:\\Users\\Shaurya\\Documents\\GitHub\\BHIC\\.next\\dev\\server\\chunks\\ssr\\[root-of-the-server]__6669acd8._.js:276:169\n\n  273 async function getEventsData(filters = {}) {\n  274     const where = buildWhere(filters);\n  275     try {\n→ 276         const eventRecords = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__[\"prisma\"].event.findMany(\nThe table `public.Event` does not exist in the current database."
+[00:01:03.500] Server  LOG      ○ Compiling /analytics ...
+[00:01:14.610] Server  LOG     prisma:query "SELECT 1"
+[00:01:14.615] Server  LOG     prisma:query "BEGIN"
+[00:01:14.622] Server  LOG     prisma:query "DEALLOCATE ALL"
+[00:01:14.633] Server  LOG     prisma:query "SELECT \"public\".\"EmailCampaign\".\"id\", \"public\".\"EmailCampaign\".\"name\", \"public\".\"EmailCampaign\".\"templateId\", \"public\".\"EmailCampaign\".\"audienceSegmentId\", \"public\".\"EmailCampaign\".\"status\"::text, \"public\".\"EmailCampaign\".\"scheduledFor\", \"public\".\"EmailCampaign\".\"sentAt\", \"public\".\"EmailCampaign\".\"createdAt\", \"public\".\"EmailCampaign\".\"updatedAt\", COALESCE(\"aggr_selection_0_EmailLog\".\"_aggr_count_logs\", 0) AS \"_aggr_count_logs\" FROM \"public\".\"EmailCampaign\" LEFT JOIN (SELECT \"public\".\"EmailLog\".\"campaignId\", COUNT(*) AS \"_aggr_count_logs\" FROM \"public\".\"EmailLog\" WHERE 1=1 GROUP BY \"public\".\"EmailLog\".\"campaignId\") AS \"aggr_selection_0_EmailLog\" ON (\"public\".\"EmailCampaign\".\"id\" = \"aggr_selection_0_EmailLog\".\"campaignId\") WHERE 1=1 ORDER BY \"public\".\"EmailCampaign\".\"createdAt\" DESC OFFSET $1"
+[00:01:14.681] Server  LOG     prisma:query "ROLLBACK"
+[00:01:14.731] Server  LOG     prisma:error "\nInvalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__[\"prisma\"].emailCampaign.findMany()` invocation in\nC:\\Users\\Shaurya\\Documents\\GitHub\\BHIC\\.next\\dev\\server\\chunks\\ssr\\[root-of-the-server]__02831182._.js:199:163\n\n  196 ;\n  197 async function getEmailCampaigns() {\n  198     try {\n→ 199         return await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__[\"prisma\"].emailCampaign.findMany(\nThe table `public.EmailCampaign` does not exist in the current database."
+[00:01:14.736] Server  WARN    Unable to load email campaigns, returning empty list "\nInvalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__[\"prisma\"].emailCampaign.findMany()` invocation in\nC:\\Users\\Shaurya\\Documents\\GitHub\\BHIC\\.next\\dev\\server\\chunks\\ssr\\[root-of-the-server]__02831182._.js:199:163\n\n  196 ;\n  197 async function getEmailCampaigns() {\n  198     try {\n→ 199         return await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__[\"prisma\"].emailCampaign.findMany(\nThe table `public.EmailCampaign` does not exist in the current database."
+[00:01:15.092] Browser ERROR   React does not recognize the `%s` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `%s` instead. If you accidentally passed it from a parent component, remove it from the DOM element. asChild aschild

@@ -4,7 +4,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
 
 const presets = [
   { label: '7 days', days: 7 },
@@ -23,6 +23,7 @@ export function AnalyticsRangeControls({ initialFrom, initialTo }: RangeControls
   const searchParams = useSearchParams();
   const [from, setFrom] = useState(initialFrom);
   const [to, setTo] = useState(initialTo);
+  const [isPending, startTransition] = useTransition();
 
   function updateRange(updates: { from?: string; to?: string }) {
     const params = new URLSearchParams(searchParams.toString());
@@ -44,7 +45,9 @@ export function AnalyticsRangeControls({ initialFrom, initialTo }: RangeControls
         setTo('');
       }
     }
-    router.push(`${pathname}?${params.toString()}`);
+    startTransition(() => {
+      router.push(`${pathname}?${params.toString()}`);
+    });
   }
 
   function handlePreset(days: number) {
@@ -87,6 +90,7 @@ export function AnalyticsRangeControls({ initialFrom, initialTo }: RangeControls
           />
         </div>
       </div>
+      {isPending ? <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-slate-400">Updating...</p> : null}
     </div>
   );
 }

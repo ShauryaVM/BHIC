@@ -52,40 +52,63 @@ function buildWhere(filters: EventFilters) {
 
 export async function getEventsData(filters: EventFilters = {}): Promise<EventsPageData> {
   const where = buildWhere(filters);
-  const eventRecords = await prisma.event.findMany({
-    where,
-    orderBy: { startDate: 'desc' }
-  });
 
-  const events = eventRecords.map((event) => ({
-    ...event,
-    grossRevenue: toNumber(event.grossRevenue),
-    netRevenue: toNumber(event.netRevenue)
-  }));
+  try {
+    const eventRecords = await prisma.event.findMany({
+      where,
+      orderBy: { startDate: 'desc' }
+    });
 
-  const now = new Date();
-  const upcomingEvents = events.filter((event) => event.startDate >= now).length;
-  const pastEvents = events.length - upcomingEvents;
-  const ticketsSold = events.reduce((sum, event) => sum + event.ticketsSold, 0);
-  const grossRevenue = events.reduce((sum, event) => sum + toNumber(event.grossRevenue), 0);
-  const netRevenue = events.reduce((sum, event) => sum + toNumber(event.netRevenue), 0);
+    const events = eventRecords.map((event) => ({
+      ...event,
+      grossRevenue: toNumber(event.grossRevenue),
+      netRevenue: toNumber(event.netRevenue)
+    }));
 
+    const now = new Date();
+    const upcomingEvents = events.filter((event) => event.startDate >= now).length;
+    const pastEvents = events.length - upcomingEvents;
+    const ticketsSold = events.reduce((sum, event) => sum + event.ticketsSold, 0);
+    const grossRevenue = events.reduce((sum, event) => sum + toNumber(event.grossRevenue), 0);
+    const netRevenue = events.reduce((sum, event) => sum + toNumber(event.netRevenue), 0);
+
+    return {
+      events,
+      summary: {
+        upcomingEvents,
+        pastEvents,
+        ticketsSold,
+        grossRevenue,
+        netRevenue
+      },
+      charts: {
+        ticketsPerEvent: events.map((event) => ({ name: event.name, tickets: event.ticketsSold })),
+        revenuePerEvent: events.map((event) => ({
+          name: event.name,
+          gross: toNumber(event.grossRevenue),
+          net: toNumber(event.netRevenue)
+        }))
+      }
+    };
+  } catch (error) {
+    console.warn('Unable to load events data, returning empty snapshot', error instanceof Error ? error.message : error);
+    return buildFallbackEventsData();
+  }
+}
+
+function buildFallbackEventsData(): EventsPageData {
   return {
-    events,
+    events: [],
     summary: {
-      upcomingEvents,
-      pastEvents,
-      ticketsSold,
-      grossRevenue,
-      netRevenue
+      upcomingEvents: 0,
+      pastEvents: 0,
+      ticketsSold: 0,
+      grossRevenue: 0,
+      netRevenue: 0
     },
     charts: {
-      ticketsPerEvent: events.map((event) => ({ name: event.name, tickets: event.ticketsSold })),
-      revenuePerEvent: events.map((event) => ({
-        name: event.name,
-        gross: toNumber(event.grossRevenue),
-        net: toNumber(event.netRevenue)
-      }))
+      ticketsPerEvent: [],
+      revenuePerEvent: []
     }
   };
 }

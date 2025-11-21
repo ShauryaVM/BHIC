@@ -124,7 +124,11 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/prisma.ts [app-rsc] (ecmascript)");
 ;
 ;
+let cacheDisabled = false;
 async function withMetricCache({ key, from, to, source, ttlMinutes = 60, fetcher }) {
+    if (cacheDisabled) {
+        return fetcher();
+    }
     try {
         const existing = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].cachedMetric.findFirst({
             where: {
@@ -147,11 +151,12 @@ async function withMetricCache({ key, from, to, source, ttlMinutes = 60, fetcher
                 source
             }
         }).catch((error)=>{
-            console.error('Failed to persist cached metric', error);
+            console.warn('Failed to persist cached metric', error instanceof Error ? error.message : error);
         });
         return value;
     } catch (error) {
-        console.error('Metric cache unavailable, falling back to live fetch', error);
+        cacheDisabled = true;
+        console.warn('Metric cache unavailable, falling back to live fetch', error instanceof Error ? error.message : error);
         return fetcher();
     }
 }

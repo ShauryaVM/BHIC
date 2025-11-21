@@ -7,7 +7,10 @@ import { formatNumber } from '@/lib/format';
 import { PageHeader, PageHeaderMeta } from '@/components/layout/page-header';
 
 interface AnalyticsPageProps {
-  searchParams?: {
+  searchParams?: Promise<{
+    from?: string;
+    to?: string;
+  }> | {
     from?: string;
     to?: string;
   };
@@ -19,12 +22,22 @@ const secondsToMinutes = (seconds: number) => {
   return `${minutes}m ${remaining}s`;
 };
 
+export const dynamic = 'force-dynamic';
+
 export default async function AnalyticsPage({ searchParams }: AnalyticsPageProps) {
+  const resolvedSearchParams = (await Promise.resolve(searchParams)) ?? {};
   const defaults = defaultAnalyticsFilters();
-  const filters = {
-    from: searchParams?.from ? new Date(searchParams.from) : defaults.from,
-    to: searchParams?.to ? new Date(searchParams.to) : defaults.to
+
+  const parseDate = (value?: string) => {
+    if (!value) return undefined;
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? undefined : parsed;
   };
+
+  const from = parseDate(resolvedSearchParams.from) ?? defaults.from;
+  const to = parseDate(resolvedSearchParams.to) ?? defaults.to;
+
+  const filters = { from, to };
   const data = await getAnalyticsData(filters);
 
   return (
@@ -33,7 +46,7 @@ export default async function AnalyticsPage({ searchParams }: AnalyticsPageProps
         eyebrow="Digital"
         title="Digital analytics"
         description="GA4 insights for bhic.org traffic and engagement."
-        actions={<AnalyticsRangeControls initialFrom={filters.from.toISOString().slice(0, 10)} initialTo={filters.to.toISOString().slice(0, 10)} />}
+        actions={<AnalyticsRangeControls initialFrom={from.toISOString().slice(0, 10)} initialTo={to.toISOString().slice(0, 10)} />}
       >
         <PageHeaderMeta
           items={[

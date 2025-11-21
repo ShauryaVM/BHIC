@@ -1,7 +1,7 @@
-import { differenceInMinutes } from "date-fns";
-import type { MetricSource } from "@prisma/client";
+import { differenceInMinutes } from 'date-fns';
+import type { MetricSource } from '@prisma/client';
 
-import { prisma } from "@/lib/prisma";
+import { prisma } from '@/lib/prisma';
 
 interface CacheParams<T> {
   key: string;
@@ -12,7 +12,13 @@ interface CacheParams<T> {
   fetcher: () => Promise<T>;
 }
 
+let cacheDisabled = false;
+
 export async function withMetricCache<T>({ key, from, to, source, ttlMinutes = 60, fetcher }: CacheParams<T>): Promise<T> {
+  if (cacheDisabled) {
+    return fetcher();
+  }
+
   try {
     const existing = await prisma.cachedMetric.findFirst({
       where: { key },
@@ -35,12 +41,13 @@ export async function withMetricCache<T>({ key, from, to, source, ttlMinutes = 6
         }
       })
       .catch((error) => {
-        console.error('Failed to persist cached metric', error);
+        console.warn('Failed to persist cached metric', error instanceof Error ? error.message : error);
       });
 
     return value;
   } catch (error) {
-    console.error('Metric cache unavailable, falling back to live fetch', error);
+    cacheDisabled = true;
+    console.warn('Metric cache unavailable, falling back to live fetch', error instanceof Error ? error.message : error);
     return fetcher();
   }
 }
