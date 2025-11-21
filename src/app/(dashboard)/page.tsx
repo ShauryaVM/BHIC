@@ -5,8 +5,10 @@ import { TimeSeriesChart } from '@/components/charts/time-series-chart';
 import { getDashboardData } from '@/lib/dashboard-data';
 import { formatCurrency, formatNumber } from '@/lib/format';
 import { PageHeader, PageHeaderMeta } from '@/components/layout/page-header';
+import { getIntegrationStatuses } from '@/lib/integration-sync';
 
 import { DashboardRangeSelector } from '@/app/(dashboard)/range-selector';
+import { IntegrationSyncPanel } from '@/app/(dashboard)/_components/integration-sync-panel';
 
 interface DashboardPageProps {
   searchParams: Promise<{
@@ -19,6 +21,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   const rawRange = Array.isArray(params?.range) ? params?.range[0] : params?.range;
   const range = rawRange === '12m' ? '12m' : 'ytd';
   const data = await getDashboardData(range);
+  const integrationStatuses = await getIntegrationStatuses();
 
   return (
     <div className="space-y-10">
@@ -47,6 +50,10 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
           ]}
         />
       </PageHeader>
+
+      <Card title="Data pipeline" description="Manually refresh eTapestry and Eventbrite data or review last sync status.">
+        <IntegrationSyncPanel statuses={integrationStatuses} />
+      </Card>
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <Card className="space-y-3 bg-gradient-to-br from-brand/10 via-white to-white">
