@@ -96,13 +96,13 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$clsx$2f$dist$2f$clsx$2e$mjs__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/clsx/dist/clsx.mjs [app-rsc] (ecmascript)");
 ;
 ;
-function Table({ children, className }) {
+function Table({ children, className: className1 }) {
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("table", {
-        className: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$clsx$2f$dist$2f$clsx$2e$mjs__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["default"])("min-w-full divide-y divide-slate-200", className),
+        className: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$clsx$2f$dist$2f$clsx$2e$mjs__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["default"])("min-w-full divide-y divide-slate-200", className1),
         children: children
     }, void 0, false, {
         fileName: "[project]/src/components/ui/table.tsx",
-        lineNumber: 5,
+        lineNumber: 16,
         columnNumber: 10
     }, this);
 }
@@ -114,12 +114,12 @@ function THead({ children }) {
             children: children
         }, void 0, false, {
             fileName: "[project]/src/components/ui/table.tsx",
-            lineNumber: 11,
+            lineNumber: 22,
             columnNumber: 7
         }, this)
     }, void 0, false, {
         fileName: "[project]/src/components/ui/table.tsx",
-        lineNumber: 10,
+        lineNumber: 21,
         columnNumber: 5
     }, this);
 }
@@ -129,7 +129,7 @@ function TBody({ children }) {
         children: children
     }, void 0, false, {
         fileName: "[project]/src/components/ui/table.tsx",
-        lineNumber: 17,
+        lineNumber: 28,
         columnNumber: 10
     }, this);
 }
@@ -140,25 +140,25 @@ function TH({ children, align = "left" }) {
             "text-left": align === "left",
             "text-center": align === "center",
             "text-right": align === "right"
-        }),
+        }, className),
         children: children
     }, void 0, false, {
         fileName: "[project]/src/components/ui/table.tsx",
-        lineNumber: 22,
+        lineNumber: 33,
         columnNumber: 5
     }, this);
 }
-function TD({ children, align = "left" }) {
+function TD({ children, align = "left", className: className1 }) {
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
         className: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$clsx$2f$dist$2f$clsx$2e$mjs__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["default"])("px-4 py-3", {
             "text-left": align === "left",
             "text-center": align === "center",
             "text-right": align === "right"
-        }),
+        }, className1),
         children: children
     }, void 0, false, {
         fileName: "[project]/src/components/ui/table.tsx",
-        lineNumber: 37,
+        lineNumber: 52,
         columnNumber: 5
     }, this);
 }
