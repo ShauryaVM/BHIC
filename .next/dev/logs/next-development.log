@@ -6,3 +6,20 @@
 [00:02:53.901] Server  LOG     prisma:query "SELECT \"public\".\"Event\".\"id\", \"public\".\"Event\".\"externalId\", \"public\".\"Event\".\"name\", \"public\".\"Event\".\"startDate\", \"public\".\"Event\".\"endDate\", \"public\".\"Event\".\"venue\", \"public\".\"Event\".\"status\"::text, \"public\".\"Event\".\"ticketsTotal\", \"public\".\"Event\".\"ticketsSold\", \"public\".\"Event\".\"grossRevenue\", \"public\".\"Event\".\"netRevenue\", \"public\".\"Event\".\"createdAt\", \"public\".\"Event\".\"updatedAt\" FROM \"public\".\"Event\" WHERE (\"public\".\"Event\".\"startDate\" >= $1 AND \"public\".\"Event\".\"startDate\" <= $2) ORDER BY \"public\".\"Event\".\"startDate\" DESC OFFSET $3"
 [00:02:53.906] Server  LOG     prisma:query "COMMIT"
 [00:03:03.270] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:37:07.682] Server  LOG        Reload env: .env
+[00:37:09.191] Server  LOG      ✓ Compiled in 653ms
+[00:37:09.474] Server  LOG     prisma:query "BEGIN"
+[00:37:09.510] Server  LOG     prisma:query "DEALLOCATE ALL"
+[00:37:09.569] Server  LOG     prisma:query "SELECT \"public\".\"Event\".\"id\", \"public\".\"Event\".\"externalId\", \"public\".\"Event\".\"name\", \"public\".\"Event\".\"startDate\", \"public\".\"Event\".\"endDate\", \"public\".\"Event\".\"venue\", \"public\".\"Event\".\"status\"::text, \"public\".\"Event\".\"ticketsTotal\", \"public\".\"Event\".\"ticketsSold\", \"public\".\"Event\".\"grossRevenue\", \"public\".\"Event\".\"netRevenue\", \"public\".\"Event\".\"createdAt\", \"public\".\"Event\".\"updatedAt\" FROM \"public\".\"Event\" WHERE (\"public\".\"Event\".\"startDate\" >= $1 AND \"public\".\"Event\".\"startDate\" <= $2) ORDER BY \"public\".\"Event\".\"startDate\" DESC OFFSET $3"
+[00:37:09.589] Server  LOG     prisma:query "COMMIT"
+[00:37:10.940] Server  LOG        Reload env: .env
+[00:37:11.523] Server  LOG     prisma:query "BEGIN"
+[00:37:11.525] Server  LOG     prisma:query "DEALLOCATE ALL"
+[00:37:11.561] Server  LOG     prisma:query "SELECT \"public\".\"Event\".\"id\", \"public\".\"Event\".\"externalId\", \"public\".\"Event\".\"name\", \"public\".\"Event\".\"startDate\", \"public\".\"Event\".\"endDate\", \"public\".\"Event\".\"venue\", \"public\".\"Event\".\"status\"::text, \"public\".\"Event\".\"ticketsTotal\", \"public\".\"Event\".\"ticketsSold\", \"public\".\"Event\".\"grossRevenue\", \"public\".\"Event\".\"netRevenue\", \"public\".\"Event\".\"createdAt\", \"public\".\"Event\".\"updatedAt\" FROM \"public\".\"Event\" WHERE (\"public\".\"Event\".\"startDate\" >= $1 AND \"public\".\"Event\".\"startDate\" <= $2) ORDER BY \"public\".\"Event\".\"startDate\" DESC OFFSET $3"
+[00:37:11.581] Server  LOG     prisma:query "COMMIT"
+[00:37:33.300] Server  LOG        Reload env: .env
+[00:37:33.927] Server  LOG     prisma:query "SELECT 1"
+[00:37:33.944] Server  LOG     prisma:query "BEGIN"
+[00:37:33.951] Server  LOG     prisma:query "DEALLOCATE ALL"
+[00:37:33.989] Server  LOG     prisma:query "SELECT \"public\".\"Event\".\"id\", \"public\".\"Event\".\"externalId\", \"public\".\"Event\".\"name\", \"public\".\"Event\".\"startDate\", \"public\".\"Event\".\"endDate\", \"public\".\"Event\".\"venue\", \"public\".\"Event\".\"status\"::text, \"public\".\"Event\".\"ticketsTotal\", \"public\".\"Event\".\"ticketsSold\", \"public\".\"Event\".\"grossRevenue\", \"public\".\"Event\".\"netRevenue\", \"public\".\"Event\".\"createdAt\", \"public\".\"Event\".\"updatedAt\" FROM \"public\".\"Event\" WHERE (\"public\".\"Event\".\"startDate\" >= $1 AND \"public\".\"Event\".\"startDate\" <= $2) ORDER BY \"public\".\"Event\".\"startDate\" DESC OFFSET $3"
+[00:37:34.006] Server  LOG     prisma:query "COMMIT"
