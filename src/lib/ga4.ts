@@ -1,4 +1,5 @@
 import { BetaAnalyticsDataClient } from '@google-analytics/data';
+import { OAuth2Client } from 'google-auth-library';
 import { MetricSource } from '@prisma/client';
 import { format } from 'date-fns';
 
@@ -6,18 +7,44 @@ import { withMetricCache } from '@/lib/cache-metrics';
 import { env } from '@/lib/env';
 
 let client: BetaAnalyticsDataClient | null = null;
+let oauthClient: OAuth2Client | null = null;
+
+function getOAuthClient() {
+  if (oauthClient) {
+    return oauthClient;
+  }
+
+  oauthClient = new OAuth2Client(env.GA4_OAUTH_CLIENT_ID, env.GA4_OAUTH_CLIENT_SECRET);
+  oauthClient.setCredentials({ refresh_token: env.GA4_OAUTH_REFRESH_TOKEN });
+
+  return oauthClient;
+}
+
+function normalizePrivateKey(key: string) {
+  return key.includes('\\n') ? key.replace(/\\n/g, '\n') : key;
+}
 
 function getClient() {
   if (client) {
     return client;
   }
 
-  client = new BetaAnalyticsDataClient({
-    credentials: {
-      client_email: env.GA4_SERVICE_ACCOUNT.client_email,
-      private_key: env.GA4_SERVICE_ACCOUNT.private_key.replace(/\\n/g, '\n')
+  if (env.GA4_AUTH_MODE === 'oauth') {
+    client = new BetaAnalyticsDataClient({
+      authClient: getOAuthClient()
+    });
+  } else {
+    if (!env.GA4_SERVICE_ACCOUNT) {
+      throw new Error('GA4 service account credentials missing');
     }
-  });
+
+    client = new BetaAnalyticsDataClient({
+      credentials: {
+        client_email: env.GA4_SERVICE_ACCOUNT.client_email,
+        private_key: normalizePrivateKey(env.GA4_SERVICE_ACCOUNT.private_key)
+      }
+    });
+  }
 
   return client;
 }

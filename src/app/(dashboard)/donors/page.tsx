@@ -9,28 +9,31 @@ import { getDonorList } from '@/lib/donor-data';
 import { formatCurrency, formatDate, formatNumber } from '@/lib/format';
 import { PageHeader, PageHeaderMeta } from '@/components/layout/page-header';
 
+type DonorSearchParams = {
+  page?: string;
+  query?: string;
+  minTotalGiven?: string;
+  lastGiftFrom?: string;
+  lastGiftTo?: string;
+};
+
 interface DonorsPageProps {
-  searchParams?: {
-    page?: string;
-    query?: string;
-    minTotalGiven?: string;
-    lastGiftFrom?: string;
-    lastGiftTo?: string;
-  };
+  searchParams?: Promise<DonorSearchParams> | DonorSearchParams;
 }
 
 const PAGE_SIZE = 10;
 
 export default async function DonorsPage({ searchParams }: DonorsPageProps) {
-  const page = Math.max(1, Number(searchParams?.page ?? '1'));
-  const minTotalGiven = searchParams?.minTotalGiven ? Number(searchParams.minTotalGiven) : undefined;
-  const lastGiftFrom = searchParams?.lastGiftFrom ? new Date(searchParams.lastGiftFrom) : undefined;
-  const lastGiftTo = searchParams?.lastGiftTo ? new Date(searchParams.lastGiftTo) : undefined;
+  const resolvedSearchParams = (await Promise.resolve(searchParams)) ?? {};
+  const page = Math.max(1, Number(resolvedSearchParams.page ?? '1'));
+  const minTotalGiven = resolvedSearchParams.minTotalGiven ? Number(resolvedSearchParams.minTotalGiven) : undefined;
+  const lastGiftFrom = resolvedSearchParams.lastGiftFrom ? new Date(resolvedSearchParams.lastGiftFrom) : undefined;
+  const lastGiftTo = resolvedSearchParams.lastGiftTo ? new Date(resolvedSearchParams.lastGiftTo) : undefined;
 
   const data = await getDonorList({
     page,
     pageSize: PAGE_SIZE,
-    query: searchParams?.query,
+    query: resolvedSearchParams.query,
     minTotalGiven,
     lastGiftFrom: Number.isNaN(lastGiftFrom?.getTime() ?? NaN) ? undefined : lastGiftFrom,
     lastGiftTo: Number.isNaN(lastGiftTo?.getTime() ?? NaN) ? undefined : lastGiftTo
@@ -53,10 +56,10 @@ export default async function DonorsPage({ searchParams }: DonorsPageProps) {
       </PageHeader>
 
       <DonorFilters
-        initialQuery={searchParams?.query}
+        initialQuery={resolvedSearchParams.query}
         initialMinTotalGiven={minTotalGiven}
-        initialLastGiftFrom={searchParams?.lastGiftFrom}
-        initialLastGiftTo={searchParams?.lastGiftTo}
+        initialLastGiftFrom={resolvedSearchParams.lastGiftFrom}
+        initialLastGiftTo={resolvedSearchParams.lastGiftTo}
       />
 
       <Card title="Donor roster" description="Sortable list of BHIC supporters with pledge + gift metrics">

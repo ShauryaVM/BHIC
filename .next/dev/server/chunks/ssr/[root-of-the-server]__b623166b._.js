@@ -160,11 +160,21 @@ const envSchema = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2
     GOOGLE_CLIENT_SECRET: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().min(1),
     ADMIN_EMAILS: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().default(''),
     ALLOWED_EMAIL_DOMAIN: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().default('bhic.org'),
-    ETAPESTRY_BASE_URL: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().url(),
-    ETAPESTRY_API_TOKEN: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().min(1),
+    ETAPESTRY_WSDL_URL: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().url(),
+    ETAPESTRY_DATABASE_ID: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().min(1),
+    ETAPESTRY_API_KEY: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().min(1),
+    ETAPESTRY_QUERY_CATEGORY: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().min(1),
+    ETAPESTRY_QUERY_NAME: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().min(1),
     EVENTBRITE_API_TOKEN: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().min(1),
     GA4_PROPERTY_ID: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().min(1),
-    GA4_SERVICE_ACCOUNT_JSON: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().min(2),
+    GA4_AUTH_MODE: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].enum([
+        'service_account',
+        'oauth'
+    ]).default('service_account'),
+    GA4_SERVICE_ACCOUNT_JSON: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().optional(),
+    GA4_OAUTH_CLIENT_ID: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().optional(),
+    GA4_OAUTH_CLIENT_SECRET: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().optional(),
+    GA4_OAUTH_REFRESH_TOKEN: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().optional(),
     GEMINI_API_KEY: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().min(1),
     GEMINI_MODEL: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().default('models/gemini-1.5-flash')
 });
@@ -176,11 +186,18 @@ const parsed = envSchema.safeParse({
     GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
     ADMIN_EMAILS: process.env.ADMIN_EMAILS ?? '',
     ALLOWED_EMAIL_DOMAIN: process.env.ALLOWED_EMAIL_DOMAIN ?? 'bhic.org',
-    ETAPESTRY_BASE_URL: process.env.ETAPESTRY_BASE_URL,
-    ETAPESTRY_API_TOKEN: process.env.ETAPESTRY_API_TOKEN,
+    ETAPESTRY_WSDL_URL: process.env.ETAPESTRY_WSDL_URL,
+    ETAPESTRY_DATABASE_ID: process.env.ETAPESTRY_DATABASE_ID,
+    ETAPESTRY_API_KEY: process.env.ETAPESTRY_API_KEY,
+    ETAPESTRY_QUERY_CATEGORY: process.env.ETAPESTRY_QUERY_CATEGORY,
+    ETAPESTRY_QUERY_NAME: process.env.ETAPESTRY_QUERY_NAME,
     EVENTBRITE_API_TOKEN: process.env.EVENTBRITE_API_TOKEN,
     GA4_PROPERTY_ID: process.env.GA4_PROPERTY_ID,
+    GA4_AUTH_MODE: process.env.GA4_AUTH_MODE ?? 'service_account',
     GA4_SERVICE_ACCOUNT_JSON: process.env.GA4_SERVICE_ACCOUNT_JSON,
+    GA4_OAUTH_CLIENT_ID: process.env.GA4_OAUTH_CLIENT_ID,
+    GA4_OAUTH_CLIENT_SECRET: process.env.GA4_OAUTH_CLIENT_SECRET,
+    GA4_OAUTH_REFRESH_TOKEN: process.env.GA4_OAUTH_REFRESH_TOKEN,
     GEMINI_API_KEY: process.env.GEMINI_API_KEY,
     GEMINI_MODEL: process.env.GEMINI_MODEL ?? 'models/gemini-1.5-flash'
 });
@@ -188,11 +205,18 @@ if (!parsed.success) {
     console.error('❌ Invalid environment variables', parsed.error.flatten().fieldErrors);
     throw new Error('Invalid environment variables. Check .env configuration.');
 }
-const adminEmails = parsed.data.ADMIN_EMAILS.split(',').map((email)=>email.trim().toLowerCase()).filter(Boolean);
+const data = parsed.data;
+if (data.GA4_AUTH_MODE === 'service_account' && !data.GA4_SERVICE_ACCOUNT_JSON) {
+    throw new Error('GA4_SERVICE_ACCOUNT_JSON is required when GA4_AUTH_MODE=service_account');
+}
+if (data.GA4_AUTH_MODE === 'oauth' && (!data.GA4_OAUTH_CLIENT_ID || !data.GA4_OAUTH_CLIENT_SECRET || !data.GA4_OAUTH_REFRESH_TOKEN)) {
+    throw new Error('GA4 OAuth credentials (client id/secret + refresh token) are required when GA4_AUTH_MODE=oauth');
+}
+const adminEmails = data.ADMIN_EMAILS.split(',').map((email)=>email.trim().toLowerCase()).filter(Boolean);
 const env = {
-    ...parsed.data,
+    ...data,
     ADMIN_EMAILS: adminEmails,
-    GA4_SERVICE_ACCOUNT: JSON.parse(parsed.data.GA4_SERVICE_ACCOUNT_JSON)
+    GA4_SERVICE_ACCOUNT: data.GA4_SERVICE_ACCOUNT_JSON ? JSON.parse(data.GA4_SERVICE_ACCOUNT_JSON) : null
 };
 }),
 "[project]/src/lib/auth.ts [app-rsc] (ecmascript)", ((__turbopack_context__) => {

@@ -9,13 +9,15 @@ import { PageHeader, PageHeaderMeta } from '@/components/layout/page-header';
 import { DashboardRangeSelector } from '@/app/(dashboard)/range-selector';
 
 interface DashboardPageProps {
-  searchParams?: {
-    range?: string;
-  };
+  searchParams: Promise<{
+    range?: string | string[];
+  }>;
 }
 
 export default async function DashboardPage({ searchParams }: DashboardPageProps) {
-  const range = searchParams?.range === '12m' ? '12m' : 'ytd';
+  const params = await searchParams;
+  const rawRange = Array.isArray(params?.range) ? params?.range[0] : params?.range;
+  const range = rawRange === '12m' ? '12m' : 'ytd';
   const data = await getDashboardData(range);
 
   return (

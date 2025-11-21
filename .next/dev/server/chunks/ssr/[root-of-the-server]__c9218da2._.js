@@ -125,28 +125,35 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__
 ;
 ;
 async function withMetricCache({ key, from, to, source, ttlMinutes = 60, fetcher }) {
-    const existing = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].cachedMetric.findFirst({
-        where: {
-            key
-        },
-        orderBy: {
-            createdAt: "desc"
+    try {
+        const existing = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].cachedMetric.findFirst({
+            where: {
+                key
+            },
+            orderBy: {
+                createdAt: 'desc'
+            }
+        });
+        if (existing && (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$differenceInMinutes$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["differenceInMinutes"])(new Date(), existing.createdAt) < ttlMinutes) {
+            return existing.value;
         }
-    });
-    if (existing && (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$differenceInMinutes$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["differenceInMinutes"])(new Date(), existing.createdAt) < ttlMinutes) {
-        return existing.value;
+        const value = await fetcher();
+        await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].cachedMetric.create({
+            data: {
+                key,
+                value,
+                fromDate: from,
+                toDate: to,
+                source
+            }
+        }).catch((error)=>{
+            console.error('Failed to persist cached metric', error);
+        });
+        return value;
+    } catch (error) {
+        console.error('Metric cache unavailable, falling back to live fetch', error);
+        return fetcher();
     }
-    const value = await fetcher();
-    await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].cachedMetric.create({
-        data: {
-            key,
-            value,
-            fromDate: from,
-            toDate: to,
-            source
-        }
-    });
-    return value;
 }
 }),
 "[project]/src/lib/time-series.ts [app-rsc] (ecmascript)", ((__turbopack_context__) => {
@@ -628,6 +635,7 @@ __turbopack_context__.s([
     ()=>getTopPages
 ]);
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$google$2d$analytics$2f$data$2f$build$2f$src$2f$index$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/@google-analytics/data/build/src/index.js [app-rsc] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$google$2d$auth$2d$library$2f$build$2f$src$2f$index$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/google-auth-library/build/src/index.js [app-rsc] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$externals$5d2f40$prisma$2f$client__$5b$external$5d$__$2840$prisma$2f$client$2c$__cjs$29$__ = __turbopack_context__.i("[externals]/@prisma/client [external] (@prisma/client, cjs)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$format$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__$3c$locals$3e$__ = __turbopack_context__.i("[project]/node_modules/date-fns/format.js [app-rsc] (ecmascript) <locals>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$cache$2d$metrics$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/cache-metrics.ts [app-rsc] (ecmascript)");
@@ -637,17 +645,41 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$env$2e$ts__$5b
 ;
 ;
 ;
+;
 let client = null;
+let oauthClient = null;
+function getOAuthClient() {
+    if (oauthClient) {
+        return oauthClient;
+    }
+    oauthClient = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$google$2d$auth$2d$library$2f$build$2f$src$2f$index$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["OAuth2Client"](__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$env$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["env"].GA4_OAUTH_CLIENT_ID, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$env$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["env"].GA4_OAUTH_CLIENT_SECRET);
+    oauthClient.setCredentials({
+        refresh_token: __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$env$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["env"].GA4_OAUTH_REFRESH_TOKEN
+    });
+    return oauthClient;
+}
+function normalizePrivateKey(key) {
+    return key.includes('\\n') ? key.replace(/\\n/g, '\n') : key;
+}
 function getClient() {
     if (client) {
         return client;
     }
-    client = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$google$2d$analytics$2f$data$2f$build$2f$src$2f$index$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["BetaAnalyticsDataClient"]({
-        credentials: {
-            client_email: __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$env$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["env"].GA4_SERVICE_ACCOUNT.client_email,
-            private_key: __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$env$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["env"].GA4_SERVICE_ACCOUNT.private_key.replace(/\\n/g, '\n')
+    if (__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$env$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["env"].GA4_AUTH_MODE === 'oauth') {
+        client = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$google$2d$analytics$2f$data$2f$build$2f$src$2f$index$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["BetaAnalyticsDataClient"]({
+            authClient: getOAuthClient()
+        });
+    } else {
+        if (!__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$env$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["env"].GA4_SERVICE_ACCOUNT) {
+            throw new Error('GA4 service account credentials missing');
         }
-    });
+        client = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$google$2d$analytics$2f$data$2f$build$2f$src$2f$index$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["BetaAnalyticsDataClient"]({
+            credentials: {
+                client_email: __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$env$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["env"].GA4_SERVICE_ACCOUNT.client_email,
+                private_key: normalizePrivateKey(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$env$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["env"].GA4_SERVICE_ACCOUNT.private_key)
+            }
+        });
+    }
     return client;
 }
 const property = `properties/${__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$env$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["env"].GA4_PROPERTY_ID}`;
@@ -863,89 +895,116 @@ async function getDashboardData(range = 'ytd') {
         to: now
     };
     const last30Start = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$subDays$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["subDays"])(now, 30);
-    const [fundsSummary, fundsYtdAggregate, totalDonors, activeDonors, eventKpis, gaSummary, gaSessions, attendance] = await Promise.all([
-        (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$etapestry$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["getFundsRaisedSummary"])(monthlyRange),
-        __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].pledge.aggregate({
-            where: {
-                date: {
-                    gte: summaryStart,
-                    lte: now
+    try {
+        const [fundsSummary, fundsYtdAggregate, totalDonors, activeDonors, eventKpis, gaSummary, gaSessions, attendance] = await Promise.all([
+            (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$etapestry$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["getFundsRaisedSummary"])(monthlyRange),
+            __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].pledge.aggregate({
+                where: {
+                    date: {
+                        gte: summaryStart,
+                        lte: now
+                    },
+                    status: {
+                        in: [
+                            __TURBOPACK__imported__module__$5b$externals$5d2f40$prisma$2f$client__$5b$external$5d$__$2840$prisma$2f$client$2c$__cjs$29$__["PledgeStatus"].PLEDGED,
+                            __TURBOPACK__imported__module__$5b$externals$5d2f40$prisma$2f$client__$5b$external$5d$__$2840$prisma$2f$client$2c$__cjs$29$__["PledgeStatus"].RECEIVED
+                        ]
+                    }
                 },
-                status: {
-                    in: [
-                        __TURBOPACK__imported__module__$5b$externals$5d2f40$prisma$2f$client__$5b$external$5d$__$2840$prisma$2f$client$2c$__cjs$29$__["PledgeStatus"].PLEDGED,
-                        __TURBOPACK__imported__module__$5b$externals$5d2f40$prisma$2f$client__$5b$external$5d$__$2840$prisma$2f$client$2c$__cjs$29$__["PledgeStatus"].RECEIVED
-                    ]
+                _sum: {
+                    amount: true
                 }
-            },
-            _sum: {
-                amount: true
-            }
-        }),
-        __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].donor.count(),
-        __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].donor.count({
-            where: {
-                lastGiftDate: {
-                    gte: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$subDays$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["subDays"])(now, 365)
+            }),
+            __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].donor.count(),
+            __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].donor.count({
+                where: {
+                    lastGiftDate: {
+                        gte: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$subDays$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["subDays"])(now, 365)
+                    }
                 }
-            }
-        }),
-        (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$eventbrite$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["getEventKpis"])({
-            from: summaryStart,
-            to: now
-        }),
-        (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$ga4$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["getSummaryMetrics"])({
-            from: last30Start,
-            to: now
-        }),
-        (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$ga4$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["getSessionsOverTime"])({
-            from: monthlyStart,
-            to: now,
-            granularity: 'MONTHLY'
-        }),
-        __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].eventAttendance.findMany({
-            where: {
-                createdAt: {
-                    gte: monthlyStart,
-                    lte: now
+            }),
+            (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$eventbrite$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["getEventKpis"])({
+                from: summaryStart,
+                to: now
+            }),
+            (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$ga4$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["getSummaryMetrics"])({
+                from: last30Start,
+                to: now
+            }),
+            (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$ga4$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["getSessionsOverTime"])({
+                from: monthlyStart,
+                to: now,
+                granularity: 'MONTHLY'
+            }),
+            __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].eventAttendance.findMany({
+                where: {
+                    createdAt: {
+                        gte: monthlyStart,
+                        lte: now
+                    }
+                },
+                select: {
+                    ticketsCount: true,
+                    createdAt: true
                 }
-            },
-            select: {
-                ticketsCount: true,
-                createdAt: true
-            }
-        })
-    ]);
-    const sessionsMap = new Map(gaSessions.points.map((point)=>[
-            point.label,
-            point.value
-        ]));
-    const fundsMap = new Map(fundsSummary.monthly.map((point)=>[
-            point.label,
-            point.total
-        ]));
-    const monthlyBuckets = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$time$2d$series$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["getMonthlyBuckets"])(12, now);
-    const monthlySeries = monthlyBuckets.map((bucket)=>{
-        const tickets = attendance.filter((entry)=>entry.createdAt >= bucket.start && entry.createdAt <= bucket.end).reduce((sum, entry)=>sum + entry.ticketsCount, 0);
+            })
+        ]);
+        const sessionsMap = new Map(gaSessions.points.map((point)=>[
+                point.label,
+                point.value
+            ]));
+        const fundsMap = new Map(fundsSummary.monthly.map((point)=>[
+                point.label,
+                point.total
+            ]));
+        const monthlyBuckets = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$time$2d$series$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["getMonthlyBuckets"])(12, now);
+        const monthlySeries = monthlyBuckets.map((bucket)=>{
+            const tickets = attendance.filter((entry)=>entry.createdAt >= bucket.start && entry.createdAt <= bucket.end).reduce((sum, entry)=>sum + entry.ticketsCount, 0);
+            return {
+                label: bucket.label,
+                funds: fundsMap.get(bucket.label) ?? 0,
+                tickets,
+                sessions: sessionsMap.get(bucket.label) ?? 0
+            };
+        });
         return {
-            label: bucket.label,
-            funds: fundsMap.get(bucket.label) ?? 0,
-            tickets,
-            sessions: sessionsMap.get(bucket.label) ?? 0
+            kpis: {
+                fundsYtd: toNumber(fundsYtdAggregate._sum.amount),
+                totalDonors,
+                activeDonors,
+                eventsThisYear: eventKpis.eventsCount,
+                ticketsSold: eventKpis.ticketsSold,
+                sessionsLast30Days: gaSummary.sessions,
+                gaError: gaSummary.error
+            },
+            charts: {
+                monthly: monthlySeries
+            }
         };
-    });
+    } catch (error) {
+        console.error('Failed to load dashboard data', error);
+        return buildFallbackDashboardData(now);
+    }
+}
+function buildFallbackDashboardData(anchor) {
+    const buckets = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$time$2d$series$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["getMonthlyBuckets"])(12, anchor);
     return {
         kpis: {
-            fundsYtd: toNumber(fundsYtdAggregate._sum.amount),
-            totalDonors,
-            activeDonors,
-            eventsThisYear: eventKpis.eventsCount,
-            ticketsSold: eventKpis.ticketsSold,
-            sessionsLast30Days: gaSummary.sessions,
-            gaError: gaSummary.error
+            fundsYtd: 0,
+            totalDonors: 0,
+            activeDonors: 0,
+            eventsThisYear: 0,
+            ticketsSold: 0,
+            sessionsLast30Days: 0,
+            gaError: 'Metrics temporarily unavailable. Check data sources.'
         },
         charts: {
-            monthly: monthlySeries
+            monthly: buckets.map((bucket)=>({
+                    label: bucket.label,
+                    funds: 0,
+                    tickets: 0,
+                    sessions: 0
+                }))
         }
     };
 }
@@ -1209,7 +1268,9 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$app$2f28$dashboard$29
 ;
 ;
 async function DashboardPage({ searchParams }) {
-    const range = searchParams?.range === '12m' ? '12m' : 'ytd';
+    const params = await searchParams;
+    const rawRange = Array.isArray(params?.range) ? params?.range[0] : params?.range;
+    const range = rawRange === '12m' ? '12m' : 'ytd';
     const data = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$dashboard$2d$data$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["getDashboardData"])(range);
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
         className: "space-y-10",
@@ -1222,7 +1283,7 @@ async function DashboardPage({ searchParams }) {
                     currentRange: range
                 }, void 0, false, {
                     fileName: "[project]/src/app/(dashboard)/page.tsx",
-                    lineNumber: 27,
+                    lineNumber: 29,
                     columnNumber: 18
                 }, void 0),
                 children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$layout$2f$page$2d$header$2e$tsx__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["PageHeaderMeta"], {
@@ -1244,12 +1305,12 @@ async function DashboardPage({ searchParams }) {
                     ]
                 }, void 0, false, {
                     fileName: "[project]/src/app/(dashboard)/page.tsx",
-                    lineNumber: 29,
+                    lineNumber: 31,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/src/app/(dashboard)/page.tsx",
-                lineNumber: 23,
+                lineNumber: 25,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("section", {
@@ -1269,20 +1330,20 @@ async function DashboardPage({ searchParams }) {
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/(dashboard)/page.tsx",
-                                        lineNumber: 52,
+                                        lineNumber: 54,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$coins$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__$3c$export__default__as__Coins$3e$__["Coins"], {
                                         className: "h-5 w-5 text-brand"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/(dashboard)/page.tsx",
-                                        lineNumber: 53,
+                                        lineNumber: 55,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/(dashboard)/page.tsx",
-                                lineNumber: 51,
+                                lineNumber: 53,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1290,7 +1351,7 @@ async function DashboardPage({ searchParams }) {
                                 children: (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$format$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["formatCurrency"])(data.kpis.fundsYtd)
                             }, void 0, false, {
                                 fileName: "[project]/src/app/(dashboard)/page.tsx",
-                                lineNumber: 55,
+                                lineNumber: 57,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1298,13 +1359,13 @@ async function DashboardPage({ searchParams }) {
                                 children: "Includes pledges received and committed."
                             }, void 0, false, {
                                 fileName: "[project]/src/app/(dashboard)/page.tsx",
-                                lineNumber: 56,
+                                lineNumber: 58,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/(dashboard)/page.tsx",
-                        lineNumber: 50,
+                        lineNumber: 52,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["Card"], {
@@ -1317,20 +1378,20 @@ async function DashboardPage({ searchParams }) {
                                         children: "Active donors"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/(dashboard)/page.tsx",
-                                        lineNumber: 60,
+                                        lineNumber: 62,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$users$2d$round$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__$3c$export__default__as__Users2$3e$__["Users2"], {
                                         className: "h-5 w-5 text-brand-light"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/(dashboard)/page.tsx",
-                                        lineNumber: 61,
+                                        lineNumber: 63,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/(dashboard)/page.tsx",
-                                lineNumber: 59,
+                                lineNumber: 61,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1338,7 +1399,7 @@ async function DashboardPage({ searchParams }) {
                                 children: (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$format$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["formatNumber"])(data.kpis.activeDonors)
                             }, void 0, false, {
                                 fileName: "[project]/src/app/(dashboard)/page.tsx",
-                                lineNumber: 63,
+                                lineNumber: 65,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1346,13 +1407,13 @@ async function DashboardPage({ searchParams }) {
                                 children: "Last gift within the past 12 months."
                             }, void 0, false, {
                                 fileName: "[project]/src/app/(dashboard)/page.tsx",
-                                lineNumber: 64,
+                                lineNumber: 66,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/(dashboard)/page.tsx",
-                        lineNumber: 58,
+                        lineNumber: 60,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["Card"], {
@@ -1365,20 +1426,20 @@ async function DashboardPage({ searchParams }) {
                                         children: "Events + tickets"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/(dashboard)/page.tsx",
-                                        lineNumber: 68,
+                                        lineNumber: 70,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$ticket$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__$3c$export__default__as__Ticket$3e$__["Ticket"], {
                                         className: "h-5 w-5 text-brand"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/(dashboard)/page.tsx",
-                                        lineNumber: 69,
+                                        lineNumber: 71,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/(dashboard)/page.tsx",
-                                lineNumber: 67,
+                                lineNumber: 69,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1391,13 +1452,13 @@ async function DashboardPage({ searchParams }) {
                                         children: "events"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/(dashboard)/page.tsx",
-                                        lineNumber: 72,
+                                        lineNumber: 74,
                                         columnNumber: 54
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/(dashboard)/page.tsx",
-                                lineNumber: 71,
+                                lineNumber: 73,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1408,13 +1469,13 @@ async function DashboardPage({ searchParams }) {
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/(dashboard)/page.tsx",
-                                lineNumber: 74,
+                                lineNumber: 76,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/(dashboard)/page.tsx",
-                        lineNumber: 66,
+                        lineNumber: 68,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["Card"], {
@@ -1427,20 +1488,20 @@ async function DashboardPage({ searchParams }) {
                                         children: "Website sessions (30d)"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/(dashboard)/page.tsx",
-                                        lineNumber: 78,
+                                        lineNumber: 80,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$globe$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__$3c$export__default__as__Globe$3e$__["Globe"], {
                                         className: "h-5 w-5 text-brand-light"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/(dashboard)/page.tsx",
-                                        lineNumber: 79,
+                                        lineNumber: 81,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/(dashboard)/page.tsx",
-                                lineNumber: 77,
+                                lineNumber: 79,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1448,7 +1509,7 @@ async function DashboardPage({ searchParams }) {
                                 children: (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$format$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["formatNumber"])(data.kpis.sessionsLast30Days)
                             }, void 0, false, {
                                 fileName: "[project]/src/app/(dashboard)/page.tsx",
-                                lineNumber: 81,
+                                lineNumber: 83,
                                 columnNumber: 11
                             }, this),
                             data.kpis.gaError ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1456,26 +1517,26 @@ async function DashboardPage({ searchParams }) {
                                 children: data.kpis.gaError
                             }, void 0, false, {
                                 fileName: "[project]/src/app/(dashboard)/page.tsx",
-                                lineNumber: 83,
+                                lineNumber: 85,
                                 columnNumber: 13
                             }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                 className: "text-xs text-slate-500",
                                 children: "Source: Google Analytics 4"
                             }, void 0, false, {
                                 fileName: "[project]/src/app/(dashboard)/page.tsx",
-                                lineNumber: 85,
+                                lineNumber: 87,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/(dashboard)/page.tsx",
-                        lineNumber: 76,
+                        lineNumber: 78,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/(dashboard)/page.tsx",
-                lineNumber: 49,
+                lineNumber: 51,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["Card"], {
@@ -1505,18 +1566,18 @@ async function DashboardPage({ searchParams }) {
                     ]
                 }, void 0, false, {
                     fileName: "[project]/src/app/(dashboard)/page.tsx",
-                    lineNumber: 91,
+                    lineNumber: 93,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/src/app/(dashboard)/page.tsx",
-                lineNumber: 90,
+                lineNumber: 92,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/app/(dashboard)/page.tsx",
-        lineNumber: 22,
+        lineNumber: 24,
         columnNumber: 5
     }, this);
 }
