@@ -19,7 +19,7 @@ export default async function SignInPage() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-slate-50 px-4">
       <div className="card w-full max-w-md space-y-6 text-center">
-        <Image src="/logo.svg" alt="BHIC" width={64} height={64} className="mx-auto" />
+        <Image src="/logo.svg" alt="BHIC" width={64} height={64} className="mx-auto" unoptimized />
         <div className="space-y-2">
           <h1 className="text-2xl font-semibold text-slate-900">BHIC Mission Control</h1>
           <p className="text-sm text-slate-500">
