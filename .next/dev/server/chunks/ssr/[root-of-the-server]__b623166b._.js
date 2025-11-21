@@ -250,7 +250,9 @@ const authOptions = {
             clientSecret: __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$env$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["env"].GOOGLE_CLIENT_SECRET,
             authorization: {
                 params: {
-                    scope: 'openid email profile https://www.googleapis.com/auth/gmail.send'
+                    scope: 'openid email profile https://www.googleapis.com/auth/gmail.send',
+                    hd: __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$env$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["env"].ALLOWED_EMAIL_DOMAIN,
+                    prompt: 'select_account'
                 }
             }
         })

@@ -147,9 +147,13 @@ const envSchema = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2
     ETAPESTRY_WSDL_URL: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().url(),
     ETAPESTRY_DATABASE_ID: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().min(1),
     ETAPESTRY_API_KEY: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().min(1),
+    ETAPESTRY_LOGIN_ID: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().min(1),
+    ETAPESTRY_LOGIN_PASSWORD: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().min(1),
+    ETAPESTRY_APPLICATION_CONTEXT: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().default('BHIC Dashboard'),
     ETAPESTRY_QUERY_CATEGORY: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().min(1),
     ETAPESTRY_QUERY_NAME: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().min(1),
     EVENTBRITE_API_TOKEN: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().min(1),
+    EVENTBRITE_ORGANIZATION_ID: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().min(1),
     GA4_PROPERTY_ID: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().min(1),
     GA4_AUTH_MODE: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].enum([
         'service_account',
@@ -173,9 +177,13 @@ const parsed = envSchema.safeParse({
     ETAPESTRY_WSDL_URL: process.env.ETAPESTRY_WSDL_URL,
     ETAPESTRY_DATABASE_ID: process.env.ETAPESTRY_DATABASE_ID,
     ETAPESTRY_API_KEY: process.env.ETAPESTRY_API_KEY,
+    ETAPESTRY_LOGIN_ID: process.env.ETAPESTRY_LOGIN_ID,
+    ETAPESTRY_LOGIN_PASSWORD: process.env.ETAPESTRY_LOGIN_PASSWORD,
+    ETAPESTRY_APPLICATION_CONTEXT: process.env.ETAPESTRY_APPLICATION_CONTEXT,
     ETAPESTRY_QUERY_CATEGORY: process.env.ETAPESTRY_QUERY_CATEGORY,
     ETAPESTRY_QUERY_NAME: process.env.ETAPESTRY_QUERY_NAME,
     EVENTBRITE_API_TOKEN: process.env.EVENTBRITE_API_TOKEN,
+    EVENTBRITE_ORGANIZATION_ID: process.env.EVENTBRITE_ORGANIZATION_ID,
     GA4_PROPERTY_ID: process.env.GA4_PROPERTY_ID,
     GA4_AUTH_MODE: process.env.GA4_AUTH_MODE ?? 'service_account',
     GA4_SERVICE_ACCOUNT_JSON: process.env.GA4_SERVICE_ACCOUNT_JSON,
@@ -226,7 +234,9 @@ const authOptions = {
             clientSecret: __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$env$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["env"].GOOGLE_CLIENT_SECRET,
             authorization: {
                 params: {
-                    scope: 'openid email profile https://www.googleapis.com/auth/gmail.send'
+                    scope: 'openid email profile https://www.googleapis.com/auth/gmail.send',
+                    hd: __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$env$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["env"].ALLOWED_EMAIL_DOMAIN,
+                    prompt: 'select_account'
                 }
             }
         })

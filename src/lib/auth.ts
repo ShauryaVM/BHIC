@@ -13,7 +13,9 @@ export const authOptions: NextAuthOptions = {
       clientSecret: env.GOOGLE_CLIENT_SECRET,
       authorization: {
         params: {
-          scope: 'openid email profile https://www.googleapis.com/auth/gmail.send'
+          scope: 'openid email profile https://www.googleapis.com/auth/gmail.send',
+          hd: env.ALLOWED_EMAIL_DOMAIN,
+          prompt: 'select_account'
         }
       }
     })

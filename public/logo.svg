@@ -1,6 +1,46 @@
 <svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
-  <rect width="120" height="120" rx="24" fill="#004225"/>
-  <path d="M32 84V36h16c11.046 0 20 8.954 20 20s-8.954 20-20 20h-8v8H32zM48 64c6.627 0 12-5.373 12-12s-5.373-12-12-12h-8v24h8z" fill="#F8FAFC"/>
-  <path d="M88 84h-12l-8-16-8 16H48l16-32-14-16h12l9 11 9-11h12l-14 16 16 32z" fill="#F8FAFC"/>
+  <defs>
+    <linearGradient id="bhic-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#004225" />
+      <stop offset="100%" stop-color="#0a5c38" />
+    </linearGradient>
+    <linearGradient id="bhic-wave" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#d1fae5" />
+      <stop offset="100%" stop-color="#a7f3d0" />
+    </linearGradient>
+  </defs>
+  <rect width="120" height="120" rx="26" fill="url(#bhic-bg)" />
+  <circle cx="88" cy="34" r="13" fill="#f97316" opacity="0.9" />
+  <path
+    d="M16 70c12 10 24 10 36 0s24-10 36 0 24 10 36 0"
+    fill="none"
+    stroke="url(#bhic-wave)"
+    stroke-width="6"
+    stroke-linecap="round"
+    opacity="0.85"
+  />
+  <g fill="#f8fafc">
+    <text
+      x="32"
+      y="82"
+      font-size="50"
+      font-weight="700"
+      font-family="Inter, 'Segoe UI', system-ui, sans-serif"
+      letter-spacing="0.2em"
+    >
+      BH
+    </text>
+  </g>
+  <text
+    x="60"
+    y="101"
+    text-anchor="middle"
+    fill="#d1fae5"
+    font-size="10"
+    font-family="Inter, 'Segoe UI', system-ui, sans-serif"
+    letter-spacing="0.4em"
+  >
+    CONSERVANCY
+  </text>
 </svg>
 

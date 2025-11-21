@@ -5,6 +5,14 @@ const nextConfig = {
     serverActions: {
       bodySizeLimit: '4mb'
     }
+  },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'lh3.googleusercontent.com'
+      }
+    ]
   }
 };
 

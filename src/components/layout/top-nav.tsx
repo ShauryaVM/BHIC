@@ -2,9 +2,11 @@
 
 import Image from "next/image";
 import { Menu, Transition } from "@headlessui/react";
+import clsx from "clsx";
 import { Fragment } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { signOut } from "next-auth/react";
 import { RefreshCw, Sparkles } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -29,7 +31,7 @@ export function TopNav({ user }: TopNavProps) {
     : "BH";
 
   return (
-    <header className="flex flex-wrap items-center justify-between gap-4 border-b border-white/70 bg-white/80 px-6 py-4 backdrop-blur">
+    <header className="relative z-40 flex flex-wrap items-center justify-between gap-4 border-b border-white/70 bg-white/80 px-6 py-4 backdrop-blur">
       <div className="space-y-1">
         <p className="text-sm font-semibold text-slate-700">Bald Head Island Conservancy</p>
         <p className="text-xs text-slate-500">Mission Control Dashboard</p>
@@ -57,7 +59,7 @@ export function TopNav({ user }: TopNavProps) {
           <Sparkles className="h-4 w-4" />
           Visit bhic.org
         </Link>
-        <Menu as="div" className="relative">
+        <Menu as="div" className="relative z-40">
           <Menu.Button className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-left shadow-sm">
             {user?.image ? (
               <Image src={user.image} alt={user?.name ?? "User"} width={32} height={32} className="rounded-full" />
@@ -80,21 +82,23 @@ export function TopNav({ user }: TopNavProps) {
             leaveFrom="transform scale-100 opacity-100"
             leaveTo="transform scale-95 opacity-0"
           >
-            <Menu.Items className="absolute right-0 mt-3 w-52 rounded-2xl border border-slate-200 bg-white p-2 shadow-card focus:outline-none">
+            <Menu.Items className="absolute right-0 mt-3 w-52 rounded-2xl border border-slate-200 bg-white p-2 shadow-card focus:outline-none z-50">
               <div className="px-3 py-2 text-xs">
                 <p className="font-semibold text-slate-800">{user?.name ?? "BHIC Staff"}</p>
                 <p className="text-slate-500">{user?.email ?? ""}</p>
               </div>
               <Menu.Item>
-                {() => (
-                  <form method="post" action="/api/auth/signout">
-                    <button
-                      type="submit"
-                      className="w-full rounded-xl px-3 py-2 text-left text-sm font-medium text-red-600 hover:bg-red-50"
-                    >
-                      Sign out
-                    </button>
-                  </form>
+                {({ active }) => (
+                  <button
+                    type="button"
+                    onClick={() => signOut({ callbackUrl: "/auth/signin" })}
+                    className={clsx(
+                      "w-full rounded-xl px-3 py-2 text-left text-sm font-semibold text-red-600 transition",
+                      active ? "bg-red-50" : "hover:bg-red-50"
+                    )}
+                  >
+                    Sign out
+                  </button>
                 )}
               </Menu.Item>
             </Menu.Items>

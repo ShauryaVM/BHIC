@@ -1053,6 +1053,14 @@ body:after {
   z-index: 10;
 }
 
+.z-40 {
+  z-index: 40;
+}
+
+.z-50 {
+  z-index: 50;
+}
+
 .mx-auto {
   margin-left: auto;
   margin-right: auto;
@@ -1250,6 +1258,16 @@ body:after {
 
 .animate-pulse {
   animation: 2s cubic-bezier(.4, 0, .6, 1) infinite pulse;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: 1s linear infinite spin;
 }
 
 .list-disc {
@@ -1506,6 +1524,11 @@ body:after {
 .bg-red-100 {
   --tw-bg-opacity: 1;
   background-color: rgb(254 226 226 / var(--tw-bg-opacity));
+}
+
+.bg-red-50 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(254 242 242 / var(--tw-bg-opacity));
 }
 
 .bg-red-600 {
@@ -2101,6 +2124,10 @@ body:after {
 
 .disabled\:opacity-60:disabled {
   opacity: .6;
+}
+
+.disabled\:opacity-70:disabled {
+  opacity: .7;
 }
 
 .group:hover .group-hover\:text-slate-600 {
