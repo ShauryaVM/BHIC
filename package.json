@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Bald Head Island Conservancy operations dashboard built with Next.js 14",
   "scripts": {
+    "prebuild": "npm run prisma:generate",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
