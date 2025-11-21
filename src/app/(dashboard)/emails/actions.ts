@@ -1,12 +1,11 @@
 "use server";
 
 import { CampaignStatus } from '@prisma/client';
-import { revalidatePath } from 'next/cache';
 import { getServerSession } from 'next-auth';
 import { z } from 'zod';
 
 import { authOptions } from '@/lib/auth';
-import { AudienceFilters, sendCampaign } from '@/lib/email';
+import { AudienceFilters, generateCampaignSuggestion } from '@/lib/email';
 import { prisma } from '@/lib/prisma';
 
 const createCampaignSchema = z.object({
@@ -29,11 +28,7 @@ const createCampaignSchema = z.object({
       html: z.string().min(10),
       text: z.string().min(10)
     })
-  ]),
-  schedule: z.object({
-    sendNow: z.boolean(),
-    scheduledFor: z.string().nullable().optional()
-  })
+  ])
 });
 
 export type CreateCampaignInput = z.infer<typeof createCampaignSchema>;
@@ -79,30 +74,22 @@ export async function createCampaignAction(data: CreateCampaignInput) {
     templateId = template.id;
   }
 
-  const scheduledFor = parsed.schedule.scheduledFor ? new Date(parsed.schedule.scheduledFor) : null;
-
   const campaign = await prisma.emailCampaign.create({
     data: {
       name: parsed.name,
       templateId,
       audienceSegmentId: segment.id,
-      status: parsed.schedule.sendNow ? CampaignStatus.SCHEDULED : CampaignStatus.DRAFT,
-      scheduledFor: parsed.schedule.sendNow ? scheduledFor ?? new Date() : scheduledFor
+      status: CampaignStatus.DRAFT,
+      scheduledFor: null
     }
   });
 
-  if (parsed.schedule.sendNow) {
-    await sendCampaign(campaign.id);
-  }
-
-  revalidatePath('/emails');
   return { success: true, campaignId: campaign.id };
 }
 
-export async function sendCampaignNowAction(campaignId: string) {
+export async function generateCampaignDraftAction(campaignId: string) {
   await requireSession();
-  await sendCampaign(campaignId);
-  revalidatePath('/emails');
-  return { success: true };
+  const suggestion = await generateCampaignSuggestion(campaignId);
+  return { success: true, suggestion };
 }
 

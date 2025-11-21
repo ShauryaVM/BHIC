@@ -13,8 +13,8 @@ const envSchema = z.object({
   EVENTBRITE_API_TOKEN: z.string().min(1),
   GA4_PROPERTY_ID: z.string().min(1),
   GA4_SERVICE_ACCOUNT_JSON: z.string().min(2),
-  EMAIL_PROVIDER_API_KEY: z.string().min(1),
-  RESEND_FROM_EMAIL: z.string().min(3)
+  GEMINI_API_KEY: z.string().min(1),
+  GEMINI_MODEL: z.string().default('models/gemini-1.5-flash')
 });
 
 const parsed = envSchema.safeParse({
@@ -30,8 +30,8 @@ const parsed = envSchema.safeParse({
   EVENTBRITE_API_TOKEN: process.env.EVENTBRITE_API_TOKEN,
   GA4_PROPERTY_ID: process.env.GA4_PROPERTY_ID,
   GA4_SERVICE_ACCOUNT_JSON: process.env.GA4_SERVICE_ACCOUNT_JSON,
-  EMAIL_PROVIDER_API_KEY: process.env.EMAIL_PROVIDER_API_KEY,
-  RESEND_FROM_EMAIL: process.env.RESEND_FROM_EMAIL
+  GEMINI_API_KEY: process.env.GEMINI_API_KEY,
+  GEMINI_MODEL: process.env.GEMINI_MODEL ?? 'models/gemini-1.5-flash'
 });
 
 if (!parsed.success) {

@@ -3,8 +3,8 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { SendNowButton } from '@/app/(dashboard)/emails/_components/send-now-button';
-import { sendCampaignNowAction } from '@/app/(dashboard)/emails/actions';
+import { DraftGenerator } from '@/app/(dashboard)/emails/_components/draft-generator';
+import { generateCampaignDraftAction } from '@/app/(dashboard)/emails/actions';
 import { campaignStatusLabel, getEmailCampaigns } from '@/lib/email-data';
 import { formatDate } from '@/lib/format';
 import { PageHeader, PageHeaderMeta } from '@/components/layout/page-header';
@@ -20,7 +20,7 @@ export default async function EmailsPage() {
       <PageHeader
         eyebrow="Outreach"
         title="Email campaigns"
-        description="Engage members with targeted outreach powered by donor data."
+        description="Use donor insights to draft targeted outreach. Copy the AI draft into your preferred email platform."
         actions={
           <Button asChild>
             <Link href="/emails/create">Create campaign</Link>
@@ -54,17 +54,7 @@ export default async function EmailsPage() {
                 Created {formatDate(campaign.createdAt)} · {campaign.sentAt ? `Sent ${formatDate(campaign.sentAt)}` : 'Not sent yet'}
               </p>
             </div>
-            <div className="flex flex-col items-start gap-2 md:items-end">
-              <p className="text-xs text-slate-500">
-                Delivery logs: {campaign._count.logs} · Scheduled for{' '}
-                {campaign.scheduledFor ? formatDate(campaign.scheduledFor) : 'not scheduled'}
-              </p>
-              {campaign.status !== 'SENT' ? (
-                <SendNowButton campaignId={campaign.id} action={sendCampaignNowAction} />
-              ) : (
-                <span className="text-xs text-slate-400">Already delivered</span>
-              )}
-            </div>
+            <DraftGenerator campaignId={campaign.id} action={generateCampaignDraftAction} />
           </Card>
         ))}
         {campaigns.length === 0 ? (

@@ -44,9 +44,7 @@ export function CampaignWizard({ data, action }: CampaignWizardProps) {
       subject: '',
       html: '<p>Dear {{ name }},<br/>Thank you for supporting BHIC.</p>',
       text: 'Dear {{ name }},\n\nThank you for supporting BHIC.'
-    },
-    sendNow: true,
-    scheduledFor: ''
+    }
   });
 
   const previewTemplate = useMemo(() => {
@@ -113,11 +111,7 @@ export function CampaignWizard({ data, action }: CampaignWizardProps) {
                   subject: form.newTemplate.subject,
                   html: form.newTemplate.html,
                   text: form.newTemplate.text
-                },
-          schedule: {
-            sendNow: form.sendNow,
-            scheduledFor: form.sendNow ? null : form.scheduledFor || null
-          }
+                }
         };
 
         const result = await action(payload);
@@ -277,36 +271,12 @@ export function CampaignWizard({ data, action }: CampaignWizardProps) {
 
       {step === 3 ? (
         <section className="space-y-4">
-          <div className="flex flex-wrap gap-6">
-            <label className="flex items-center gap-2 text-sm">
-              <input
-                type="radio"
-                name="schedule"
-                checked={form.sendNow}
-                onChange={() => setForm((current) => ({ ...current, sendNow: true }))}
-              />
-              Send immediately
-            </label>
-            <label className="flex items-center gap-2 text-sm">
-              <input
-                type="radio"
-                name="schedule"
-                checked={!form.sendNow}
-                onChange={() => setForm((current) => ({ ...current, sendNow: false }))}
-              />
-              Schedule
-            </label>
-            {!form.sendNow ? (
-              <Input
-                type="datetime-local"
-                value={form.scheduledFor}
-                onChange={(event) => setForm((current) => ({ ...current, scheduledFor: event.target.value }))}
-              />
-            ) : null}
-          </div>
           <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
             <p className="text-sm font-semibold text-slate-700">Preview</p>
-            <p className="text-xs text-slate-500">Showing sample for {data.sampleDonor?.name ?? 'BHIC Supporter'}</p>
+            <p className="text-xs text-slate-500">
+              Gemini will use this template plus donor context to suggest a final draft after you save. Below is the base content rendered for{' '}
+              {data.sampleDonor?.name ?? 'a sample donor'}.
+            </p>
             <div className="mt-3 rounded-2xl bg-white p-4 shadow-inner">
               <div className="font-semibold text-slate-900">{previewTemplate?.subject ?? 'Subject TBD'}</div>
               <div className="mt-2 text-sm text-slate-700" dangerouslySetInnerHTML={{ __html: renderPreview(previewTemplate?.html) }} />
@@ -328,7 +298,7 @@ export function CampaignWizard({ data, action }: CampaignWizardProps) {
           </Button>
         ) : (
           <Button type="button" onClick={submit} disabled={pending}>
-            {pending ? 'Saving...' : 'Launch campaign'}
+            {pending ? 'Saving...' : 'Save campaign'}
           </Button>
         )}
       </div>
