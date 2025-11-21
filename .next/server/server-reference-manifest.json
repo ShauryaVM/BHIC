@@ -1,5 +1,20 @@
 {
   "node": {
+    "0079642c756b10993ed74226cd177e619c7bf8b6b7": {
+      "workers": {
+        "app/(dashboard)/page": {
+          "moduleId": 97405,
+          "async": false,
+          "exportedName": "syncIntegrationsAction",
+          "filename": "src/app/(dashboard)/actions/sync-integrations.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/page": "action-browser"
+      },
+      "filename": "src/app/(dashboard)/actions/sync-integrations.ts",
+      "exportedName": "syncIntegrationsAction"
+    },
     "40c21b41d25d1cb7a2078c26f9738b70818c544029": {
       "workers": {
         "app/(dashboard)/emails/create/page": {
