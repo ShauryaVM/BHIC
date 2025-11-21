@@ -1,5 +1,27 @@
 {
   "node": {
+    "40c21b41d25d1cb7a2078c26f9738b70818c544029": {
+      "workers": {
+        "app/(dashboard)/emails/create/page": {
+          "moduleId": 52060,
+          "async": false,
+          "exportedName": "deleteCampaignAction",
+          "filename": "src/app/(dashboard)/emails/actions.ts"
+        },
+        "app/(dashboard)/emails/page": {
+          "moduleId": 27708,
+          "async": false,
+          "exportedName": "deleteCampaignAction",
+          "filename": "src/app/(dashboard)/emails/actions.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/emails/create/page": "rsc",
+        "app/(dashboard)/emails/page": "rsc"
+      },
+      "filename": "src/app/(dashboard)/emails/actions.ts",
+      "exportedName": "deleteCampaignAction"
+    },
     "4077aea07091fb9867f3992b90de83470c7b78c8ae": {
       "workers": {
         "app/(dashboard)/emails/create/page": {

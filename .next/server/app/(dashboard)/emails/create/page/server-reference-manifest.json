@@ -15,6 +15,21 @@
       "exportedName": "createCampaignAction",
       "filename": "src/app/(dashboard)/emails/actions.ts"
     },
+    "40c21b41d25d1cb7a2078c26f9738b70818c544029": {
+      "workers": {
+        "app/(dashboard)/emails/create/page": {
+          "moduleId": 52060,
+          "async": false,
+          "exportedName": "deleteCampaignAction",
+          "filename": "src/app/(dashboard)/emails/actions.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/emails/create/page": "rsc"
+      },
+      "exportedName": "deleteCampaignAction",
+      "filename": "src/app/(dashboard)/emails/actions.ts"
+    },
     "40f9d051ee1ba85e7b1176fcb29548a48a6e690027": {
       "workers": {
         "app/(dashboard)/emails/create/page": {

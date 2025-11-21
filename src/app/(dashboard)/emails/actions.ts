@@ -1,13 +1,13 @@
 "use server";
 
-import { CampaignStatus } from '@prisma/client';
+import { CampaignStatus, type Prisma } from '@prisma/client';
 import { getServerSession } from 'next-auth';
 import { z } from 'zod';
+import { revalidatePath } from 'next/cache';
 
 import { authOptions } from '@/lib/auth';
 import { AudienceFilters, generateCampaignSuggestion } from '@/lib/email';
 import { prisma } from '@/lib/prisma';
-import type { Prisma } from '@prisma/client';
 
 const createCampaignSchema = z.object({
   name: z.string().min(3),
@@ -33,6 +33,10 @@ const createCampaignSchema = z.object({
 });
 
 export type CreateCampaignInput = z.infer<typeof createCampaignSchema>;
+
+const deleteCampaignSchema = z.object({
+  campaignId: z.string().min(1)
+});
 
 async function requireSession() {
   const session = await getServerSession(authOptions);
@@ -92,5 +96,36 @@ export async function generateCampaignDraftAction(campaignId: string) {
   await requireSession();
   const suggestion = await generateCampaignSuggestion(campaignId);
   return { success: true, suggestion };
+}
+
+export async function deleteCampaignAction(input: { campaignId: string }) {
+  await requireSession();
+  const { campaignId } = deleteCampaignSchema.parse(input);
+
+  const campaign = await prisma.emailCampaign.findUnique({
+    where: { id: campaignId },
+    select: {
+      audienceSegmentId: true
+    }
+  });
+
+  if (!campaign) {
+    throw new Error('Campaign not found');
+  }
+
+  await prisma.emailLog.deleteMany({ where: { campaignId } });
+  await prisma.emailCampaign.delete({ where: { id: campaignId } });
+
+  if (campaign.audienceSegmentId) {
+    const remaining = await prisma.emailCampaign.count({
+      where: { audienceSegmentId: campaign.audienceSegmentId }
+    });
+    if (remaining === 0) {
+      await prisma.audienceSegment.delete({ where: { id: campaign.audienceSegmentId } }).catch(() => undefined);
+    }
+  }
+
+  revalidatePath('/emails');
+  return { success: true };
 }
 
