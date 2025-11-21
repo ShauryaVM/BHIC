@@ -1,0 +1,50 @@
+{
+  "node": {
+    "4077aea07091fb9867f3992b90de83470c7b78c8ae": {
+      "workers": {
+        "app/(dashboard)/emails/create/page": {
+          "moduleId": 52060,
+          "async": false,
+          "exportedName": "createCampaignAction",
+          "filename": "src/app/(dashboard)/emails/actions.ts"
+        },
+        "app/(dashboard)/emails/page": {
+          "moduleId": 27708,
+          "async": false,
+          "exportedName": "createCampaignAction",
+          "filename": "src/app/(dashboard)/emails/actions.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/emails/create/page": "rsc",
+        "app/(dashboard)/emails/page": "rsc"
+      },
+      "filename": "src/app/(dashboard)/emails/actions.ts",
+      "exportedName": "createCampaignAction"
+    },
+    "40f9d051ee1ba85e7b1176fcb29548a48a6e690027": {
+      "workers": {
+        "app/(dashboard)/emails/create/page": {
+          "moduleId": 52060,
+          "async": false,
+          "exportedName": "generateCampaignDraftAction",
+          "filename": "src/app/(dashboard)/emails/actions.ts"
+        },
+        "app/(dashboard)/emails/page": {
+          "moduleId": 27708,
+          "async": false,
+          "exportedName": "generateCampaignDraftAction",
+          "filename": "src/app/(dashboard)/emails/actions.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/emails/create/page": "rsc",
+        "app/(dashboard)/emails/page": "rsc"
+      },
+      "filename": "src/app/(dashboard)/emails/actions.ts",
+      "exportedName": "generateCampaignDraftAction"
+    }
+  },
+  "edge": {},
+  "encryptionKey": "85x6FMMgCsmtL4xVsPsjD4AXR649dn3QsS5LHhJkj5A="
+}

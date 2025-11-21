@@ -1,0 +1,13 @@
+{
+  "/(dashboard)/analytics/page": "app/(dashboard)/analytics/page.js",
+  "/(dashboard)/donors/page": "app/(dashboard)/donors/page.js",
+  "/(dashboard)/emails/create/page": "app/(dashboard)/emails/create/page.js",
+  "/(dashboard)/emails/page": "app/(dashboard)/emails/page.js",
+  "/(dashboard)/events/page": "app/(dashboard)/events/page.js",
+  "/(dashboard)/page": "app/(dashboard)/page.js",
+  "/_global-error/page": "app/_global-error/page.js",
+  "/_not-found/page": "app/_not-found/page.js",
+  "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
+  "/auth/not-authorized/page": "app/auth/not-authorized/page.js",
+  "/auth/signin/page": "app/auth/signin/page.js"
+}

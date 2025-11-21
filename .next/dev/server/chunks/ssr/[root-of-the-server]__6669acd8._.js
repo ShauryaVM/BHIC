@@ -96,9 +96,9 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$clsx$2f$dist$2f$clsx$2e$mjs__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/clsx/dist/clsx.mjs [app-rsc] (ecmascript)");
 ;
 ;
-function Table({ children, className: className1 }) {
+function Table({ children, className }) {
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("table", {
-        className: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$clsx$2f$dist$2f$clsx$2e$mjs__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["default"])("min-w-full divide-y divide-slate-200", className1),
+        className: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$clsx$2f$dist$2f$clsx$2e$mjs__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["default"])("min-w-full divide-y divide-slate-200", className),
         children: children
     }, void 0, false, {
         fileName: "[project]/src/components/ui/table.tsx",
@@ -133,7 +133,7 @@ function TBody({ children }) {
         columnNumber: 10
     }, this);
 }
-function TH({ children, align = "left" }) {
+function TH({ children, align = "left", className }) {
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
         scope: "col",
         className: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$clsx$2f$dist$2f$clsx$2e$mjs__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["default"])("px-4 py-3", {
@@ -148,13 +148,13 @@ function TH({ children, align = "left" }) {
         columnNumber: 5
     }, this);
 }
-function TD({ children, align = "left", className: className1 }) {
+function TD({ children, align = "left", className }) {
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
         className: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$clsx$2f$dist$2f$clsx$2e$mjs__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["default"])("px-4 py-3", {
             "text-left": align === "left",
             "text-center": align === "center",
             "text-right": align === "right"
-        }, className1),
+        }, className),
         children: children
     }, void 0, false, {
         fileName: "[project]/src/components/ui/table.tsx",
@@ -256,16 +256,14 @@ function buildWhere(filters) {
         return {};
     }
     const where = {};
-    if (filters.from) {
+    if (filters.from || filters.to) {
         where.startDate = {
-            ...where.startDate ?? {},
-            gte: filters.from
-        };
-    }
-    if (filters.to) {
-        where.startDate = {
-            ...where.startDate ?? {},
-            lte: filters.to
+            ...filters.from ? {
+                gte: filters.from
+            } : {},
+            ...filters.to ? {
+                lte: filters.to
+            } : {}
         };
     }
     return where;
@@ -288,8 +286,8 @@ async function getEventsData(filters = {}) {
         const upcomingEvents = events.filter((event)=>event.startDate >= now).length;
         const pastEvents = events.length - upcomingEvents;
         const ticketsSold = events.reduce((sum, event)=>sum + event.ticketsSold, 0);
-        const grossRevenue = events.reduce((sum, event)=>sum + toNumber(event.grossRevenue), 0);
-        const netRevenue = events.reduce((sum, event)=>sum + toNumber(event.netRevenue), 0);
+        const grossRevenue = events.reduce((sum, event)=>sum + Number(event.grossRevenue ?? 0), 0);
+        const netRevenue = events.reduce((sum, event)=>sum + Number(event.netRevenue ?? 0), 0);
         return {
             events,
             summary: {
@@ -306,8 +304,8 @@ async function getEventsData(filters = {}) {
                     })),
                 revenuePerEvent: events.map((event)=>({
                         name: event.name,
-                        gross: toNumber(event.grossRevenue),
-                        net: toNumber(event.netRevenue)
+                        gross: Number(event.grossRevenue ?? 0),
+                        net: Number(event.netRevenue ?? 0)
                     }))
             }
         };

@@ -7,6 +7,15 @@ import clsx from "clsx";
 type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
 type ButtonSize = "sm" | "md" | "lg";
 
+interface SlottableChildProps {
+  onClick?: (event: MouseEvent<HTMLElement>) => void;
+  className?: string;
+  tabIndex?: number;
+  children?: ReactNode;
+  "aria-disabled"?: boolean;
+  ref?: Ref<HTMLElement | HTMLAnchorElement>;
+}
+
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
   size?: ButtonSize;
@@ -54,7 +63,7 @@ export const Button = forwardRef<HTMLButtonElement | HTMLAnchorElement, ButtonPr
   );
 
   if (asChild && isValidElement(children)) {
-    const child = children as ReactElement;
+    const child = children as ReactElement<SlottableChildProps>;
     const originalOnClick = child.props.onClick;
     const slottedContent = (
       <>

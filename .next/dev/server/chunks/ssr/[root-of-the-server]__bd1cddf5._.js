@@ -267,7 +267,7 @@ const Button = /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f
                     children: loading ? "Processing..." : child.props.children
                 }, void 0, false, {
                     fileName: "[project]/src/components/ui/button.tsx",
-                    lineNumber: 62,
+                    lineNumber: 71,
                     columnNumber: 9
                 }, this),
                 rightIcon
@@ -298,7 +298,7 @@ const Button = /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f
                 children: loading ? "Processing..." : children
             }, void 0, false, {
                 fileName: "[project]/src/components/ui/button.tsx",
-                lineNumber: 94,
+                lineNumber: 103,
                 columnNumber: 7
             }, this),
             rightIcon
@@ -314,7 +314,7 @@ const Button = /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f
         children: content
     }, void 0, false, {
         fileName: "[project]/src/components/ui/button.tsx",
-        lineNumber: 100,
+        lineNumber: 109,
         columnNumber: 5
     }, this);
 });

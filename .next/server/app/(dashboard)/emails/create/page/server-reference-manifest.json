@@ -1,0 +1,35 @@
+{
+  "node": {
+    "4077aea07091fb9867f3992b90de83470c7b78c8ae": {
+      "workers": {
+        "app/(dashboard)/emails/create/page": {
+          "moduleId": 52060,
+          "async": false,
+          "exportedName": "createCampaignAction",
+          "filename": "src/app/(dashboard)/emails/actions.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/emails/create/page": "rsc"
+      },
+      "exportedName": "createCampaignAction",
+      "filename": "src/app/(dashboard)/emails/actions.ts"
+    },
+    "40f9d051ee1ba85e7b1176fcb29548a48a6e690027": {
+      "workers": {
+        "app/(dashboard)/emails/create/page": {
+          "moduleId": 52060,
+          "async": false,
+          "exportedName": "generateCampaignDraftAction",
+          "filename": "src/app/(dashboard)/emails/actions.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/emails/create/page": "rsc"
+      },
+      "exportedName": "generateCampaignDraftAction",
+      "filename": "src/app/(dashboard)/emails/actions.ts"
+    }
+  },
+  "edge": {}
+}

@@ -28,7 +28,7 @@ export function TBody({ children }: { children: ReactNode }) {
   return <tbody className="divide-y divide-slate-100 bg-white text-sm text-slate-700">{children}</tbody>;
 }
 
-export function TH({ children, align = "left" }: TableCellProps) {
+export function TH({ children, align = "left", className }: TableCellProps) {
   return (
     <th
       scope="col"

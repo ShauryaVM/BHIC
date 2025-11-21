@@ -41,11 +41,11 @@ function buildWhere(filters: EventFilters) {
     return {};
   }
   const where: Prisma.EventWhereInput = {};
-  if (filters.from) {
-    where.startDate = { ...(where.startDate ?? {}), gte: filters.from };
-  }
-  if (filters.to) {
-    where.startDate = { ...(where.startDate ?? {}), lte: filters.to };
+  if (filters.from || filters.to) {
+    where.startDate = {
+      ...(filters.from ? { gte: filters.from } : {}),
+      ...(filters.to ? { lte: filters.to } : {})
+    };
   }
   return where;
 }
@@ -69,8 +69,8 @@ export async function getEventsData(filters: EventFilters = {}): Promise<EventsP
     const upcomingEvents = events.filter((event) => event.startDate >= now).length;
     const pastEvents = events.length - upcomingEvents;
     const ticketsSold = events.reduce((sum, event) => sum + event.ticketsSold, 0);
-    const grossRevenue = events.reduce((sum, event) => sum + toNumber(event.grossRevenue), 0);
-    const netRevenue = events.reduce((sum, event) => sum + toNumber(event.netRevenue), 0);
+    const grossRevenue = events.reduce<number>((sum, event) => sum + Number(event.grossRevenue ?? 0), 0);
+    const netRevenue = events.reduce<number>((sum, event) => sum + Number(event.netRevenue ?? 0), 0);
 
     return {
       events,
@@ -85,8 +85,8 @@ export async function getEventsData(filters: EventFilters = {}): Promise<EventsP
         ticketsPerEvent: events.map((event) => ({ name: event.name, tickets: event.ticketsSold })),
         revenuePerEvent: events.map((event) => ({
           name: event.name,
-          gross: toNumber(event.grossRevenue),
-          net: toNumber(event.netRevenue)
+          gross: Number(event.grossRevenue ?? 0),
+          net: Number(event.netRevenue ?? 0)
         }))
       }
     };

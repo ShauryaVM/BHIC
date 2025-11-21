@@ -17,7 +17,7 @@ export interface EmailDraftSuggestion {
   html: string;
   text: string;
   talkingPoints: string[];
-  sampleRecipients: string[];
+  sampleRecipients?: string[];
 }
 
 const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY);
@@ -217,7 +217,8 @@ export async function generateThankYouSuggestion(donorId: string): Promise<Email
       subject: suggestion.subject ?? renderContent(template.subject, donor.name),
       html: suggestion.html ?? renderContent(template.html, donor.name),
       text: suggestion.text ?? renderContent(template.text, donor.name),
-      talkingPoints: suggestion.talkingPoints ?? []
+      talkingPoints: suggestion.talkingPoints ?? [],
+      sampleRecipients: suggestion.sampleRecipients ?? []
     };
   } catch (error) {
     console.error('Gemini thank-you draft failed', error);

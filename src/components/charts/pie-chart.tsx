@@ -3,7 +3,7 @@
 import type { ReactNode } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
 
-export interface PieChartDatum {
+export interface PieChartDatum extends Record<string, unknown> {
   name: string;
   value: number;
 }

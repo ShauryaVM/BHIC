@@ -1,5 +1,5 @@
 import { differenceInMinutes } from 'date-fns';
-import type { MetricSource } from '@prisma/client';
+import type { MetricSource, Prisma } from '@prisma/client';
 
 import { prisma } from '@/lib/prisma';
 
@@ -13,6 +13,10 @@ interface CacheParams<T> {
 }
 
 let cacheDisabled = false;
+
+function toJsonValue<T>(value: T): Prisma.InputJsonValue {
+  return value as Prisma.InputJsonValue;
+}
 
 export async function withMetricCache<T>({ key, from, to, source, ttlMinutes = 60, fetcher }: CacheParams<T>): Promise<T> {
   if (cacheDisabled) {
@@ -34,7 +38,7 @@ export async function withMetricCache<T>({ key, from, to, source, ttlMinutes = 6
       .create({
         data: {
           key,
-          value,
+          value: toJsonValue(value),
           fromDate: from,
           toDate: to,
           source

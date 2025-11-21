@@ -1,6 +1,7 @@
 import { PrismaAdapter } from '@next-auth/prisma-adapter';
 import type { NextAuthOptions } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
+import { UserRole } from '@prisma/client';
 
 import { prisma } from '@/lib/prisma';
 import { env } from '@/lib/env';
@@ -42,14 +43,15 @@ export const authOptions: NextAuthOptions = {
     },
     async jwt({ token, user }) {
       if (user) {
-        token.role = (user as { role?: string }).role ?? token.role ?? 'STAFF';
+        const userRole = (user as { role?: UserRole }).role;
+        token.role = userRole ?? token.role ?? UserRole.STAFF;
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.sub!;
-        session.user.role = (token.role as string) ?? 'STAFF';
+        session.user.role = (token.role as UserRole) ?? UserRole.STAFF;
       }
       return session;
     }
