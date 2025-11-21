@@ -4,10 +4,12 @@
   "/(dashboard)/emails/create/page": "/emails/create",
   "/(dashboard)/emails/page": "/emails",
   "/(dashboard)/events/page": "/events",
+  "/(dashboard)/insights/page": "/insights",
   "/(dashboard)/page": "/",
   "/_global-error/page": "/_global-error",
   "/_not-found/page": "/_not-found",
   "/api/auth/[...nextauth]/route": "/api/auth/[...nextauth]",
+  "/api/insights/report/route": "/api/insights/report",
   "/auth/not-authorized/page": "/auth/not-authorized",
   "/auth/signin/page": "/auth/signin"
 }

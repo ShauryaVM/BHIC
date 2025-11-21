@@ -55,6 +55,12 @@
       "namedRegex": "^/analytics(?:/)?$"
     },
     {
+      "page": "/api/insights/report",
+      "regex": "^/api/insights/report(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/insights/report(?:/)?$"
+    },
+    {
       "page": "/auth/not-authorized",
       "regex": "^/auth/not\\-authorized(?:/)?$",
       "routeKeys": {},
@@ -89,6 +95,12 @@
       "regex": "^/events(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/events(?:/)?$"
+    },
+    {
+      "page": "/insights",
+      "regex": "^/insights(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/insights(?:/)?$"
     }
   ],
   "dataRoutes": [],
