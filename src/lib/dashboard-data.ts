@@ -9,7 +9,7 @@ import { getMonthlyBuckets } from '@/lib/time-series';
 
 const toNumber = (value?: Prisma.Decimal | null) => Number(value ?? 0);
 
-export interface DashboardSeriesPoint {
+export interface DashboardSeriesPoint extends Record<string, unknown> {
   label: string;
   funds: number;
   tickets: number;
