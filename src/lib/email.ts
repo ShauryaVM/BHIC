@@ -5,7 +5,7 @@ import { subDays } from 'date-fns';
 import { env } from '@/lib/env';
 import { prisma } from '@/lib/prisma';
 
-export interface AudienceFilters {
+export interface AudienceFilters extends Record<string, unknown> {
   donatedWithinDays?: number;
   totalGivenGreaterThan?: number;
   attendedEventIds?: string[];

@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { authOptions } from '@/lib/auth';
 import { AudienceFilters, generateCampaignSuggestion } from '@/lib/email';
 import { prisma } from '@/lib/prisma';
+import type { Prisma } from '@prisma/client';
 
 const createCampaignSchema = z.object({
   name: z.string().min(3),
@@ -55,7 +56,7 @@ export async function createCampaignAction(data: CreateCampaignInput) {
   const segment = await prisma.audienceSegment.create({
     data: {
       name: `${parsed.name} audience ${Date.now()}`,
-      filters
+      filters: filters as Prisma.JsonObject
     }
   });
 
