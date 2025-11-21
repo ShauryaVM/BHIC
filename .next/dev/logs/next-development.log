@@ -83,3 +83,7 @@
 [01:34:51.279] Server  LOG      ✓ Compiled in 858ms
 [01:40:54.802] Server  LOG      ✓ Compiled in 479ms
 [01:43:04.609] Server  LOG      ✓ Compiled in 359ms
+[04:08:47.136] Server  LOG        Reload env: .env
+[04:08:50.377] Server  LOG        Reload env: .env
+[04:08:53.722] Server  LOG        Reload env: .env
+[04:08:55.616] Server  LOG        Reload env: .env
