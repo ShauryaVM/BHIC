@@ -1,13 +1,13 @@
 import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
 import { withAuth } from 'next-auth/middleware';
+import type { NextRequestWithAuth } from 'next-auth/middleware';
 
 import { env } from '@/lib/env';
 
 const allowedDomain = env.ALLOWED_EMAIL_DOMAIN.toLowerCase();
 
 export default withAuth(
-  function middleware(request: NextRequest) {
+  function middleware(request: NextRequestWithAuth) {
     const token = request.nextauth.token;
     if (!token?.email) {
       return NextResponse.redirect(new URL('/auth/signin', request.url));
