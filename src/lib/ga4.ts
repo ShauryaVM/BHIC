@@ -60,7 +60,7 @@ interface BaseRange {
   to: Date;
 }
 
-export interface Ga4SeriesPoint {
+export interface Ga4SeriesPoint extends Record<string, unknown> {
   label: string;
   value: number;
   date: string;
