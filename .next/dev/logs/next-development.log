@@ -72,3 +72,5 @@
 [00:51:49.655] Server  LOG     prisma:query "DEALLOCATE ALL"
 [00:51:49.770] Server  LOG     prisma:query "INSERT INTO \"public\".\"CachedMetric\" (\"id\",\"key\",\"value\",\"fromDate\",\"toDate\",\"source\",\"createdAt\") VALUES ($1,$2,$3,$4,$5,CAST($6::text AS \"public\".\"MetricSource\"),$7) RETURNING \"public\".\"CachedMetric\".\"id\", \"public\".\"CachedMetric\".\"key\", \"public\".\"CachedMetric\".\"value\", \"public\".\"CachedMetric\".\"fromDate\", \"public\".\"CachedMetric\".\"toDate\", \"public\".\"CachedMetric\".\"source\"::text, \"public\".\"CachedMetric\".\"createdAt\""
 [00:51:49.869] Server  LOG     prisma:query "COMMIT"
+[00:57:24.906] Server  LOG      ✓ Compiled in 372ms
+[00:57:34.267] Server  LOG      ✓ Compiled in 282ms

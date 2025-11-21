@@ -52,7 +52,10 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
         />
       </PageHeader>
 
-      <EventsFilters initialFrom={from.toISOString().slice(0, 10)} initialTo={to.toISOString().slice(0, 10)} />
+      <EventsFilters
+        initialFrom={from?.toISOString().slice(0, 10)}
+        initialTo={to?.toISOString().slice(0, 10)}
+      />
 
       <Card title="Event performance" description="Revenue and tickets by event">
         <div className="overflow-x-auto">
