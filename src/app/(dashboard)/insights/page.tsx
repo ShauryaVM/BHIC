@@ -22,8 +22,42 @@ const impactStyles: Record<string, string> = {
   neutral: 'border-slate-200 bg-white text-slate-700'
 };
 
+function ProgressBar({ value, color }: { value: number; color: string }) {
+  if (!Number.isFinite(value)) return null;
+  const clamped = Math.min(1, Math.max(0.04, value));
+  return (
+    <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
+      <div className="h-full rounded-full" style={{ width: `${clamped * 100}%`, backgroundColor: color }} />
+    </div>
+  );
+}
+
+function formatDateTime(value: string | Date) {
+  const date = typeof value === 'string' ? new Date(value) : value;
+  return new Intl.DateTimeFormat('en-US', { dateStyle: 'medium', timeStyle: 'short' }).format(date);
+}
+
+function formatSeconds(value: number) {
+  const minutes = Math.floor(value / 60);
+  const seconds = Math.round(value % 60);
+  return `${minutes}m ${seconds.toString().padStart(2, '0')}s`;
+}
+
 export default async function InsightsPage() {
   const data = await getInsightsData();
+  const ticketsByEvent = data.events.data.charts.ticketsPerEvent.slice(0, 8);
+  const revenueByEvent = data.events.data.charts.revenuePerEvent.slice(0, 8);
+  const gaSummary = data.analytics.data.summary;
+  const donorRatio =
+    data.donors.summary.totalDonors > 0 ? data.donors.summary.activeDonors / data.donors.summary.totalDonors : 0;
+  const grossRevenue = data.events.data.summary.grossRevenue;
+  const netRevenue = data.events.data.summary.netRevenue;
+  const netShare = grossRevenue > 0 ? netRevenue / grossRevenue : 0;
+  const generatedOn = formatDateTime(data.generatedAt);
+  const eventWindowStart = data.events.filters.from ?? data.range.from;
+  const eventWindowEnd = data.events.filters.to ?? data.range.to;
+  const analyticsWindowStart = data.analytics.filters.from ?? data.range.from;
+  const analyticsWindowEnd = data.analytics.filters.to ?? data.range.to;
 
   const summaryItems = [
     {
@@ -73,6 +107,82 @@ export default async function InsightsPage() {
         </div>
       </Card>
 
+      <section className="grid gap-6 xl:grid-cols-3">
+        <Card title="Donor health" description="Fundraising signals from the eTapestry sync.">
+          <div className="space-y-4 text-sm">
+            <div>
+              <p className="font-semibold text-slate-600">Total donors</p>
+              <p className="text-2xl font-semibold text-slate-900">{formatNumber(data.donors.summary.totalDonors)}</p>
+              <p className="text-xs text-slate-500">All-time in CRM</p>
+            </div>
+            <div>
+              <p className="font-semibold text-slate-600">Active donors</p>
+              <p className="text-2xl font-semibold text-slate-900">{formatNumber(data.donors.summary.activeDonors)}</p>
+              <p className="text-xs text-slate-500">Gifted in last 12 months ({formatPercent(donorRatio)})</p>
+              <ProgressBar value={donorRatio} color="#2563eb" />
+            </div>
+            <div>
+              <p className="font-semibold text-slate-600">Avg lifetime value</p>
+              <p className="text-2xl font-semibold text-slate-900">
+                {formatCurrency(data.donors.summary.averageLifetimeValue)}
+              </p>
+              <p className="text-xs text-slate-500">Mean revenue per donor</p>
+            </div>
+          </div>
+        </Card>
+
+        <Card title="Revenue mix" description="Eventbrite revenue + capacity snapshot.">
+          <div className="space-y-4 text-sm">
+            <div>
+              <p className="font-semibold text-slate-600">Gross revenue</p>
+              <p className="text-2xl font-semibold text-slate-900">{formatCurrency(grossRevenue)}</p>
+              <p className="text-xs text-slate-500">
+                {formatNumber(data.events.data.summary.ticketsSold)} tickets sold
+              </p>
+            </div>
+            <div>
+              <p className="font-semibold text-slate-600">Net revenue</p>
+              <p className="text-2xl font-semibold text-slate-900">{formatCurrency(netRevenue)}</p>
+              <p className="text-xs text-slate-500">{formatPercent(netShare)} of gross captured</p>
+              <ProgressBar value={netShare} color="#059669" />
+            </div>
+            <div>
+              <p className="font-semibold text-slate-600">Avg capacity fill</p>
+              <p className="text-2xl font-semibold text-slate-900">{formatPercent(data.metrics.avgOccupancy)}</p>
+              <p className="text-xs text-slate-500">Across synced events</p>
+              <ProgressBar value={data.metrics.avgOccupancy} color="#f97316" />
+            </div>
+          </div>
+        </Card>
+
+        <Card title="Data freshness" description="Windows synced into this briefing.">
+          <dl className="space-y-3 text-sm">
+            <div>
+              <dt className="font-semibold text-slate-600">Insights generated</dt>
+              <dd className="text-slate-900">{generatedOn}</dd>
+            </div>
+            <div>
+              <dt className="font-semibold text-slate-600">Financial window</dt>
+              <dd className="text-slate-900">
+                {formatDate(data.range.from)} &ndash; {formatDate(data.range.to)}
+              </dd>
+            </div>
+            <div>
+              <dt className="font-semibold text-slate-600">Events window</dt>
+              <dd className="text-slate-900">
+                {formatDate(eventWindowStart)} &ndash; {formatDate(eventWindowEnd)}
+              </dd>
+            </div>
+            <div>
+              <dt className="font-semibold text-slate-600">Analytics window</dt>
+              <dd className="text-slate-900">
+                {formatDate(analyticsWindowStart)} &ndash; {formatDate(analyticsWindowEnd)}
+              </dd>
+            </div>
+          </dl>
+        </Card>
+      </section>
+
       <Card
         title="Monthly performance"
         description="Funds raised, tickets sold, and website sessions across the last 12 months."
@@ -91,7 +201,11 @@ export default async function InsightsPage() {
         <Card
           title="Top donors"
           description="Highest lifetime value donors with most recent gift date."
-          actions={<p className="text-xs text-slate-500">Avg lifetime value {formatCurrency(data.donors.summary.averageLifetimeValue)}</p>}
+          actions={
+            <p className="text-xs text-slate-500">
+              Avg lifetime value {formatCurrency(data.donors.summary.averageLifetimeValue)}
+            </p>
+          }
         >
           <div className="overflow-x-auto">
             <Table>
@@ -118,7 +232,12 @@ export default async function InsightsPage() {
         <Card
           title="Event performance snapshot"
           description="Most recent Eventbrite programs with revenue and capacity details."
-          actions={<p className="text-xs text-slate-500">{formatNumber(data.events.data.summary.upcomingEvents)} upcoming · {formatNumber(data.events.data.summary.pastEvents)} past</p>}
+          actions={
+            <p className="text-xs text-slate-500">
+              {formatNumber(data.events.data.summary.upcomingEvents)} upcoming ·{' '}
+              {formatNumber(data.events.data.summary.pastEvents)} past
+            </p>
+          }
         >
           <div className="overflow-x-auto">
             <Table>
@@ -138,7 +257,8 @@ export default async function InsightsPage() {
                     </TD>
                     <TD>{formatNumber(event.ticketsSold)}</TD>
                     <TD>
-                      {formatNumber(event.ticketsTotal)} ({formatPercent(event.ticketsTotal ? event.ticketsSold / event.ticketsTotal : 0)})
+                      {formatNumber(event.ticketsTotal)} (
+                      {formatPercent(event.ticketsTotal ? event.ticketsSold / event.ticketsTotal : 0)})
                     </TD>
                     <TD>{formatCurrency(event.grossRevenue)}</TD>
                   </tr>
@@ -146,6 +266,27 @@ export default async function InsightsPage() {
               </TBody>
             </Table>
           </div>
+        </Card>
+      </section>
+
+      <section className="grid gap-6 lg:grid-cols-2">
+        <Card title="Tickets per event" description="Top recent programs ranked by attendance.">
+          <BarChartComponent
+            data={ticketsByEvent}
+            bars={[{ dataKey: 'tickets', color: '#2563eb', name: 'Tickets sold' }]}
+            footer={<p className="text-xs text-slate-500">Data source: Eventbrite</p>}
+          />
+        </Card>
+        <Card title="Revenue per event" description="Gross vs. net performance for recent programs.">
+          <BarChartComponent
+            data={revenueByEvent}
+            bars={[
+              { dataKey: 'gross', color: '#0f172a', name: 'Gross' },
+              { dataKey: 'net', color: '#059669', name: 'Net' }
+            ]}
+            stacked={false}
+            footer={<p className="text-xs text-slate-500">Bars highlight net capture per program.</p>}
+          />
         </Card>
       </section>
 
@@ -165,8 +306,12 @@ export default async function InsightsPage() {
         </Card>
       </section>
 
-      <section className="grid gap-6 lg:grid-cols-2">
-        <Card title="Sessions (last 30 days)" description="Google Analytics 4 daily sessions trend.">
+      <section className="grid gap-6 xl:grid-cols-3">
+        <Card
+          className="xl:col-span-2"
+          title="Sessions (last 30 days)"
+          description="Google Analytics 4 daily sessions trend."
+        >
           <TimeSeriesChart
             data={data.analytics.data.sessionsSeries.points}
             lines={[{ dataKey: 'value', color: '#0f172a', name: 'Sessions' }]}
@@ -179,28 +324,55 @@ export default async function InsightsPage() {
             }
           />
         </Card>
-        <Card title="Top pages" description="Highest pageviews by title.">
-          <div className="overflow-x-auto">
-            <Table>
-              <THead>
-                <TH>Path</TH>
-                <TH>Title</TH>
-                <TH>Pageviews</TH>
-              </THead>
-              <TBody>
-                {data.analytics.data.topPages.rows.map((row) => (
-                  <tr key={`${row.path}-${row.title}`}>
-                    <TD className="font-medium">{row.path}</TD>
-                    <TD>{row.title}</TD>
-                    <TD>{formatNumber(row.pageviews)}</TD>
-                  </tr>
-                ))}
-              </TBody>
-            </Table>
+        <Card title="Engagement breakdown" description="Key GA4 metrics for the selected window.">
+          <div className="space-y-4 text-sm">
+            <div>
+              <p className="font-semibold text-slate-600">Users</p>
+              <p className="text-2xl font-semibold text-slate-900">{formatNumber(gaSummary.users)}</p>
+              <p className="text-xs text-slate-500">Unique visitors in window</p>
+            </div>
+            <div>
+              <p className="font-semibold text-slate-600">Sessions</p>
+              <p className="text-2xl font-semibold text-slate-900">{formatNumber(gaSummary.sessions)}</p>
+              <p className="text-xs text-slate-500">{formatMomentum(data.metrics.sessionsMomentum)}</p>
+            </div>
+            <div>
+              <p className="font-semibold text-slate-600">Pageviews</p>
+              <p className="text-2xl font-semibold text-slate-900">{formatNumber(gaSummary.pageviews)}</p>
+              <p className="text-xs text-slate-500">Total content views</p>
+            </div>
+            <div>
+              <p className="font-semibold text-slate-600">Avg engagement</p>
+              <p className="text-2xl font-semibold text-slate-900">{formatSeconds(gaSummary.averageEngagementTime)}</p>
+              <p className="text-xs text-slate-500">Per engaged session</p>
+            </div>
           </div>
-          {data.analytics.data.topPages.error ? <p className="mt-2 text-sm text-red-500">{data.analytics.data.topPages.error}</p> : null}
         </Card>
       </section>
+
+      <Card title="Top pages" description="Highest pageviews by title.">
+        <div className="overflow-x-auto">
+          <Table>
+            <THead>
+              <TH>Path</TH>
+              <TH>Title</TH>
+              <TH>Pageviews</TH>
+            </THead>
+            <TBody>
+              {data.analytics.data.topPages.rows.map((row) => (
+                <tr key={`${row.path}-${row.title}`}>
+                  <TD className="font-medium">{row.path}</TD>
+                  <TD>{row.title}</TD>
+                  <TD>{formatNumber(row.pageviews)}</TD>
+                </tr>
+              ))}
+            </TBody>
+          </Table>
+        </div>
+        {data.analytics.data.topPages.error ? (
+          <p className="mt-2 text-sm text-red-500">{data.analytics.data.topPages.error}</p>
+        ) : null}
+      </Card>
     </div>
   );
 }

@@ -10,9 +10,9 @@ const navItems: Array<{ href: string; label: string; icon: LucideIcon }> = [
   { href: "/", label: "Dashboard", icon: Gauge },
   { href: "/donors", label: "Donors", icon: Users2 },
   { href: "/events", label: "Events", icon: CalendarDays },
-  { href: "/insights", label: "Insights", icon: Lightbulb },
   { href: "/analytics", label: "Analytics", icon: Activity },
-  { href: "/emails", label: "Emails", icon: Mail }
+  { href: "/emails", label: "Emails", icon: Mail },
+  { href: "/insights", label: "Insights", icon: Lightbulb }
 ];
 
 export function Sidebar() {
