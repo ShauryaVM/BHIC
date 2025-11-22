@@ -85,6 +85,19 @@ export async function getIntegrationStatuses(): Promise<IntegrationStatuses> {
   };
 }
 
+export function isIntegrationStale(
+  status: IntegrationStatusValue | null,
+  options: { maxAgeHours?: number } = {}
+): boolean {
+  const { maxAgeHours = 12 } = options;
+  if (!status) return true;
+  if (status.error) return true;
+  const timestamp = new Date(status.timestamp);
+  if (Number.isNaN(timestamp.getTime())) return true;
+  const ageMs = Date.now() - timestamp.getTime();
+  return ageMs > maxAgeHours * 60 * 60 * 1000;
+}
+
 export async function invalidateMetricsForSources(sources: MetricSource[]) {
   if (!sources.length) return;
   await prisma.cachedMetric.deleteMany({

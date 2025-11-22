@@ -93,7 +93,7 @@ function buildEnvelope(innerBody: string, sessionId?: string) {
 </soap:Envelope>`;
 }
 
-function mapStatus(status?: string | null): PledgeStatus {
+export function normalizePledgeStatus(status?: string | null): PledgeStatus {
   if (!status) return PledgeStatus.PLEDGED;
   const normalized = status.toUpperCase() as PledgeStatus;
   return allowedStatuses.has(normalized) ? normalized : PledgeStatus.PLEDGED;
@@ -444,7 +444,7 @@ export async function syncPledgesToDb(range?: Partial<FetchParams>) {
         amount: pledge.amount,
         date: new Date(pledge.date),
         campaign: pledge.campaign,
-        status: mapStatus(pledge.status)
+        status: normalizePledgeStatus(pledge.status)
       },
       create: {
         externalId: pledge.id,
@@ -452,12 +452,12 @@ export async function syncPledgesToDb(range?: Partial<FetchParams>) {
         amount: pledge.amount,
         date: new Date(pledge.date),
         campaign: pledge.campaign,
-        status: mapStatus(pledge.status)
+        status: normalizePledgeStatus(pledge.status)
       }
     });
   }
 
-  await refreshLifetimeValues();
+  await recalculateDonorLifetimeValues();
 
   const summary = { synced: pledges.length };
   await invalidateMetricsForSources([MetricSource.ETAPESTRY]);
@@ -466,7 +466,7 @@ export async function syncPledgesToDb(range?: Partial<FetchParams>) {
   return summary;
 }
 
-async function refreshLifetimeValues() {
+export async function recalculateDonorLifetimeValues() {
   const pledged = await prisma.pledge.groupBy({
     by: ['donorId'],
     _sum: { amount: true }

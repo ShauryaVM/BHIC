@@ -1,0 +1,4 @@
+event_id,name,start_date,end_date,venue,status,tickets_total,tickets_sold,gross_revenue,net_revenue
+EVT-100,Cape Fear Gala,2024-08-12T18:00:00Z,2024-08-12T21:00:00Z,BHIC Campus,LIVE,200,180,45000,39600
+EVT-101,Turtle Talk,2024-09-05T23:00:00Z,2024-09-06T00:30:00Z,Community Center,COMPLETED,120,120,6000,5280
+

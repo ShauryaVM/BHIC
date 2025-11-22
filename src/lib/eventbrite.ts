@@ -86,7 +86,7 @@ function rangeWithDefault(range?: Partial<FetchParams>): FetchParams {
   };
 }
 
-function mapStatus(status?: string): EventStatus {
+export function normalizeEventStatus(status?: string): EventStatus {
   switch (status?.toLowerCase()) {
     case 'live':
       return EventStatus.PUBLISHED;
@@ -208,7 +208,7 @@ export async function syncEventsToDb(range?: Partial<FetchParams>) {
         startDate: new Date(event.start.utc),
         endDate: new Date(event.end.utc ?? event.start.utc),
         venue: event.venue?.name,
-        status: mapStatus(event.status),
+        status: normalizeEventStatus(event.status),
         ticketsTotal: event.ticket_availability?.capacity ?? 0
       },
       create: {
@@ -217,7 +217,7 @@ export async function syncEventsToDb(range?: Partial<FetchParams>) {
         startDate: new Date(event.start.utc),
         endDate: new Date(event.end.utc ?? event.start.utc),
         venue: event.venue?.name,
-        status: mapStatus(event.status),
+        status: normalizeEventStatus(event.status),
         ticketsTotal: event.ticket_availability?.capacity ?? 0
       }
     });

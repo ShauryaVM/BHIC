@@ -62,13 +62,14 @@ export const Button = forwardRef<HTMLButtonElement | HTMLAnchorElement, ButtonPr
     className
   );
 
-  if (asChild && isValidElement(children)) {
-    const child = children as ReactElement<SlottableChildProps>;
-    const originalOnClick = child.props.onClick;
+  const slottableChild = isValidElement(children) ? (children as ReactElement<SlottableChildProps>) : null;
+
+  if (asChild && slottableChild) {
+    const originalOnClick = slottableChild.props.onClick;
     const slottedContent = (
       <>
         {leftIcon}
-        <span>{loading ? "Processing..." : child.props.children}</span>
+        <span>{loading ? "Processing..." : slottableChild.props.children}</span>
         {rightIcon}
       </>
     );
@@ -84,14 +85,13 @@ export const Button = forwardRef<HTMLButtonElement | HTMLAnchorElement, ButtonPr
     };
 
     return cloneElement(
-      child,
+      slottableChild,
       {
         ...props,
-        className: clsx(child.props.className, baseClasses),
-        ref,
+        className: clsx(slottableChild.props.className, baseClasses),
         onClick: handleClick,
-        "aria-disabled": isDisabled || child.props["aria-disabled"],
-        tabIndex: isDisabled ? -1 : child.props.tabIndex ?? props.tabIndex
+        "aria-disabled": isDisabled || slottableChild.props["aria-disabled"],
+        tabIndex: isDisabled ? -1 : slottableChild.props.tabIndex ?? props.tabIndex
       },
       slottedContent
     );

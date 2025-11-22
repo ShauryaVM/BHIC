@@ -1,0 +1,4 @@
+pledge_id,donor_name,donor_email,donor_phone,amount,date,status,campaign
+PLEDGE-001,Jane Doe,jane@example.org,910-555-0142,250.00,2024-06-15,RECEIVED,Sea Turtle Rescue
+PLEDGE-002,Sam Patel,sam@bhic.org,,1000,2024-07-01,PLEDGED,Annual Fund
+

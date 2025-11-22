@@ -5,10 +5,11 @@ import { TimeSeriesChart } from '@/components/charts/time-series-chart';
 import { getDashboardData } from '@/lib/dashboard-data';
 import { formatCurrency, formatNumber } from '@/lib/format';
 import { PageHeader, PageHeaderMeta } from '@/components/layout/page-header';
-import { getIntegrationStatuses } from '@/lib/integration-sync';
+import { getIntegrationStatuses, isIntegrationStale } from '@/lib/integration-sync';
 
 import { DashboardRangeSelector } from '@/app/(dashboard)/range-selector';
 import { IntegrationSyncPanel } from '@/app/(dashboard)/_components/integration-sync-panel';
+import { ManualImportNotice } from '@/app/(dashboard)/_components/manual-import-notice';
 
 interface DashboardPageProps {
   searchParams: Promise<{
@@ -22,6 +23,8 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   const range = rawRange === '12m' ? '12m' : 'ytd';
   const data = await getDashboardData(range);
   const integrationStatuses = await getIntegrationStatuses();
+  const manualImportActive =
+    isIntegrationStale(integrationStatuses.etapestry) || isIntegrationStale(integrationStatuses.eventbrite);
 
   return (
     <div className="space-y-10">
@@ -50,6 +53,8 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
           ]}
         />
       </PageHeader>
+
+      {manualImportActive ? <ManualImportNotice statuses={integrationStatuses} /> : null}
 
       <Card title="Data pipeline" description="Manually refresh eTapestry and Eventbrite data or review last sync status.">
         <IntegrationSyncPanel statuses={integrationStatuses} />
