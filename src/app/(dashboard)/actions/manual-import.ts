@@ -11,17 +11,7 @@ import { prisma } from '@/lib/prisma';
 import { normalizePledgeStatus, recalculateDonorLifetimeValues } from '@/lib/etapestry';
 import { normalizeEventStatus } from '@/lib/eventbrite';
 import { invalidateMetricsForSources, recordIntegrationSync } from '@/lib/integration-sync';
-
-export type ManualImportResult = {
-  success: boolean;
-  message: string;
-  errors?: string[];
-};
-
-export const manualImportInitialState: ManualImportResult = {
-  success: false,
-  message: ''
-};
+import type { ManualImportResult } from '@/app/(dashboard)/actions/manual-import-shared';
 
 type SourceType = 'etapestry' | 'eventbrite';
 

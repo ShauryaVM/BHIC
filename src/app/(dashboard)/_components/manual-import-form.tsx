@@ -2,7 +2,8 @@
 
 import { useActionState, useId } from 'react';
 
-import { manualImportAction, manualImportInitialState } from '@/app/(dashboard)/actions/manual-import';
+import { manualImportAction } from '@/app/(dashboard)/actions/manual-import';
+import { manualImportInitialState } from '@/app/(dashboard)/actions/manual-import-shared';
 import { Button } from '@/components/ui/button';
 
 interface ManualImportFormProps {
