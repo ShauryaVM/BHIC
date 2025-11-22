@@ -8,6 +8,7 @@ import type { AnalyticsFilters } from '@/lib/analytics-data';
 import { defaultAnalyticsFilters, getAnalyticsData } from '@/lib/analytics-data';
 import type { DonorListResult } from '@/lib/donor-data';
 import { getDonorList } from '@/lib/donor-data';
+import { getIntegrationStatuses, isIntegrationStale } from '@/lib/integration-sync';
 
 export type InsightImpact = 'positive' | 'neutral' | 'negative';
 
@@ -158,22 +159,35 @@ export async function getInsightsData(): Promise<InsightsData> {
   const eventFilters = defaultEventFilters();
   const analyticsFilters = defaultAnalyticsFilters();
 
-  const [dashboard, donors, eventsData, analyticsData] = await Promise.all([
+  const [dashboard, donors, eventsData, analyticsData, integrationStatuses] = await Promise.all([
     getDashboardData('12m'),
     getDonorList({ page: 1, pageSize: 5 }),
     getEventsData(eventFilters),
-    getAnalyticsData(analyticsFilters)
+    getAnalyticsData(analyticsFilters),
+    getIntegrationStatuses()
   ]);
 
-  const fundsMomentum = calculateFundsMomentum(dashboard.charts.monthly);
-  const sessionsMomentum = calculateSessionsMomentum(analyticsData.sessionsSeries.points);
-  const avgOccupancy = calculateAverageOccupancy(eventsData.events);
+  const hasEtapestryData =
+    integrationStatuses.etapestry && !isIntegrationStale(integrationStatuses.etapestry);
+  const hasEventbriteData =
+    integrationStatuses.eventbrite && !isIntegrationStale(integrationStatuses.eventbrite);
 
-  const topEvent = eventsData.events
+  const sanitizedDashboard = sanitizeDashboardData(dashboard, {
+    includeEtapestry: Boolean(hasEtapestryData),
+    includeEventbrite: Boolean(hasEventbriteData)
+  });
+  const sanitizedDonors = hasEtapestryData ? donors : blankDonorResult(donors);
+  const sanitizedEvents = hasEventbriteData ? eventsData : blankEventsData();
+
+  const fundsMomentum = calculateFundsMomentum(sanitizedDashboard.charts.monthly);
+  const sessionsMomentum = calculateSessionsMomentum(analyticsData.sessionsSeries.points);
+  const avgOccupancy = calculateAverageOccupancy(sanitizedEvents.events);
+
+  const topEvent = sanitizedEvents.events
     .slice()
     .sort((a, b) => b.grossRevenue - a.grossRevenue)[0];
   const topPage = analyticsData.topPages.rows[0];
-  const topDonor = donors.donors[0];
+  const topDonor = sanitizedDonors.donors[0];
 
   const highlights = buildHighlights({
     fundsMomentum,
@@ -199,9 +213,9 @@ export async function getInsightsData(): Promise<InsightsData> {
   return {
     generatedAt: now.toISOString(),
     range,
-    dashboard,
-    donors,
-    events: { filters: eventFilters, data: eventsData },
+    dashboard: sanitizedDashboard,
+    donors: sanitizedDonors,
+    events: { filters: eventFilters, data: sanitizedEvents },
     analytics: { filters: analyticsFilters, data: analyticsData },
     metrics: {
       fundsMomentum,
@@ -212,4 +226,67 @@ export async function getInsightsData(): Promise<InsightsData> {
   };
 }
 
+function blankDonorResult(template: DonorListResult): DonorListResult {
+  return {
+    donors: [],
+    pagination: {
+      ...template.pagination,
+      total: 0,
+      totalPages: 1
+    },
+    summary: {
+      totalDonors: 0,
+      activeDonors: 0,
+      averageLifetimeValue: 0
+    },
+    charts: {
+      acquisitions: template.charts.acquisitions.map((bucket) => ({ ...bucket, value: 0 })),
+      giftDistribution: template.charts.giftDistribution.map((segment) => ({ ...segment, value: 0 }))
+    }
+  };
+}
 
+function blankEventsData(): EventsPageData {
+  return {
+    events: [],
+    summary: {
+      upcomingEvents: 0,
+      pastEvents: 0,
+      ticketsSold: 0,
+      grossRevenue: 0,
+      netRevenue: 0
+    },
+    charts: {
+      ticketsPerEvent: [],
+      revenuePerEvent: []
+    }
+  };
+}
+
+function sanitizeDashboardData(
+  data: DashboardData,
+  { includeEtapestry, includeEventbrite }: { includeEtapestry: boolean; includeEventbrite: boolean }
+): DashboardData {
+  let monthlySeries = data.charts.monthly.map((point) => ({ ...point }));
+  const kpis = { ...data.kpis };
+
+  if (!includeEtapestry) {
+    kpis.fundsYtd = 0;
+    kpis.totalDonors = 0;
+    kpis.activeDonors = 0;
+    monthlySeries = monthlySeries.map((point) => ({ ...point, funds: 0 }));
+  }
+
+  if (!includeEventbrite) {
+    kpis.eventsThisYear = 0;
+    kpis.ticketsSold = 0;
+    monthlySeries = monthlySeries.map((point) => ({ ...point, tickets: 0 }));
+  }
+
+  return {
+    kpis,
+    charts: {
+      monthly: monthlySeries
+    }
+  };
+}

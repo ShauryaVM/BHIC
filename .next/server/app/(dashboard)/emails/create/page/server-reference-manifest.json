@@ -1,21 +1,21 @@
 {
   "node": {
-    "4077aea07091fb9867f3992b90de83470c7b78c8ae": {
+    "405b9861db10bb32a891673ce22fdcdfce59a76154": {
       "workers": {
         "app/(dashboard)/emails/create/page": {
           "moduleId": 52060,
           "async": false,
-          "exportedName": "createCampaignAction",
+          "exportedName": "generateCampaignDraftAction",
           "filename": "src/app/(dashboard)/emails/actions.ts"
         }
       },
       "layer": {
         "app/(dashboard)/emails/create/page": "rsc"
       },
-      "exportedName": "createCampaignAction",
+      "exportedName": "generateCampaignDraftAction",
       "filename": "src/app/(dashboard)/emails/actions.ts"
     },
-    "40c21b41d25d1cb7a2078c26f9738b70818c544029": {
+    "4093ad12e2db7fa3323ca44394c7b2ed9ef961aac2": {
       "workers": {
         "app/(dashboard)/emails/create/page": {
           "moduleId": 52060,
@@ -30,19 +30,19 @@
       "exportedName": "deleteCampaignAction",
       "filename": "src/app/(dashboard)/emails/actions.ts"
     },
-    "40f9d051ee1ba85e7b1176fcb29548a48a6e690027": {
+    "40f3f0e6016bbd847bed804b25b2f7b6559ba8515a": {
       "workers": {
         "app/(dashboard)/emails/create/page": {
           "moduleId": 52060,
           "async": false,
-          "exportedName": "generateCampaignDraftAction",
+          "exportedName": "createCampaignAction",
           "filename": "src/app/(dashboard)/emails/actions.ts"
         }
       },
       "layer": {
         "app/(dashboard)/emails/create/page": "rsc"
       },
-      "exportedName": "generateCampaignDraftAction",
+      "exportedName": "createCampaignAction",
       "filename": "src/app/(dashboard)/emails/actions.ts"
     }
   },

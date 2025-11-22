@@ -1,6 +1,6 @@
 {
   "node": {
-    "0079642c756b10993ed74226cd177e619c7bf8b6b7": {
+    "00510e1a30a37162808b9089fdbe2d7b1a8b0d49d9": {
       "workers": {
         "app/(dashboard)/page": {
           "moduleId": 48583,
@@ -15,7 +15,7 @@
       "filename": "src/app/(dashboard)/actions/sync-integrations.ts",
       "exportedName": "syncIntegrationsAction"
     },
-    "6055abac66abfa964a4599c7aab2037caf756f7952": {
+    "602bb404ace8a7318c768fbd08f61eaa16a4c0149a": {
       "workers": {
         "app/(dashboard)/page": {
           "moduleId": 48583,
@@ -30,7 +30,7 @@
       "filename": "src/app/(dashboard)/actions/manual-import.ts",
       "exportedName": "manualImportAction"
     },
-    "7f38424bea48e57fcfc132fbdce3b9546904bd6167": {
+    "7fa4a243266e81239c53fe0a91c6d548860aec7953": {
       "workers": {
         "app/(dashboard)/page": {
           "moduleId": 48583,
@@ -45,7 +45,7 @@
       "filename": "src/app/(dashboard)/actions/manual-import.ts",
       "exportedName": "manualImportInitialState"
     },
-    "40c21b41d25d1cb7a2078c26f9738b70818c544029": {
+    "4093ad12e2db7fa3323ca44394c7b2ed9ef961aac2": {
       "workers": {
         "app/(dashboard)/emails/create/page": {
           "moduleId": 52060,
@@ -67,29 +67,7 @@
       "filename": "src/app/(dashboard)/emails/actions.ts",
       "exportedName": "deleteCampaignAction"
     },
-    "4077aea07091fb9867f3992b90de83470c7b78c8ae": {
-      "workers": {
-        "app/(dashboard)/emails/create/page": {
-          "moduleId": 52060,
-          "async": false,
-          "exportedName": "createCampaignAction",
-          "filename": "src/app/(dashboard)/emails/actions.ts"
-        },
-        "app/(dashboard)/emails/page": {
-          "moduleId": 27708,
-          "async": false,
-          "exportedName": "createCampaignAction",
-          "filename": "src/app/(dashboard)/emails/actions.ts"
-        }
-      },
-      "layer": {
-        "app/(dashboard)/emails/create/page": "rsc",
-        "app/(dashboard)/emails/page": "rsc"
-      },
-      "filename": "src/app/(dashboard)/emails/actions.ts",
-      "exportedName": "createCampaignAction"
-    },
-    "40f9d051ee1ba85e7b1176fcb29548a48a6e690027": {
+    "405b9861db10bb32a891673ce22fdcdfce59a76154": {
       "workers": {
         "app/(dashboard)/emails/create/page": {
           "moduleId": 52060,
@@ -110,8 +88,30 @@
       },
       "filename": "src/app/(dashboard)/emails/actions.ts",
       "exportedName": "generateCampaignDraftAction"
+    },
+    "40f3f0e6016bbd847bed804b25b2f7b6559ba8515a": {
+      "workers": {
+        "app/(dashboard)/emails/create/page": {
+          "moduleId": 52060,
+          "async": false,
+          "exportedName": "createCampaignAction",
+          "filename": "src/app/(dashboard)/emails/actions.ts"
+        },
+        "app/(dashboard)/emails/page": {
+          "moduleId": 27708,
+          "async": false,
+          "exportedName": "createCampaignAction",
+          "filename": "src/app/(dashboard)/emails/actions.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/emails/create/page": "rsc",
+        "app/(dashboard)/emails/page": "rsc"
+      },
+      "filename": "src/app/(dashboard)/emails/actions.ts",
+      "exportedName": "createCampaignAction"
     }
   },
   "edge": {},
-  "encryptionKey": "85x6FMMgCsmtL4xVsPsjD4AXR649dn3QsS5LHhJkj5A="
+  "encryptionKey": "mu7rsJZR0bCzEL7RX8296P7rEQrv4Xo6Jstktl7BDvc="
 }

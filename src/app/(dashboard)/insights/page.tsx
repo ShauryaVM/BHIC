@@ -174,7 +174,7 @@ export default async function InsightsPage() {
               </dd>
             </div>
             <div>
-              <dt className="font-semibold text-slate-600">Analytics window</dt>
+              <dt className="font-semibold text-slate-600">Web analytics window</dt>
               <dd className="text-slate-900">
                 {formatDate(analyticsWindowStart)} &ndash; {formatDate(analyticsWindowEnd)}
               </dd>

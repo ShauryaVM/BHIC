@@ -44,7 +44,7 @@ export default async function AnalyticsPage({ searchParams }: AnalyticsPageProps
     <div className="space-y-8">
       <PageHeader
         eyebrow="Digital"
-        title="Digital analytics"
+        title="Website analytics"
         description="GA4 insights for bhic.org traffic and engagement."
         actions={<AnalyticsRangeControls initialFrom={from.toISOString().slice(0, 10)} initialTo={to.toISOString().slice(0, 10)} />}
       >

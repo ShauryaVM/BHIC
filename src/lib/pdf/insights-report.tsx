@@ -208,7 +208,7 @@ export function InsightsReport({ data }: { data: InsightsData }) {
               </Text>
             </View>
             <View style={styles.tableRow}>
-              <Text style={[styles.cell, { flex: 1.4 }]}>GA4 analytics</Text>
+              <Text style={[styles.cell, { flex: 1.4 }]}>Web analytics</Text>
               <Text style={styles.cell}>
                 {formatDate(data.analytics.filters.from ?? data.range.from)} – {formatDate(data.analytics.filters.to ?? data.range.to)}
               </Text>

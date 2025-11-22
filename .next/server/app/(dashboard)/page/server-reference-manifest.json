@@ -1,6 +1,6 @@
 {
   "node": {
-    "0079642c756b10993ed74226cd177e619c7bf8b6b7": {
+    "00510e1a30a37162808b9089fdbe2d7b1a8b0d49d9": {
       "workers": {
         "app/(dashboard)/page": {
           "moduleId": 48583,
@@ -15,7 +15,7 @@
       "exportedName": "syncIntegrationsAction",
       "filename": "src/app/(dashboard)/actions/sync-integrations.ts"
     },
-    "6055abac66abfa964a4599c7aab2037caf756f7952": {
+    "602bb404ace8a7318c768fbd08f61eaa16a4c0149a": {
       "workers": {
         "app/(dashboard)/page": {
           "moduleId": 48583,
@@ -30,7 +30,7 @@
       "exportedName": "manualImportAction",
       "filename": "src/app/(dashboard)/actions/manual-import.ts"
     },
-    "7f38424bea48e57fcfc132fbdce3b9546904bd6167": {
+    "7fa4a243266e81239c53fe0a91c6d548860aec7953": {
       "workers": {
         "app/(dashboard)/page": {
           "moduleId": 48583,
