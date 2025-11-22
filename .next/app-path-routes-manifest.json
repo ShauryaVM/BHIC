@@ -6,6 +6,7 @@
   "/(dashboard)/events/page": "/events",
   "/(dashboard)/insights/page": "/insights",
   "/(dashboard)/page": "/",
+  "/(dashboard)/settings/page": "/settings",
   "/_global-error/page": "/_global-error",
   "/_not-found/page": "/_not-found",
   "/api/auth/[...nextauth]/route": "/api/auth/[...nextauth]",

@@ -1,5 +1,5 @@
 var R=require("../../../chunks/ssr/[turbopack]_runtime.js")("server/app/(dashboard)/emails/page.js")
-R.c("server/chunks/ssr/[root-of-the-server]__967e4861._.js")
+R.c("server/chunks/ssr/[root-of-the-server]__cb2f63d2._.js")
 R.c("server/chunks/ssr/node_modules_next_dist_cc88faaa._.js")
 R.c("server/chunks/ssr/_275f36b4._.js")
 R.c("server/chunks/ssr/[root-of-the-server]__4244e1d0._.js")

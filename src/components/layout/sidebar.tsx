@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
 import type { LucideIcon } from "lucide-react";
-import { Activity, CalendarDays, Gauge, Lightbulb, Mail, Users2 } from "lucide-react";
+import { Activity, CalendarDays, Gauge, Lightbulb, Mail, Settings, Users2 } from "lucide-react";
 
 const navItems: Array<{ href: string; label: string; icon: LucideIcon }> = [
   { href: "/", label: "Dashboard", icon: Gauge },
@@ -12,7 +12,8 @@ const navItems: Array<{ href: string; label: string; icon: LucideIcon }> = [
   { href: "/events", label: "Events", icon: CalendarDays },
   { href: "/analytics", label: "Analytics", icon: Activity },
   { href: "/emails", label: "Emails", icon: Mail },
-  { href: "/insights", label: "Insights", icon: Lightbulb }
+  { href: "/insights", label: "Insights", icon: Lightbulb },
+  { href: "/settings", label: "Settings", icon: Settings }
 ];
 
 export function Sidebar() {

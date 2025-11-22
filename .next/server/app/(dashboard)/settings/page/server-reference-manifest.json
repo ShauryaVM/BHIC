@@ -1,0 +1,35 @@
+{
+  "node": {
+    "40528bc0fff7d1ed92663858d39c9bea6e2044ac3d": {
+      "workers": {
+        "app/(dashboard)/settings/page": {
+          "moduleId": 36846,
+          "async": false,
+          "exportedName": "updateSecureSettingAction",
+          "filename": "src/app/(dashboard)/settings/actions.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/settings/page": "rsc"
+      },
+      "exportedName": "updateSecureSettingAction",
+      "filename": "src/app/(dashboard)/settings/actions.ts"
+    },
+    "40a6b5841ea69c11e128d9d7c2b7503f5bfac58021": {
+      "workers": {
+        "app/(dashboard)/settings/page": {
+          "moduleId": 36846,
+          "async": false,
+          "exportedName": "updateUserRoleAction",
+          "filename": "src/app/(dashboard)/settings/actions.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/settings/page": "rsc"
+      },
+      "exportedName": "updateUserRoleAction",
+      "filename": "src/app/(dashboard)/settings/actions.ts"
+    }
+  },
+  "edge": {}
+}

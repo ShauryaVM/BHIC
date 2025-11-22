@@ -25,7 +25,8 @@ const envSchema = z.object({
   GA4_OAUTH_CLIENT_SECRET: z.string().optional(),
   GA4_OAUTH_REFRESH_TOKEN: z.string().optional(),
   GEMINI_API_KEY: z.string().min(1),
-  GEMINI_MODEL: z.string().default('models/gemini-1.5-flash')
+  GEMINI_MODEL: z.string().default('models/gemini-1.5-flash'),
+  SETTINGS_ENCRYPTION_KEY: z.string().min(44)
 });
 
 const parsed = envSchema.safeParse({
@@ -53,7 +54,8 @@ const parsed = envSchema.safeParse({
   GA4_OAUTH_CLIENT_SECRET: process.env.GA4_OAUTH_CLIENT_SECRET,
   GA4_OAUTH_REFRESH_TOKEN: process.env.GA4_OAUTH_REFRESH_TOKEN,
   GEMINI_API_KEY: process.env.GEMINI_API_KEY,
-  GEMINI_MODEL: process.env.GEMINI_MODEL ?? 'models/gemini-1.5-flash'
+  GEMINI_MODEL: process.env.GEMINI_MODEL ?? 'models/gemini-1.5-flash',
+  SETTINGS_ENCRYPTION_KEY: process.env.SETTINGS_ENCRYPTION_KEY
 });
 
 if (!parsed.success) {
@@ -74,6 +76,11 @@ if (
   throw new Error('GA4 OAuth credentials (client id/secret + refresh token) are required when GA4_AUTH_MODE=oauth');
 }
 
+const encryptionKey = Buffer.from(data.SETTINGS_ENCRYPTION_KEY, 'base64');
+if (encryptionKey.length !== 32) {
+  throw new Error('SETTINGS_ENCRYPTION_KEY must be a base64-encoded 32-byte key (256 bits).');
+}
+
 const adminEmails = data.ADMIN_EMAILS.split(',').map((email) => email.trim().toLowerCase()).filter(Boolean);
 
 type ServiceAccountConfig = { client_email: string; private_key: string };
@@ -83,6 +90,7 @@ export const env = {
   ADMIN_EMAILS: adminEmails,
   GA4_SERVICE_ACCOUNT: data.GA4_SERVICE_ACCOUNT_JSON
     ? (JSON.parse(data.GA4_SERVICE_ACCOUNT_JSON) as ServiceAccountConfig)
-    : null
+    : null,
+  SETTINGS_ENCRYPTION_KEY_BUFFER: encryptionKey
 } as const;
 

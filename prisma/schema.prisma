@@ -50,15 +50,17 @@ model User {
   id            String   @id @default(cuid())
   name          String?
   email         String   @unique
-  emailVerified DateTime?   // <— add this line
+  emailVerified DateTime?
   image         String?
   role          UserRole @default(STAFF)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   lastLoginAt   DateTime?
 
-  accounts Account[]
-  sessions Session[]
+  accounts    Account[]
+  sessions    Session[]
+  settings    SecureSetting[]        @relation("SecureSettingUpdatedBy")
+  settingLogs SecureSettingHistory[] @relation("SecureSettingHistoryUpdatedBy")
 }
 
 model Donor {
@@ -184,6 +186,30 @@ model EmailLog {
 
   @@index([campaignId])
   @@index([recipientEmail])
+}
+
+model SecureSetting {
+  id             String                 @id @default(cuid())
+  key            String                 @unique
+  encryptedValue String
+  createdAt      DateTime               @default(now())
+  updatedAt      DateTime               @updatedAt
+  updatedById    String?
+  updatedBy      User?                  @relation("SecureSettingUpdatedBy", fields: [updatedById], references: [id])
+  history        SecureSettingHistory[]
+}
+
+model SecureSettingHistory {
+  id             String   @id @default(cuid())
+  settingId      String
+  key            String
+  encryptedValue String
+  createdAt      DateTime @default(now())
+  updatedById    String?
+  updatedBy      User?    @relation("SecureSettingHistoryUpdatedBy", fields: [updatedById], references: [id])
+  setting        SecureSetting @relation(fields: [settingId], references: [id])
+
+  @@index([key])
 }
 
 model Account {

@@ -101,6 +101,12 @@
       "regex": "^/insights(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/insights(?:/)?$"
+    },
+    {
+      "page": "/settings",
+      "regex": "^/settings(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/settings(?:/)?$"
     }
   ],
   "dataRoutes": [],
