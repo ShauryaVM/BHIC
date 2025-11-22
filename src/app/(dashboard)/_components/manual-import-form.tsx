@@ -11,7 +11,7 @@ interface ManualImportFormProps {
 }
 
 export function ManualImportForm({ source, label }: ManualImportFormProps) {
-  const [state, formAction, pending] = useActionState(manualImportAction, manualImportInitialState());
+  const [state, formAction, pending] = useActionState(manualImportAction, manualImportInitialState);
   const id = useId();
 
   return (

@@ -3,7 +3,7 @@
     "0079642c756b10993ed74226cd177e619c7bf8b6b7": {
       "workers": {
         "app/(dashboard)/page": {
-          "moduleId": 97405,
+          "moduleId": 48583,
           "async": false,
           "exportedName": "syncIntegrationsAction",
           "filename": "src/app/(dashboard)/actions/sync-integrations.ts"
@@ -14,6 +14,36 @@
       },
       "filename": "src/app/(dashboard)/actions/sync-integrations.ts",
       "exportedName": "syncIntegrationsAction"
+    },
+    "6055abac66abfa964a4599c7aab2037caf756f7952": {
+      "workers": {
+        "app/(dashboard)/page": {
+          "moduleId": 48583,
+          "async": false,
+          "exportedName": "manualImportAction",
+          "filename": "src/app/(dashboard)/actions/manual-import.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/page": "action-browser"
+      },
+      "filename": "src/app/(dashboard)/actions/manual-import.ts",
+      "exportedName": "manualImportAction"
+    },
+    "7f38424bea48e57fcfc132fbdce3b9546904bd6167": {
+      "workers": {
+        "app/(dashboard)/page": {
+          "moduleId": 48583,
+          "async": false,
+          "exportedName": "manualImportInitialState",
+          "filename": "src/app/(dashboard)/actions/manual-import.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/page": "action-browser"
+      },
+      "filename": "src/app/(dashboard)/actions/manual-import.ts",
+      "exportedName": "manualImportInitialState"
     },
     "40c21b41d25d1cb7a2078c26f9738b70818c544029": {
       "workers": {

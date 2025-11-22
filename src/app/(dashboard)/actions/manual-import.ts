@@ -12,13 +12,13 @@ import { normalizePledgeStatus, recalculateDonorLifetimeValues } from '@/lib/eta
 import { normalizeEventStatus } from '@/lib/eventbrite';
 import { invalidateMetricsForSources, recordIntegrationSync } from '@/lib/integration-sync';
 
-type ManualImportResult = {
+export type ManualImportResult = {
   success: boolean;
   message: string;
   errors?: string[];
 };
 
-const INITIAL_STATE: ManualImportResult = {
+export const manualImportInitialState: ManualImportResult = {
   success: false,
   message: ''
 };
@@ -83,7 +83,7 @@ async function importPledges(rows: Record<string, string>[]) {
     const row = rows[index];
     const parsed = pledgeRowSchema.safeParse(row);
     if (!parsed.success) {
-      throw new Error(`Row ${index + 2}: ${parsed.error.errors[0]?.message ?? 'Invalid pledge row'}`);
+      throw new Error(`Row ${index + 2}: ${parsed.error.issues[0]?.message ?? 'Invalid pledge row'}`);
     }
     const data = parsed.data;
     const amount = parseCurrency(data.amount);
@@ -156,7 +156,7 @@ async function importEvents(rows: Record<string, string>[]) {
     const row = rows[index];
     const parsed = eventRowSchema.safeParse(row);
     if (!parsed.success) {
-      throw new Error(`Row ${index + 2}: ${parsed.error.errors[0]?.message ?? 'Invalid event row'}`);
+      throw new Error(`Row ${index + 2}: ${parsed.error.issues[0]?.message ?? 'Invalid event row'}`);
     }
     const data = parsed.data;
     const startDate = new Date(data.start_date);
@@ -209,7 +209,7 @@ async function importEvents(rows: Record<string, string>[]) {
 }
 
 export async function manualImportAction(
-  _prevState: ManualImportResult | undefined,
+  _prevState: ManualImportResult,
   formData: FormData
 ): Promise<ManualImportResult> {
   const session = await getServerSession(authOptions);
@@ -257,7 +257,4 @@ export async function manualImportAction(
   }
 }
 
-export function manualImportInitialState() {
-  return INITIAL_STATE;
-}
 
