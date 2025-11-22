@@ -1,13 +1,13 @@
 "use client";
 
 import Image from "next/image";
-import { Menu, Transition } from "@headlessui/react";
+import { Menu as HeadlessMenu, Transition } from "@headlessui/react";
 import clsx from "clsx";
 import { Fragment } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
-import { RefreshCw, Sparkles } from "lucide-react";
+import { Menu as MenuIcon, RefreshCw, Sparkles } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
@@ -18,9 +18,10 @@ interface TopNavProps {
     image?: string | null;
     role?: string | null;
   };
+  onToggleSidebar?: () => void;
 }
 
-export function TopNav({ user }: TopNavProps) {
+export function TopNav({ user, onToggleSidebar }: TopNavProps) {
   const router = useRouter();
   const initials = user?.name
     ? user.name
@@ -31,12 +32,22 @@ export function TopNav({ user }: TopNavProps) {
     : "BH";
 
   return (
-    <header className="relative z-40 flex flex-wrap items-center justify-between gap-4 border-b border-white/70 bg-white/80 px-6 py-4 backdrop-blur">
-      <div className="space-y-1">
-        <p className="text-sm font-semibold text-slate-700">Bald Head Island Conservancy</p>
-        <p className="text-xs text-slate-500">Mission Control Dashboard</p>
+    <header className="relative z-40 flex flex-wrap items-center justify-between gap-4 border-b border-white/70 bg-white/80 px-4 py-4 sm:px-6 backdrop-blur">
+      <div className="flex flex-1 items-center gap-3">
+        <button
+          type="button"
+          className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-slate-600 shadow-sm transition hover:bg-slate-50 lg:hidden"
+          onClick={onToggleSidebar}
+          aria-label="Open navigation"
+        >
+          <MenuIcon className="h-5 w-5" />
+        </button>
+        <div className="space-y-1">
+          <p className="text-sm font-semibold text-slate-700">Bald Head Island Conservancy</p>
+          <p className="text-xs text-slate-500">Mission Control Dashboard</p>
+        </div>
       </div>
-      <div className="flex flex-1 items-center justify-end gap-3">
+      <div className="flex flex-1 flex-wrap items-center justify-end gap-3">
         <div className="hidden items-center gap-2 rounded-full border border-emerald-100 bg-emerald-50/80 px-3 py-1 text-xs font-semibold text-emerald-700 md:flex">
           <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
           Live sync enabled
@@ -51,6 +62,22 @@ export function TopNav({ user }: TopNavProps) {
           <RefreshCw className="h-4 w-4" />
           Refresh data
         </Button>
+        <div className="flex w-full flex-col gap-2 text-xs text-slate-600 md:hidden">
+          <div className="inline-flex items-center gap-2 rounded-full border border-emerald-100 bg-emerald-50/90 px-3 py-1 text-[11px] font-semibold text-emerald-700">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            Live sync enabled
+          </div>
+          <Button
+            type="button"
+            variant="secondary"
+            size="xs"
+            className="inline-flex w-full items-center justify-center gap-1 rounded-full border border-slate-200 bg-white/90 text-[11px] font-semibold text-slate-700 shadow-sm"
+            onClick={() => router.refresh()}
+          >
+            <RefreshCw className="h-3.5 w-3.5" />
+            Refresh data
+          </Button>
+        </div>
         <Link
           href="https://bhic.org"
           target="_blank"
@@ -59,8 +86,8 @@ export function TopNav({ user }: TopNavProps) {
           <Sparkles className="h-4 w-4" />
           Visit bhic.org
         </Link>
-        <Menu as="div" className="relative z-40">
-          <Menu.Button className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-left shadow-sm">
+        <HeadlessMenu as="div" className="relative z-40">
+          <HeadlessMenu.Button className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-left shadow-sm">
             {user?.image ? (
               <Image src={user.image} alt={user?.name ?? "User"} width={32} height={32} className="rounded-full" />
             ) : (
@@ -72,7 +99,7 @@ export function TopNav({ user }: TopNavProps) {
               <p className="font-semibold text-slate-800">{user?.name ?? "BHIC Staff"}</p>
               <p className="text-slate-500">{user?.role ?? "STAFF"}</p>
             </div>
-          </Menu.Button>
+          </HeadlessMenu.Button>
           <Transition
             as={Fragment}
             enter="transition duration-100"
@@ -82,12 +109,12 @@ export function TopNav({ user }: TopNavProps) {
             leaveFrom="transform scale-100 opacity-100"
             leaveTo="transform scale-95 opacity-0"
           >
-            <Menu.Items className="absolute right-0 mt-3 w-52 rounded-2xl border border-slate-200 bg-white p-2 shadow-card focus:outline-none z-50">
+            <HeadlessMenu.Items className="absolute right-0 mt-3 w-52 rounded-2xl border border-slate-200 bg-white p-2 shadow-card focus:outline-none z-50">
               <div className="px-3 py-2 text-xs">
                 <p className="font-semibold text-slate-800">{user?.name ?? "BHIC Staff"}</p>
                 <p className="text-slate-500">{user?.email ?? ""}</p>
               </div>
-              <Menu.Item>
+              <HeadlessMenu.Item>
                 {({ active }) => (
                   <button
                     type="button"
@@ -100,10 +127,10 @@ export function TopNav({ user }: TopNavProps) {
                     Sign out
                   </button>
                 )}
-              </Menu.Item>
-            </Menu.Items>
+              </HeadlessMenu.Item>
+            </HeadlessMenu.Items>
           </Transition>
-        </Menu>
+        </HeadlessMenu>
       </div>
     </header>
   );

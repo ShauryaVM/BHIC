@@ -5,7 +5,7 @@ import type { ButtonHTMLAttributes, MouseEvent, ReactElement, ReactNode, Ref } f
 import clsx from "clsx";
 
 type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
-type ButtonSize = "sm" | "md" | "lg";
+type ButtonSize = "xs" | "sm" | "md" | "lg";
 
 interface SlottableChildProps {
   onClick?: (event: MouseEvent<HTMLElement>) => void;
@@ -26,6 +26,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const sizeClasses: Record<ButtonSize, string> = {
+  xs: "text-[11px] px-2 py-1",
   sm: "text-sm px-3 py-1.5",
   md: "text-sm px-4 py-2",
   lg: "text-base px-5 py-3"

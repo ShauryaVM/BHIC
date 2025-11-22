@@ -1,6 +1,6 @@
 {
   "node": {
-    "4093ad12e2db7fa3323ca44394c7b2ed9ef961aac2": {
+    "4000932185ee93021a36f0000c347e61c168630759": {
       "workers": {
         "app/(dashboard)/emails/page": {
           "moduleId": 27708,
@@ -15,22 +15,7 @@
       "exportedName": "deleteCampaignAction",
       "filename": "src/app/(dashboard)/emails/actions.ts"
     },
-    "405b9861db10bb32a891673ce22fdcdfce59a76154": {
-      "workers": {
-        "app/(dashboard)/emails/page": {
-          "moduleId": 27708,
-          "async": false,
-          "exportedName": "generateCampaignDraftAction",
-          "filename": "src/app/(dashboard)/emails/actions.ts"
-        }
-      },
-      "layer": {
-        "app/(dashboard)/emails/page": "rsc"
-      },
-      "exportedName": "generateCampaignDraftAction",
-      "filename": "src/app/(dashboard)/emails/actions.ts"
-    },
-    "40f3f0e6016bbd847bed804b25b2f7b6559ba8515a": {
+    "4005f15e29f33c795c82b8e50c6f7022a67d5932b2": {
       "workers": {
         "app/(dashboard)/emails/page": {
           "moduleId": 27708,
@@ -43,6 +28,21 @@
         "app/(dashboard)/emails/page": "rsc"
       },
       "exportedName": "createCampaignAction",
+      "filename": "src/app/(dashboard)/emails/actions.ts"
+    },
+    "40b7e7f5784e7c79df909b7126850356f1336ca319": {
+      "workers": {
+        "app/(dashboard)/emails/page": {
+          "moduleId": 27708,
+          "async": false,
+          "exportedName": "generateCampaignDraftAction",
+          "filename": "src/app/(dashboard)/emails/actions.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/emails/page": "rsc"
+      },
+      "exportedName": "generateCampaignDraftAction",
       "filename": "src/app/(dashboard)/emails/actions.ts"
     }
   },

@@ -59,13 +59,12 @@ export const authOptions: NextAuthOptions = {
   events: {
     async signIn({ user }) {
       if (!user.email) return;
-      const role = env.ADMIN_EMAILS.includes(user.email.toLowerCase()) ? 'ADMIN' : 'STAFF';
       await prisma.user
         .update({
           where: { id: user.id as string },
           data: {
-            role,
-            lastLoginAt: new Date()
+            lastLoginAt: new Date(),
+            ...(env.ADMIN_EMAILS.includes(user.email.toLowerCase()) ? { role: UserRole.ADMIN } : {})
           }
         })
         .catch(() => undefined);

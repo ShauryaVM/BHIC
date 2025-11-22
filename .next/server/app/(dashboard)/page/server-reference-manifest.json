@@ -1,6 +1,6 @@
 {
   "node": {
-    "00510e1a30a37162808b9089fdbe2d7b1a8b0d49d9": {
+    "0032190fc92f3832328d0bebc971d6bd0f2e8df2ac": {
       "workers": {
         "app/(dashboard)/page": {
           "moduleId": 48583,
@@ -15,7 +15,7 @@
       "exportedName": "syncIntegrationsAction",
       "filename": "src/app/(dashboard)/actions/sync-integrations.ts"
     },
-    "602bb404ace8a7318c768fbd08f61eaa16a4c0149a": {
+    "6042936e14ff5a81fa91eb1ccd5ed954ead8069fab": {
       "workers": {
         "app/(dashboard)/page": {
           "moduleId": 48583,

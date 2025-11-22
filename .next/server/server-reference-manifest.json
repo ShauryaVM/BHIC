@@ -1,6 +1,6 @@
 {
   "node": {
-    "00510e1a30a37162808b9089fdbe2d7b1a8b0d49d9": {
+    "0032190fc92f3832328d0bebc971d6bd0f2e8df2ac": {
       "workers": {
         "app/(dashboard)/page": {
           "moduleId": 48583,
@@ -15,7 +15,7 @@
       "filename": "src/app/(dashboard)/actions/sync-integrations.ts",
       "exportedName": "syncIntegrationsAction"
     },
-    "602bb404ace8a7318c768fbd08f61eaa16a4c0149a": {
+    "6042936e14ff5a81fa91eb1ccd5ed954ead8069fab": {
       "workers": {
         "app/(dashboard)/page": {
           "moduleId": 48583,
@@ -30,7 +30,7 @@
       "filename": "src/app/(dashboard)/actions/manual-import.ts",
       "exportedName": "manualImportAction"
     },
-    "4093ad12e2db7fa3323ca44394c7b2ed9ef961aac2": {
+    "4000932185ee93021a36f0000c347e61c168630759": {
       "workers": {
         "app/(dashboard)/emails/create/page": {
           "moduleId": 52060,
@@ -52,29 +52,7 @@
       "filename": "src/app/(dashboard)/emails/actions.ts",
       "exportedName": "deleteCampaignAction"
     },
-    "405b9861db10bb32a891673ce22fdcdfce59a76154": {
-      "workers": {
-        "app/(dashboard)/emails/create/page": {
-          "moduleId": 52060,
-          "async": false,
-          "exportedName": "generateCampaignDraftAction",
-          "filename": "src/app/(dashboard)/emails/actions.ts"
-        },
-        "app/(dashboard)/emails/page": {
-          "moduleId": 27708,
-          "async": false,
-          "exportedName": "generateCampaignDraftAction",
-          "filename": "src/app/(dashboard)/emails/actions.ts"
-        }
-      },
-      "layer": {
-        "app/(dashboard)/emails/create/page": "rsc",
-        "app/(dashboard)/emails/page": "rsc"
-      },
-      "filename": "src/app/(dashboard)/emails/actions.ts",
-      "exportedName": "generateCampaignDraftAction"
-    },
-    "40f3f0e6016bbd847bed804b25b2f7b6559ba8515a": {
+    "4005f15e29f33c795c82b8e50c6f7022a67d5932b2": {
       "workers": {
         "app/(dashboard)/emails/create/page": {
           "moduleId": 52060,
@@ -96,7 +74,29 @@
       "filename": "src/app/(dashboard)/emails/actions.ts",
       "exportedName": "createCampaignAction"
     },
-    "40528bc0fff7d1ed92663858d39c9bea6e2044ac3d": {
+    "40b7e7f5784e7c79df909b7126850356f1336ca319": {
+      "workers": {
+        "app/(dashboard)/emails/create/page": {
+          "moduleId": 52060,
+          "async": false,
+          "exportedName": "generateCampaignDraftAction",
+          "filename": "src/app/(dashboard)/emails/actions.ts"
+        },
+        "app/(dashboard)/emails/page": {
+          "moduleId": 27708,
+          "async": false,
+          "exportedName": "generateCampaignDraftAction",
+          "filename": "src/app/(dashboard)/emails/actions.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/emails/create/page": "rsc",
+        "app/(dashboard)/emails/page": "rsc"
+      },
+      "filename": "src/app/(dashboard)/emails/actions.ts",
+      "exportedName": "generateCampaignDraftAction"
+    },
+    "40210996cd788b387e5d1fb55c8e58361568173498": {
       "workers": {
         "app/(dashboard)/settings/page": {
           "moduleId": 36846,
@@ -111,7 +111,7 @@
       "filename": "src/app/(dashboard)/settings/actions.ts",
       "exportedName": "updateSecureSettingAction"
     },
-    "40a6b5841ea69c11e128d9d7c2b7503f5bfac58021": {
+    "40aed5f3abb11153ae5a05ae4d6b41f8a6e5de3fa0": {
       "workers": {
         "app/(dashboard)/settings/page": {
           "moduleId": 36846,
@@ -128,5 +128,5 @@
     }
   },
   "edge": {},
-  "encryptionKey": "mu7rsJZR0bCzEL7RX8296P7rEQrv4Xo6Jstktl7BDvc="
+  "encryptionKey": "k/5IqDv6Ld3wojzzz3K60HwuP4mhHZNX0gPLa5t3R8A="
 }
