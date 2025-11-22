@@ -11,11 +11,16 @@ import { recordIntegrationSync } from "@/lib/integration-sync";
 
 export async function syncIntegrationsAction() {
   const session = await getServerSession(authOptions);
+  const emptyResult = {
+    etapestry: null,
+    eventbrite: null
+  };
+
   if (!session) {
-    throw new Error("Authentication required");
+    return { success: false, errors: ["Authentication required"], result: emptyResult };
   }
   if (session.user.role !== "ADMIN") {
-    throw new Error("Admin access required");
+    return { success: false, errors: ["Admin access required"], result: emptyResult };
   }
 
   const result: {

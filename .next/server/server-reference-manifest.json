@@ -30,21 +30,6 @@
       "filename": "src/app/(dashboard)/actions/manual-import.ts",
       "exportedName": "manualImportAction"
     },
-    "7fa4a243266e81239c53fe0a91c6d548860aec7953": {
-      "workers": {
-        "app/(dashboard)/page": {
-          "moduleId": 48583,
-          "async": false,
-          "exportedName": "manualImportInitialState",
-          "filename": "src/app/(dashboard)/actions/manual-import.ts"
-        }
-      },
-      "layer": {
-        "app/(dashboard)/page": "action-browser"
-      },
-      "filename": "src/app/(dashboard)/actions/manual-import.ts",
-      "exportedName": "manualImportInitialState"
-    },
     "4093ad12e2db7fa3323ca44394c7b2ed9ef961aac2": {
       "workers": {
         "app/(dashboard)/emails/create/page": {
