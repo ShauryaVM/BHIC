@@ -54,7 +54,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
         />
       </PageHeader>
 
-      {manualImportActive ? <ManualImportNotice statuses={integrationStatuses} /> : null}
+      <ManualImportNotice statuses={integrationStatuses} urgent={manualImportActive} />
 
       <Card title="Data pipeline" description="Manually refresh eTapestry and Eventbrite data or review last sync status.">
         <IntegrationSyncPanel statuses={integrationStatuses} />

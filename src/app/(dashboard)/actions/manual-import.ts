@@ -1,5 +1,7 @@
 "use server";
 
+import { createHash } from 'crypto';
+
 import { MetricSource } from '@prisma/client';
 import { parse } from 'csv-parse/sync';
 import { getServerSession } from 'next-auth';
@@ -39,9 +41,53 @@ const eventRowSchema = z.object({
   net_revenue: z.string().optional()
 });
 
+const eventbriteOrderSchema = z.object({
+  event_id: z.string().min(1, 'event_id is required'),
+  event_name: z.string().min(1, 'event_name is required'),
+  event_start_date: z.string().min(1, 'event_start_date is required'),
+  event_start_time: z.string().optional(),
+  event_timezone: z.string().optional(),
+  event_location: z.string().optional(),
+  order_id: z.string().optional(),
+  order_date: z.string().optional(),
+  ticket_quantity: z.string().optional(),
+  gross_sales: z.string().optional(),
+  ticket_revenue: z.string().optional(),
+  add_ons_revenue: z.string().optional(),
+  ticket_add_ons_revenue: z.string().optional(),
+  net_sales: z.string().optional(),
+  payment_status: z.string().optional()
+});
+
+type NormalizedEventRow = z.infer<typeof eventRowSchema>;
+type LegacyEventbriteRow = z.infer<typeof eventbriteOrderSchema>;
+
+const etapestryExportSchema = z.object({
+  date: z.string().min(1, 'date is required'),
+  role: z.string().optional(),
+  account_name: z.string().min(1, 'account_name is required'),
+  type: z.string().optional(),
+  pledged: z.string().optional(),
+  received: z.string().optional(),
+  fund: z.string().optional()
+});
+
+type NormalizedPledgeRow = z.infer<typeof pledgeRowSchema>;
+type LegacyEtapestryRow = z.infer<typeof etapestryExportSchema>;
+type NormalizedEventRowWithMeta = NormalizedEventRow & { __rowNumber?: number };
+type LegacyEventbriteRowWithMeta = LegacyEventbriteRow & { __rowNumber: number };
+
+function normalizeHeaderKey(key: string) {
+  return key
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '');
+}
+
 function parseCsv(text: string) {
   return parse(text, {
-    columns: (header: string[]) => header.map((key) => key.trim().toLowerCase()),
+    columns: (header: string[]) => header.map(normalizeHeaderKey),
     skip_empty_lines: true,
     trim: true
   }) as Record<string, string>[];
@@ -66,66 +112,198 @@ function parseInteger(value?: string) {
   return Math.round(num);
 }
 
-async function importPledges(rows: Record<string, string>[]) {
-  let imported = 0;
+function formatCurrencyNumber(value: number) {
+  return (Math.round(value * 100) / 100).toFixed(2);
+}
+
+function isLegacyEtapestryRow(row: Record<string, string> | undefined) {
+  if (!row) return false;
+  const hasAccountName = Boolean(row.account_name);
+  const hasPledgeId = 'pledge_id' in row;
+  return hasAccountName && !hasPledgeId;
+}
+
+function isSummaryLegacyRow(row: Record<string, string>) {
+  return !row.date && !row.account_name && !row.type && !row.fund;
+}
+
+function deriveLegacyPledgeId(row: LegacyEtapestryRow) {
+  const token = createHash('sha1')
+    .update(
+      [
+        row.account_name ?? '',
+        row.date ?? '',
+        row.type ?? '',
+        row.fund ?? '',
+        row.received ?? row.pledged ?? ''
+      ].join('|')
+    )
+    .digest('hex');
+  return `legacy-etp:${token}`;
+}
+
+function mapLegacyRow(row: LegacyEtapestryRow): NormalizedPledgeRow {
+  const amount = row.received?.trim() || row.pledged?.trim() || '0';
+  return {
+    pledge_id: deriveLegacyPledgeId(row),
+    donor_name: row.account_name.trim(),
+    donor_email: undefined,
+    donor_phone: undefined,
+    amount: amount,
+    date: row.date,
+    status: row.type,
+    campaign: row.fund
+  };
+}
+
+function parseLegacyEventbriteRows(rows: Record<string, string>[]): LegacyEventbriteRowWithMeta[] {
+  const parsed: LegacyEventbriteRowWithMeta[] = [];
 
   for (let index = 0; index < rows.length; index += 1) {
     const row = rows[index];
-    const parsed = pledgeRowSchema.safeParse(row);
-    if (!parsed.success) {
-      throw new Error(`Row ${index + 2}: ${parsed.error.issues[0]?.message ?? 'Invalid pledge row'}`);
+    if (!row.event_id) {
+      continue;
     }
-    const data = parsed.data;
-    const amount = parseCurrency(data.amount);
-    const date = new Date(data.date);
+    const result = eventbriteOrderSchema.safeParse(row);
+    if (!result.success) {
+      throw new Error(
+        `Row ${index + 2}: ${result.error.issues[0]?.message ?? 'Invalid Eventbrite order row'}`
+      );
+    }
+    parsed.push({ ...result.data, __rowNumber: index + 2 });
+  }
+
+  if (!parsed.length) {
+    throw new Error('No Eventbrite rows were detected in the CSV.');
+  }
+
+  return parsed;
+}
+
+function aggregateEventbriteOrders(rows: LegacyEventbriteRowWithMeta[]): NormalizedEventRowWithMeta[] {
+  const grouped = new Map<
+    string,
+    {
+      row: LegacyEventbriteRowWithMeta;
+      tickets: number;
+      gross: number;
+      net: number;
+      rowNumber: number;
+    }
+  >();
+
+  for (const entry of rows) {
+    const tickets = parseInteger(entry.ticket_quantity);
+    const gross =
+      parseCurrency(entry.ticket_add_ons_revenue ?? entry.ticket_revenue ?? entry.gross_sales) ?? 0;
+    const net =
+      parseCurrency(entry.net_sales ?? entry.ticket_add_ons_revenue ?? entry.ticket_revenue) ?? gross;
+
+    if (!grouped.has(entry.event_id)) {
+      grouped.set(entry.event_id, {
+        row: entry,
+        tickets,
+        gross,
+        net,
+        rowNumber: entry.__rowNumber
+      });
+    } else {
+      const bucket = grouped.get(entry.event_id)!;
+      bucket.tickets += tickets;
+      bucket.gross += gross;
+      bucket.net += net;
+      bucket.rowNumber = Math.min(bucket.rowNumber, entry.__rowNumber);
+    }
+  }
+
+  return Array.from(grouped.values()).map(({ row, tickets, gross, net, rowNumber }) => ({
+    event_id: row.event_id,
+    name: row.event_name,
+    start_date: row.event_start_date,
+    end_date: row.event_start_date,
+    venue: row.event_location,
+    status: 'completed',
+    tickets_total: String(tickets),
+    tickets_sold: String(tickets),
+    gross_revenue: formatCurrencyNumber(gross),
+    net_revenue: formatCurrencyNumber(net > 0 ? net : gross * 0.88),
+    __rowNumber: rowNumber
+  }));
+}
+
+async function importPledges(rows: Record<string, string>[], options: { legacyFormat?: boolean } = {}) {
+  let imported = 0;
+  const legacyFormat = options.legacyFormat ?? false;
+
+  for (let index = 0; index < rows.length; index += 1) {
+    const row = rows[index];
+    if (legacyFormat && isSummaryLegacyRow(row)) {
+      continue;
+    }
+    let normalized: NormalizedPledgeRow;
+    if (legacyFormat) {
+      const parsed = etapestryExportSchema.safeParse(row);
+      if (!parsed.success) {
+        throw new Error(`Row ${index + 2}: ${parsed.error.issues[0]?.message ?? 'Invalid pledge row'}`);
+      }
+      normalized = mapLegacyRow(parsed.data);
+    } else {
+      const parsed = pledgeRowSchema.safeParse(row);
+      if (!parsed.success) {
+        throw new Error(`Row ${index + 2}: ${parsed.error.issues[0]?.message ?? 'Invalid pledge row'}`);
+      }
+      normalized = parsed.data;
+    }
+    const amount = parseCurrency(normalized.amount);
+    const date = new Date(normalized.date);
     if (Number.isNaN(date.getTime())) {
-      throw new Error(`Row ${index + 2}: Invalid date "${data.date}"`);
+      throw new Error(`Row ${index + 2}: Invalid date "${normalized.date}"`);
     }
-    const donorEmail = data.donor_email?.trim() || null;
+    const donorEmail = normalized.donor_email?.trim() || null;
 
     let donor =
       donorEmail ? await prisma.donor.findUnique({ where: { email: donorEmail } }) : null;
     if (!donor) {
       donor = await prisma.donor.upsert({
-        where: { externalId: `manual-etp:${data.pledge_id}` },
+        where: { externalId: `manual-etp:${normalized.pledge_id}` },
         update: {
-          name: data.donor_name,
+          name: normalized.donor_name,
           email: donorEmail,
-          phone: data.donor_phone?.trim() || null
+          phone: normalized.donor_phone?.trim() || null
         },
         create: {
-          externalId: `manual-etp:${data.pledge_id}`,
-          name: data.donor_name,
+          externalId: `manual-etp:${normalized.pledge_id}`,
+          name: normalized.donor_name,
           email: donorEmail,
-          phone: data.donor_phone?.trim() || null
+          phone: normalized.donor_phone?.trim() || null
         }
       });
     } else {
       await prisma.donor.update({
         where: { id: donor.id },
         data: {
-          name: data.donor_name,
-          phone: data.donor_phone?.trim() || donor.phone
+          name: normalized.donor_name,
+          phone: normalized.donor_phone?.trim() || donor.phone
         }
       });
     }
 
     await prisma.pledge.upsert({
-      where: { externalId: data.pledge_id },
+      where: { externalId: normalized.pledge_id },
       update: {
         donorId: donor.id,
         amount,
         date,
-        campaign: data.campaign?.trim() || null,
-        status: normalizePledgeStatus(data.status)
+        campaign: normalized.campaign?.trim() || null,
+        status: normalizePledgeStatus(normalized.status)
       },
       create: {
-        externalId: data.pledge_id,
+        externalId: normalized.pledge_id,
         donorId: donor.id,
         amount,
         date,
-        campaign: data.campaign?.trim() || null,
-        status: normalizePledgeStatus(data.status)
+        campaign: normalized.campaign?.trim() || null,
+        status: normalizePledgeStatus(normalized.status)
       }
     });
     imported += 1;
@@ -139,49 +317,65 @@ async function importPledges(rows: Record<string, string>[]) {
   return imported;
 }
 
-async function importEvents(rows: Record<string, string>[]) {
+function isEventbriteOrderRow(row: Record<string, string> | undefined) {
+  if (!row) return false;
+  return Boolean(row.event_id && row.order_id);
+}
+
+async function importEvents(rows: Record<string, string>[], options: { legacyFormat?: boolean } = {}) {
   let imported = 0;
+  const legacyFormat = options.legacyFormat ?? false;
 
-  for (let index = 0; index < rows.length; index += 1) {
-    const row = rows[index];
-    const parsed = eventRowSchema.safeParse(row);
-    if (!parsed.success) {
-      throw new Error(`Row ${index + 2}: ${parsed.error.issues[0]?.message ?? 'Invalid event row'}`);
+  const normalizedRows: NormalizedEventRowWithMeta[] = [];
+
+  if (legacyFormat) {
+    const parsedOrders = parseLegacyEventbriteRows(rows);
+    normalizedRows.push(...aggregateEventbriteOrders(parsedOrders));
+  } else {
+    for (let index = 0; index < rows.length; index += 1) {
+      const result = eventRowSchema.safeParse(rows[index]);
+      if (!result.success) {
+        throw new Error(`Row ${index + 2}: ${result.error.issues[0]?.message ?? 'Invalid event row'}`);
+      }
+      normalizedRows.push({ ...result.data, __rowNumber: index + 2 });
     }
-    const data = parsed.data;
-    const startDate = new Date(data.start_date);
-    const endDate = new Date(data.end_date || data.start_date);
+  }
+
+  for (const row of normalizedRows) {
+    const rowPrefix = row.__rowNumber ? `Row ${row.__rowNumber}` : `Event ${row.name}`;
+    const startDate = new Date(row.start_date);
+    const endDate = new Date(row.end_date || row.start_date);
     if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) {
-      throw new Error(`Row ${index + 2}: Invalid start/end date`);
+      throw new Error(`${rowPrefix}: Invalid start/end date`);
     }
 
-    const ticketsTotal = parseInteger(data.tickets_total);
-    const ticketsSold = parseInteger(data.tickets_sold);
-    const grossRevenue = parseCurrency(data.gross_revenue);
-    const netRevenue = data.net_revenue
-      ? parseCurrency(data.net_revenue)
+    const ticketsTotal = parseInteger(row.tickets_total);
+    const ticketsSold = parseInteger(row.tickets_sold);
+    const grossRevenue = parseCurrency(row.gross_revenue);
+    const netRevenue = row.net_revenue
+      ? parseCurrency(row.net_revenue)
       : Math.round(grossRevenue * 0.88 * 100) / 100;
 
     await prisma.event.upsert({
-      where: { externalId: data.event_id },
+      where: { externalId: row.event_id },
       update: {
-        name: data.name,
+        name: row.name,
         startDate,
         endDate,
-        venue: data.venue?.trim() || null,
-        status: normalizeEventStatus(data.status),
+        venue: row.venue?.trim() || null,
+        status: normalizeEventStatus(row.status),
         ticketsTotal,
         ticketsSold,
         grossRevenue,
         netRevenue
       },
       create: {
-        externalId: data.event_id,
-        name: data.name,
+        externalId: row.event_id,
+        name: row.name,
         startDate,
         endDate,
-        venue: data.venue?.trim() || null,
-        status: normalizeEventStatus(data.status),
+        venue: row.venue?.trim() || null,
+        status: normalizeEventStatus(row.status),
         ticketsTotal,
         ticketsSold,
         grossRevenue,
@@ -231,8 +425,12 @@ export async function manualImportAction(
       return { success: false, message: 'No records were found in the CSV file.' };
     }
 
+    const legacyEtapestryFormat = source === 'etapestry' ? isLegacyEtapestryRow(rows[0]) : false;
+    const legacyEventbriteFormat = source === 'eventbrite' ? isEventbriteOrderRow(rows[0]) : false;
     const count =
-      source === 'etapestry' ? await importPledges(rows) : await importEvents(rows);
+      source === 'etapestry'
+        ? await importPledges(rows, { legacyFormat: legacyEtapestryFormat })
+        : await importEvents(rows, { legacyFormat: legacyEventbriteFormat });
 
     return {
       success: true,

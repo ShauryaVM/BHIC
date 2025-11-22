@@ -7,5 +7,10 @@ node_modules
 .env.production
 .env.test
 
+# Local data exports
+BHIC Data Extraction.csv
+BHIC_Order_til11_12 - Sheet1.csv
+
 # Local Netlify folder
 .netlify
+
