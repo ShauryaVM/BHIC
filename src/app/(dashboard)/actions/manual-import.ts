@@ -127,6 +127,21 @@ function isSummaryLegacyRow(row: Record<string, string>) {
   return !row.date && !row.account_name && !row.type && !row.fund;
 }
 
+function detectLegacyEtapestryFormat(rows: Record<string, string>[]) {
+  for (const row of rows) {
+    if (isSummaryLegacyRow(row)) {
+      continue;
+    }
+    if (isLegacyEtapestryRow(row)) {
+      return true;
+    }
+    if ('pledge_id' in row) {
+      return false;
+    }
+  }
+  return false;
+}
+
 function deriveLegacyPledgeId(row: LegacyEtapestryRow) {
   const token = createHash('sha1')
     .update(
@@ -425,7 +440,7 @@ export async function manualImportAction(
       return { success: false, message: 'No records were found in the CSV file.' };
     }
 
-    const legacyEtapestryFormat = source === 'etapestry' ? isLegacyEtapestryRow(rows[0]) : false;
+    const legacyEtapestryFormat = source === 'etapestry' ? detectLegacyEtapestryFormat(rows) : false;
     const legacyEventbriteFormat = source === 'eventbrite' ? isEventbriteOrderRow(rows[0]) : false;
     const count =
       source === 'etapestry'
