@@ -200,15 +200,23 @@ async function upsertManualDonors(payloads: ManualDonorPayload[]) {
   for (const chunk of chunkArray(payloads, 400)) {
     if (!chunk.length) continue;
     const values = chunk.map((donor) =>
-      Prisma.sql`(${donor.externalId}, ${donor.name}, ${donor.email}, ${donor.phone})`
+      Prisma.sql`(${donor.externalId}, ${donor.name}, ${donor.email}, ${donor.phone}, ${new Prisma.Decimal(
+        donor.totalPledged
+      )}, ${new Prisma.Decimal(donor.totalGiven)}, ${donor.lastGiftDate})`
     );
     const rows = await prisma.$queryRaw<Array<{ id: string; externalId: string; email: string | null }>>`
-      INSERT INTO "Donor" ("externalId","name","email","phone")
+      INSERT INTO "Donor" ("externalId","name","email","phone","totalPledged","totalGiven","lastGiftDate")
       VALUES ${Prisma.join(values)}
       ON CONFLICT ("externalId") DO UPDATE SET
         "name" = EXCLUDED."name",
         "email" = EXCLUDED."email",
         "phone" = EXCLUDED."phone",
+        "totalPledged" = "Donor"."totalPledged" + EXCLUDED."totalPledged",
+        "totalGiven" = "Donor"."totalGiven" + EXCLUDED."totalGiven",
+        "lastGiftDate" = GREATEST(
+          COALESCE("Donor"."lastGiftDate", '-infinity'::timestamp),
+          COALESCE(EXCLUDED."lastGiftDate", '-infinity'::timestamp)
+        ),
         "updatedAt" = NOW()
       RETURNING "id","externalId","email";
     `;
@@ -318,6 +326,9 @@ interface ManualDonorPayload {
   name: string;
   email: string | null;
   phone: string | null;
+  totalPledged: number;
+  totalGiven: number;
+  lastGiftDate: Date | null;
 }
 
 interface PledgeUpsertPayload {
@@ -413,7 +424,10 @@ async function importPledges(rows: Record<string, string>[], options: { legacyFo
         externalId: row.donorKey,
         name: row.donorName,
         email: row.donorEmail,
-        phone: row.donorPhone
+        phone: row.donorPhone,
+        totalPledged: row.amount,
+        totalGiven: row.status === 'RECEIVED' ? row.amount : 0,
+        lastGiftDate: row.status === 'RECEIVED' ? row.date : null
       });
     }
   }
