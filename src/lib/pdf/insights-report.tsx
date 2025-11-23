@@ -132,10 +132,10 @@ export function InsightsReport({ data }: { data: InsightsData }) {
   const maxTickets = Math.max(...monthlyPoints.map((point) => point.tickets), 1);
   const maxSessions = Math.max(...monthlyPoints.map((point) => point.sessions), 1);
 
-  const acquisitions = data.donors.charts.acquisitions.slice(-6);
+  const acquisitions = (data.donors.charts?.giftsMonthly ?? []).slice(-6);
   const maxAcq = Math.max(...acquisitions.map((item) => item.value), 1);
-  const ticketsPerEvent = data.events.data.charts.ticketsPerEvent.slice(0, 6);
-  const revenuePerEvent = data.events.data.charts.revenuePerEvent.slice(0, 6);
+  const ticketsPerEvent = (data.events.data.charts.topTickets ?? []).slice(0, 6);
+  const revenuePerEvent = (data.events.data.charts.topRevenue ?? []).slice(0, 6);
   const donorRatio =
     data.donors.summary.totalDonors > 0 ? data.donors.summary.activeDonors / data.donors.summary.totalDonors : 0;
   const grossRevenue = data.events.data.summary.grossRevenue;
@@ -292,7 +292,7 @@ export function InsightsReport({ data }: { data: InsightsData }) {
                 <Text style={[styles.cell, { flex: 1.4 }]}>Segment</Text>
                 <Text style={styles.cell}>Donors</Text>
               </View>
-              {data.donors.charts.giftDistribution.map((segment) => (
+              {(data.donors.charts?.giftDistribution ?? []).map((segment) => (
                 <View key={segment.name} style={styles.tableRow}>
                   <Text style={[styles.cell, { flex: 1.4 }]}>{segment.name}</Text>
                   <Text style={styles.cell}>{formatNumber(segment.value)}</Text>

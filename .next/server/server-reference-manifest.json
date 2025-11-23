@@ -1,6 +1,6 @@
 {
   "node": {
-    "0032190fc92f3832328d0bebc971d6bd0f2e8df2ac": {
+    "00a5307686bd2d2a69cea5fe5acbe546c33811ba52": {
       "workers": {
         "app/(dashboard)/page": {
           "moduleId": 48583,
@@ -15,7 +15,7 @@
       "filename": "src/app/(dashboard)/actions/sync-integrations.ts",
       "exportedName": "syncIntegrationsAction"
     },
-    "6042936e14ff5a81fa91eb1ccd5ed954ead8069fab": {
+    "60c297418a7b9877d77993d48be36d847a799b4223": {
       "workers": {
         "app/(dashboard)/page": {
           "moduleId": 48583,
@@ -30,73 +30,7 @@
       "filename": "src/app/(dashboard)/actions/manual-import.ts",
       "exportedName": "manualImportAction"
     },
-    "4000932185ee93021a36f0000c347e61c168630759": {
-      "workers": {
-        "app/(dashboard)/emails/create/page": {
-          "moduleId": 52060,
-          "async": false,
-          "exportedName": "deleteCampaignAction",
-          "filename": "src/app/(dashboard)/emails/actions.ts"
-        },
-        "app/(dashboard)/emails/page": {
-          "moduleId": 27708,
-          "async": false,
-          "exportedName": "deleteCampaignAction",
-          "filename": "src/app/(dashboard)/emails/actions.ts"
-        }
-      },
-      "layer": {
-        "app/(dashboard)/emails/create/page": "rsc",
-        "app/(dashboard)/emails/page": "rsc"
-      },
-      "filename": "src/app/(dashboard)/emails/actions.ts",
-      "exportedName": "deleteCampaignAction"
-    },
-    "4005f15e29f33c795c82b8e50c6f7022a67d5932b2": {
-      "workers": {
-        "app/(dashboard)/emails/create/page": {
-          "moduleId": 52060,
-          "async": false,
-          "exportedName": "createCampaignAction",
-          "filename": "src/app/(dashboard)/emails/actions.ts"
-        },
-        "app/(dashboard)/emails/page": {
-          "moduleId": 27708,
-          "async": false,
-          "exportedName": "createCampaignAction",
-          "filename": "src/app/(dashboard)/emails/actions.ts"
-        }
-      },
-      "layer": {
-        "app/(dashboard)/emails/create/page": "rsc",
-        "app/(dashboard)/emails/page": "rsc"
-      },
-      "filename": "src/app/(dashboard)/emails/actions.ts",
-      "exportedName": "createCampaignAction"
-    },
-    "40b7e7f5784e7c79df909b7126850356f1336ca319": {
-      "workers": {
-        "app/(dashboard)/emails/create/page": {
-          "moduleId": 52060,
-          "async": false,
-          "exportedName": "generateCampaignDraftAction",
-          "filename": "src/app/(dashboard)/emails/actions.ts"
-        },
-        "app/(dashboard)/emails/page": {
-          "moduleId": 27708,
-          "async": false,
-          "exportedName": "generateCampaignDraftAction",
-          "filename": "src/app/(dashboard)/emails/actions.ts"
-        }
-      },
-      "layer": {
-        "app/(dashboard)/emails/create/page": "rsc",
-        "app/(dashboard)/emails/page": "rsc"
-      },
-      "filename": "src/app/(dashboard)/emails/actions.ts",
-      "exportedName": "generateCampaignDraftAction"
-    },
-    "40210996cd788b387e5d1fb55c8e58361568173498": {
+    "40bfcdc425a8882d2a6d3f630aae336ec8cd76680e": {
       "workers": {
         "app/(dashboard)/settings/page": {
           "moduleId": 36846,
@@ -111,7 +45,7 @@
       "filename": "src/app/(dashboard)/settings/actions.ts",
       "exportedName": "updateSecureSettingAction"
     },
-    "40aed5f3abb11153ae5a05ae4d6b41f8a6e5de3fa0": {
+    "40e2a2b0f9b76735a91fcfa73d6bdbf5eab7567714": {
       "workers": {
         "app/(dashboard)/settings/page": {
           "moduleId": 36846,
@@ -128,5 +62,5 @@
     }
   },
   "edge": {},
-  "encryptionKey": "k/5IqDv6Ld3wojzzz3K60HwuP4mhHZNX0gPLa5t3R8A="
+  "encryptionKey": "nnggp1FjwCAUvvXwoJyYnhQBu/SqRHTwmAS/7I6H+24="
 }

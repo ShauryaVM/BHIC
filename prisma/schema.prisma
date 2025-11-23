@@ -64,18 +64,32 @@ model User {
 }
 
 model Donor {
-  id          String    @id @default(cuid())
-  externalId  String?   @unique
-  name        String
-  email       String?   @unique
-  phone       String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  totalPledged Decimal   @default(0)
-  totalGiven  Decimal   @default(0)
+  id           String         @id @default(cuid())
+  externalId   String?        @unique
+  name         String
+  email        String?        @unique
+  phone        String?
+  address      String?
+  city         String?
+  state        String?
+  postalCode   String?
+  emails       DonorEmail[]
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  totalPledged Decimal        @default(0)
+  totalGiven   Decimal        @default(0)
   lastGiftDate DateTime?
-  pledges     Pledge[]
-  attendance  EventAttendance[]
+  pledges      Pledge[]
+  attendance   EventAttendance[]
+}
+
+model DonorEmail {
+  id      String @id @default(cuid())
+  donorId String
+  donor   Donor  @relation(fields: [donorId], references: [id], onDelete: Cascade)
+  email   String
+
+  @@unique([donorId, email])
 }
 
 model Pledge {
@@ -106,6 +120,7 @@ model Event {
   createdAt    DateTime        @default(now())
   updatedAt    DateTime        @updatedAt
   attendance   EventAttendance[]
+  emailCampaigns EmailCampaign[]
 }
 
 model EventAttendance {
@@ -165,6 +180,12 @@ model EmailCampaign {
   template          EmailTemplate @relation(fields: [templateId], references: [id])
   audienceSegmentId String
   audienceSegment   AudienceSegment @relation(fields: [audienceSegmentId], references: [id])
+  goal              String?
+  ctaLabel          String?
+  ctaUrl            String?
+  contextNotes      String?
+  featuredEventId   String?
+  featuredEvent     Event?        @relation(fields: [featuredEventId], references: [id])
   status            CampaignStatus  @default(DRAFT)
   scheduledFor      DateTime?
   sentAt            DateTime?

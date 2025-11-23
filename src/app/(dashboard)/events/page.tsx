@@ -1,14 +1,17 @@
+import Link from 'next/link';
+
 import { Card } from '@/components/ui/card';
 import { Table, TBody, TD, TH, THead } from '@/components/ui/table';
-import { BarChartComponent } from '@/components/charts/bar-chart';
+import { HorizontalBarChart } from '@/components/charts/horizontal-bar-chart';
 import { EventsFilters } from '@/app/(dashboard)/events/_components/events-filters';
-import { defaultEventFilters, getEventsData } from '@/lib/events-data';
+import { defaultEventFilters, getEventsData, type EventSortField } from '@/lib/events-data';
 import { formatCurrency, formatDate, formatNumber } from '@/lib/format';
 import { PageHeader, PageHeaderMeta } from '@/components/layout/page-header';
 
 interface SearchParams {
   from?: string;
   to?: string;
+  sort?: string;
 }
 
 interface EventsPageProps {
@@ -31,8 +34,15 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
   const to = parseDate(resolvedSearchParams.to) ?? defaults.to;
 
   const filters = { from, to };
+  const [sortFieldRaw, sortDirRaw] = (resolvedSearchParams.sort ?? '').split('.');
+  const sortField = ['name', 'startDate', 'venue', 'ticketsSold', 'ticketsTotal', 'grossRevenue', 'netRevenue'].includes(
+    sortFieldRaw ?? ''
+  )
+    ? (sortFieldRaw as EventSortField)
+    : undefined;
+  const sortDir = sortDirRaw === 'asc' || sortDirRaw === 'desc' ? sortDirRaw : undefined;
 
-  const data = await getEventsData(filters);
+  const data = await getEventsData(filters, { sortBy: sortField, sortDir });
 
   return (
     <div className="space-y-8">
@@ -61,13 +71,13 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
         <div className="overflow-x-auto">
           <Table>
             <THead>
-              <TH>Name</TH>
-              <TH>Dates</TH>
-              <TH>Venue</TH>
-              <TH>Tickets sold</TH>
-              <TH>Capacity</TH>
-              <TH>Gross revenue</TH>
-              <TH>Net revenue</TH>
+              <EventSortableHeader label="Name" field="name" searchParams={resolvedSearchParams} />
+              <EventSortableHeader label="Dates" field="startDate" searchParams={resolvedSearchParams} />
+              <EventSortableHeader label="Venue" field="venue" searchParams={resolvedSearchParams} />
+              <EventSortableHeader label="Tickets sold" field="ticketsSold" searchParams={resolvedSearchParams} />
+              <EventSortableHeader label="Capacity" field="ticketsTotal" searchParams={resolvedSearchParams} />
+              <EventSortableHeader label="Gross revenue" field="grossRevenue" searchParams={resolvedSearchParams} />
+              <EventSortableHeader label="Net revenue" field="netRevenue" searchParams={resolvedSearchParams} />
             </THead>
             <TBody>
               {data.events.map((event) => (
@@ -91,24 +101,69 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
       </Card>
 
       <section className="grid gap-4 lg:grid-cols-2">
-        <Card title="Tickets per event">
-          <BarChartComponent
-            data={data.charts.ticketsPerEvent}
+        <Card title="Tickets per event (recent)">
+          <HorizontalBarChart
+            data={data.charts.topTickets}
             bars={[{ dataKey: 'tickets', color: '#1d4ed8', name: 'Tickets sold' }]}
+            categoryKey="name"
+            height={400}
           />
         </Card>
-        <Card title="Revenue per event">
-          <BarChartComponent
-            data={data.charts.revenuePerEvent}
+        <Card title="Revenue per event (recent)">
+          <HorizontalBarChart
+            data={data.charts.topRevenue}
             bars={[
               { dataKey: 'gross', color: '#0f172a', name: 'Gross' },
               { dataKey: 'net', color: '#059669', name: 'Net' }
             ]}
-            stacked={false}
+            categoryKey="name"
+            height={400}
           />
         </Card>
       </section>
     </div>
+  );
+}
+
+interface EventSortableHeaderProps {
+  label: string;
+  field: EventSortField;
+  searchParams: SearchParams;
+}
+
+function EventSortableHeader({ label, field, searchParams }: EventSortableHeaderProps) {
+  const params = new URLSearchParams();
+  Object.entries(searchParams ?? {}).forEach(([key, value]) => {
+    if (!value) return;
+    if (key === 'page' || key === 'sort') return;
+    params.set(key, value);
+  });
+
+  const [currentField, currentDir] = (searchParams.sort ?? '').split('.');
+  let nextDir: 'asc' | 'desc' | undefined = 'asc';
+  if (currentField === field) {
+    nextDir = currentDir === 'asc' ? 'desc' : currentDir === 'desc' ? undefined : 'asc';
+  }
+
+  if (nextDir) {
+    params.set('sort', `${field}.${nextDir}`);
+  } else {
+    params.delete('sort');
+  }
+
+  const indicator =
+    currentField === field ? (currentDir === 'asc' ? '↑' : currentDir === 'desc' ? '↓' : '↕') : '↕';
+
+  const paramsString = params.toString();
+  const href = paramsString ? `?${paramsString}` : '/events';
+
+  return (
+    <TH>
+      <Link href={href} className="flex items-center gap-1 text-sm font-semibold text-slate-700">
+        {label}
+        <span className="text-xs text-slate-400">{indicator}</span>
+      </Link>
+    </TH>
   );
 }
 

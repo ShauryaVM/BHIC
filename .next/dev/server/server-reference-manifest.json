@@ -1,0 +1,66 @@
+{
+  "node": {
+    "00e796c46ae6800f9326b0250049149bc0be344449": {
+      "workers": {
+        "app/(dashboard)/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/app/(dashboard)/actions/sync-integrations.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/app/(dashboard)/actions/manual-import.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "syncIntegrationsAction",
+          "filename": "src/app/(dashboard)/actions/sync-integrations.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/page": "action-browser"
+      },
+      "filename": "src/app/(dashboard)/actions/sync-integrations.ts",
+      "exportedName": "syncIntegrationsAction"
+    },
+    "600ed49537ea6f4783ff1d6d42249a3194c15ba525": {
+      "workers": {
+        "app/(dashboard)/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/app/(dashboard)/actions/sync-integrations.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/app/(dashboard)/actions/manual-import.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "manualImportAction",
+          "filename": "src/app/(dashboard)/actions/manual-import.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/page": "action-browser"
+      },
+      "filename": "src/app/(dashboard)/actions/manual-import.ts",
+      "exportedName": "manualImportAction"
+    },
+    "4023ad6113b819bf73a9d14a12532f433d8ca57f62": {
+      "workers": {
+        "app/(dashboard)/settings/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/settings/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/app/(dashboard)/settings/actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "updateSecureSettingAction",
+          "filename": "src/app/(dashboard)/settings/actions.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/settings/page": "rsc"
+      },
+      "filename": "src/app/(dashboard)/settings/actions.ts",
+      "exportedName": "updateSecureSettingAction"
+    },
+    "4048935d2272663ee1566a2188fe6f9924e0e53d10": {
+      "workers": {
+        "app/(dashboard)/settings/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/settings/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/app/(dashboard)/settings/actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "updateUserRoleAction",
+          "filename": "src/app/(dashboard)/settings/actions.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/settings/page": "rsc"
+      },
+      "filename": "src/app/(dashboard)/settings/actions.ts",
+      "exportedName": "updateUserRoleAction"
+    }
+  },
+  "edge": {},
+  "encryptionKey": "YuKXBBIl85kkiXgd2AqbHAINfDs+5+gBoxkdXFLSoKU="
+}

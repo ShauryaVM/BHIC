@@ -8,6 +8,7 @@ export async function getEmailCampaigns() {
       include: {
         template: true,
         audienceSegment: true,
+        featuredEvent: true,
         _count: { select: { logs: true } }
       },
       orderBy: { createdAt: 'desc' }

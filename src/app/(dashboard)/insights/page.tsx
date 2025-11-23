@@ -4,6 +4,8 @@ import { PageHeader, PageHeaderMeta } from '@/components/layout/page-header';
 import { TimeSeriesChart } from '@/components/charts/time-series-chart';
 import { BarChartComponent } from '@/components/charts/bar-chart';
 import { PieChartComponent } from '@/components/charts/pie-chart';
+import { HorizontalBarChart } from '@/components/charts/horizontal-bar-chart';
+import { Progress } from '@/components/ui/progress';
 import { formatCurrency, formatDate, formatNumber, formatPercent } from '@/lib/format';
 import { getInsightsData } from '@/lib/insights-data';
 import { InsightsReportButton } from '@/app/(dashboard)/insights/_components/insights-report-button';
@@ -45,8 +47,8 @@ function formatSeconds(value: number) {
 
 export default async function InsightsPage() {
   const data = await getInsightsData();
-  const ticketsByEvent = data.events.data.charts.ticketsPerEvent.slice(0, 8);
-  const revenueByEvent = data.events.data.charts.revenuePerEvent.slice(0, 8);
+  const topTickets = (data.events.data.charts.topTickets ?? []).slice(0, 8);
+  const topRevenueEvents = (data.events.data.charts.topRevenue ?? []).slice(0, 8);
   const gaSummary = data.analytics.data.summary;
   const donorRatio =
     data.donors.summary.totalDonors > 0 ? data.donors.summary.activeDonors / data.donors.summary.totalDonors : 0;
@@ -58,6 +60,34 @@ export default async function InsightsPage() {
   const eventWindowEnd = data.events.filters.to ?? data.range.to;
   const analyticsWindowStart = data.analytics.filters.from ?? data.range.from;
   const analyticsWindowEnd = data.analytics.filters.to ?? data.range.to;
+  const giftsMonthlySeries = data.donors.charts.giftsMonthly.slice(-12).map((bucket) => ({
+    ...bucket,
+    value: Math.round(bucket.value)
+  }));
+  const giftsMonthlyGiftCount = giftsMonthlySeries.reduce((sum, bucket) => sum + bucket.count, 0);
+  const giftDistributionTotal = data.donors.charts.giftDistribution.reduce((sum, bucket) => sum + bucket.value, 0) || 1;
+  const avgNetPerTicket =
+    data.events.data.summary.ticketsSold > 0 ? data.events.data.summary.netRevenue / data.events.data.summary.ticketsSold : 0;
+  const channelBlend = data.dashboard.charts.monthly.slice(-6).map((point) => ({
+    label: point.label,
+    donorFunds: Math.round(point.funds),
+    eventRevenue: Math.round(point.tickets * avgNetPerTicket)
+  }));
+  const revenueMix = [
+    { name: 'Direct gifts (YTD)', value: Math.max(0, data.dashboard.kpis.fundsYtd) },
+    { name: 'Event net (window)', value: Math.max(0, data.events.data.summary.netRevenue) }
+  ];
+  const funnelData = [
+    { label: 'Sessions (30d)', value: data.analytics.data.summary.sessions ?? 0 },
+    { label: 'Tickets sold (event window)', value: data.events.data.summary.ticketsSold ?? 0 },
+    { label: 'Active donors (12m)', value: data.donors.summary.activeDonors ?? 0 }
+  ];
+  const giftsByLabel = new Map((data.donors.charts.giftsMonthly ?? []).map((bucket) => [bucket.label, bucket.count]));
+  const donorTicketBridge = data.dashboard.charts.monthly.slice(-12).map((point) => ({
+    label: point.label,
+    tickets: Math.max(0, point.tickets),
+    giftCount: giftsByLabel.get(point.label) ?? 0
+  }));
 
   const summaryItems = [
     {
@@ -101,7 +131,9 @@ export default async function InsightsPage() {
               className={`rounded-2xl border p-4 shadow-sm transition ${impactStyles[highlight.impact] ?? impactStyles.neutral}`}
             >
               <p className="text-sm font-semibold">{highlight.title}</p>
-              <p className="mt-2 text-sm leading-6">{highlight.description}</p>
+              <p className="mt-2 text-sm leading-6" suppressHydrationWarning>
+                {highlight.description}
+              </p>
             </div>
           ))}
         </div>
@@ -271,37 +303,99 @@ export default async function InsightsPage() {
 
       <section className="grid gap-6 lg:grid-cols-2">
         <Card title="Tickets per event" description="Top recent programs ranked by attendance.">
-          <BarChartComponent
-            data={ticketsByEvent}
+          <HorizontalBarChart
+            data={topTickets}
             bars={[{ dataKey: 'tickets', color: '#2563eb', name: 'Tickets sold' }]}
-            footer={<p className="text-xs text-slate-500">Data source: Eventbrite</p>}
+            categoryKey="name"
+            height={380}
           />
+          <p className="text-xs text-slate-500">Source: Eventbrite sync window.</p>
         </Card>
         <Card title="Revenue per event" description="Gross vs. net performance for recent programs.">
-          <BarChartComponent
-            data={revenueByEvent}
+          <HorizontalBarChart
+            data={topRevenueEvents}
             bars={[
               { dataKey: 'gross', color: '#0f172a', name: 'Gross' },
               { dataKey: 'net', color: '#059669', name: 'Net' }
             ]}
-            stacked={false}
-            footer={<p className="text-xs text-slate-500">Bars highlight net capture per program.</p>}
+            categoryKey="name"
+            height={380}
+          />
+          <p className="text-xs text-slate-500">Net overlays gross to highlight capture per program.</p>
+        </Card>
+      </section>
+
+      <section className="grid gap-6 lg:grid-cols-2">
+        <Card title="Giving history" description="Monthly received gifts (last 12 months).">
+          <TimeSeriesChart
+            data={giftsMonthlySeries}
+            lines={[{ dataKey: 'value', color: '#2563eb', name: 'Total received ($)' }]}
+            footer={
+              <p className="text-xs text-slate-500">
+                {giftsMonthlyGiftCount.toLocaleString()} recorded gifts in this period.
+              </p>
+            }
+          />
+        </Card>
+        <Card title="Gift size distribution" description="Share of donors by lifetime giving.">
+          <div className="space-y-4">
+            {data.donors.charts.giftDistribution.map((bucket) => {
+              const percent = (bucket.value / giftDistributionTotal) * 100;
+              return (
+                <div key={bucket.name}>
+                  <div className="flex justify-between text-sm font-semibold text-slate-700">
+                    <span>{bucket.name}</span>
+                    <span>
+                      {bucket.value.toLocaleString()} donors · {percent.toFixed(1)}%
+                    </span>
+                  </div>
+                  <Progress value={percent} className="mt-1" />
+                </div>
+              );
+            })}
+          </div>
+        </Card>
+      </section>
+
+      <section className="grid gap-6 lg:grid-cols-2">
+        <Card title="Channel blend (last 6 months)" description="Comparing donor funds vs. event net revenue.">
+          <BarChartComponent
+            data={channelBlend}
+            xKey="label"
+            bars={[
+              { dataKey: 'donorFunds', color: '#2563eb', name: 'Donor funds ($)' },
+              { dataKey: 'eventRevenue', color: '#059669', name: 'Event net ($)' }
+            ]}
+            stacked
+            footer={<p className="text-xs text-slate-500">Displays overlap in donor + event revenue streams.</p>}
+          />
+        </Card>
+        <Card title="Revenue mix snapshot" description="Share of direct donations vs. event net.">
+          <PieChartComponent
+            data={revenueMix}
+            footer={<p className="text-xs text-slate-500">Helps explain how much revenue is tied to each source.</p>}
           />
         </Card>
       </section>
 
       <section className="grid gap-6 lg:grid-cols-2">
-        <Card title="Donor acquisition (last 12 months)">
+        <Card title="Digital-to-donor funnel" description="How sessions convert to ticket buyers and active donors.">
           <BarChartComponent
-            data={data.donors.charts.acquisitions}
-            bars={[{ dataKey: 'value', color: '#2563eb', name: 'New donors' }]}
-            footer={<p className="text-xs text-slate-500">Source: eTapestry synced donors</p>}
+            data={funnelData}
+            xKey="label"
+            bars={[{ dataKey: 'value', color: '#0f172a', name: 'Audience size' }]}
+            footer={<p className="text-xs text-slate-500">Uses GA4 sessions, Eventbrite tickets, and eTapestry donors.</p>}
           />
         </Card>
-        <Card title="Gift distribution">
-          <PieChartComponent
-            data={data.donors.charts.giftDistribution}
-            footer={<p className="text-xs text-slate-500">Segments by donor lifetime value</p>}
+        <Card title="Tickets sold vs. gift activity" description="Does program demand correlate with donor engagement?">
+          <BarChartComponent
+            data={donorTicketBridge.slice(-6)}
+            xKey="label"
+            bars={[
+              { dataKey: 'tickets', color: '#2563eb', name: 'Tickets sold' },
+              { dataKey: 'giftCount', color: '#9333ea', name: 'Gift count' }
+            ]}
+            footer={<p className="text-xs text-slate-500">Aligns Eventbrite ticketing with received gift counts.</p>}
           />
         </Card>
       </section>

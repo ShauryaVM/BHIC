@@ -240,7 +240,9 @@ function blankDonorResult(template: DonorListResult): DonorListResult {
       averageLifetimeValue: 0
     },
     charts: {
-      acquisitions: template.charts.acquisitions.map((bucket) => ({ ...bucket, value: 0 })),
+      giftsMonthly: template.charts.giftsMonthly.map((bucket) => ({ ...bucket, value: 0, count: 0 })),
+      giftsYearly: template.charts.giftsYearly.map((bucket) => ({ ...bucket, value: 0, count: 0 })),
+      giftsAllTime: template.charts.giftsAllTime.map((bucket) => ({ ...bucket, value: 0, count: 0 })),
       giftDistribution: template.charts.giftDistribution.map((segment) => ({ ...segment, value: 0 }))
     }
   };
@@ -257,8 +259,8 @@ function blankEventsData(): EventsPageData {
       netRevenue: 0
     },
     charts: {
-      ticketsPerEvent: [],
-      revenuePerEvent: []
+      topTickets: [],
+      topRevenue: []
     }
   };
 }

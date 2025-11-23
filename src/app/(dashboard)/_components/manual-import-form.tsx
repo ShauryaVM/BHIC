@@ -16,7 +16,7 @@ export function ManualImportForm({ source, label }: ManualImportFormProps) {
   const id = useId();
 
   return (
-    <form action={formAction} encType="multipart/form-data" className="space-y-3">
+    <form action={formAction} className="space-y-3">
       <input type="hidden" name="source" value={source} />
       <div className="space-y-1.5">
         <label htmlFor={`${id}-file`} className="text-sm font-medium text-slate-700">
@@ -27,6 +27,7 @@ export function ManualImportForm({ source, label }: ManualImportFormProps) {
           name="file"
           type="file"
           accept=".csv"
+          formEncType="multipart/form-data"
           required
           className="block w-full cursor-pointer rounded-xl border border-dashed border-slate-300 bg-white px-3 py-2 text-sm text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-slate-900 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-white"
         />

@@ -1,5 +1,5 @@
-import { Prisma } from '@prisma/client';
-import { startOfMonth, subDays, subMonths } from 'date-fns';
+import { PledgeStatus, Prisma } from '@prisma/client';
+import { startOfMonth, startOfYear, subDays, subMonths } from 'date-fns';
 
 import { prisma } from '@/lib/prisma';
 import { getMonthlyBuckets, type MonthlyBucket } from '@/lib/time-series';
@@ -11,13 +11,17 @@ export interface DonorFilters {
   minTotalGiven?: number;
   lastGiftFrom?: Date;
   lastGiftTo?: Date;
+  status?: 'active' | 'prospect';
 }
+
+export type DonorSortField = 'name' | 'email' | 'totalPledged' | 'totalGiven' | 'lastGiftDate';
 
 export interface DonorListResult {
   donors: Array<{
     id: string;
     name: string;
     email?: string | null;
+    emails: string[];
     phone?: string | null;
     totalPledged: number;
     totalGiven: number;
@@ -35,13 +39,17 @@ export interface DonorListResult {
     averageLifetimeValue: number;
   };
   charts: {
-    acquisitions: Array<{ label: string; value: number }>;
+    giftsMonthly: Array<{ label: string; value: number; count: number }>;
+    giftsYearly: Array<{ label: string; value: number; count: number }>;
+    giftsAllTime: Array<{ label: string; value: number; count: number }>;
     giftDistribution: Array<{ name: string; value: number }>;
   };
 }
 
-export async function getDonorList(params: DonorFilters & { page: number; pageSize: number }): Promise<DonorListResult> {
-  const { page, pageSize, query, minTotalGiven, lastGiftFrom, lastGiftTo } = params;
+export async function getDonorList(
+  params: DonorFilters & { page: number; pageSize: number; sortBy?: DonorSortField; sortDir?: 'asc' | 'desc' }
+): Promise<DonorListResult> {
+  const { page, pageSize, query, minTotalGiven, lastGiftFrom, lastGiftTo, status, sortBy, sortDir } = params;
   const where: Prisma.DonorWhereInput = {};
   const giftRanges = [
     { name: '< $1k', min: 0, max: 1000 },
@@ -62,22 +70,58 @@ export async function getDonorList(params: DonorFilters & { page: number; pageSi
     where.totalGiven = { gte: minTotalGiven };
   }
 
-  if (lastGiftFrom || lastGiftTo) {
-    where.lastGiftDate = {};
-    if (lastGiftFrom) {
-      where.lastGiftDate.gte = lastGiftFrom;
-    }
-    if (lastGiftTo) {
-      where.lastGiftDate.lte = lastGiftTo;
+  if (status === 'prospect') {
+    where.lastGiftDate = null;
+  } else {
+    if (lastGiftFrom || lastGiftTo || status === 'active') {
+      const filter: Prisma.DateTimeNullableFilter = {};
+      if (status === 'active') {
+        filter.not = null;
+      }
+      if (lastGiftFrom) {
+        filter.gte = lastGiftFrom;
+      }
+      if (lastGiftTo) {
+        filter.lte = lastGiftTo;
+      }
+      where.lastGiftDate = filter;
     }
   }
 
+  const sortFieldMap: Record<DonorSortField, keyof Prisma.DonorOrderByWithRelationInput> = {
+    name: 'name',
+    email: 'email',
+    totalPledged: 'totalPledged',
+    totalGiven: 'totalGiven',
+    lastGiftDate: 'lastGiftDate'
+  };
+
+  const orderBy: Prisma.DonorOrderByWithRelationInput[] =
+    sortBy && sortDir
+      ? [{ [sortFieldMap[sortBy]]: sortDir }]
+      : [{ totalGiven: 'desc' as const }];
+
   try {
-    const [totalMatching, donors, totalDonors, activeDonors, averageLifetimeValue, acquisitionSource, lifetimeValues] = await Promise.all([
+    const now = new Date();
+    const monthlyWindowStart = subMonths(startOfMonth(now), 11);
+    const yearlyWindowStart = startOfYear(new Date(now.getFullYear() - 5, 0, 1));
+    const allTimeStart = startOfYear(new Date(2006, 0, 1));
+
+    const [
+      totalMatching,
+      donors,
+      totalDonors,
+      activeDonors,
+      averageLifetimeValue,
+      monthlyGifts,
+      yearlyGifts,
+      lifetimeValues,
+      allTimeGifts
+    ] = await Promise.all([
       prisma.donor.count({ where }),
       prisma.donor.findMany({
         where,
-        orderBy: { totalGiven: 'desc' },
+        orderBy,
         take: pageSize,
         skip: (page - 1) * pageSize,
         select: {
@@ -87,28 +131,77 @@ export async function getDonorList(params: DonorFilters & { page: number; pageSi
           phone: true,
           totalGiven: true,
           totalPledged: true,
-          lastGiftDate: true
+          lastGiftDate: true,
+          emails: {
+            select: { email: true }
+          }
         }
       }),
       prisma.donor.count(),
-      prisma.donor.count({ where: { lastGiftDate: { gte: subDays(new Date(), 365) } } }),
+      prisma.donor.count({ where: { lastGiftDate: { gte: subDays(now, 365) } } }),
       prisma.donor.aggregate({ _avg: { totalGiven: true } }),
-      prisma.donor.findMany({
-        where: { createdAt: { gte: subMonths(startOfMonth(new Date()), 11) } },
-        select: { createdAt: true }
+      prisma.pledge.findMany({
+        where: { date: { gte: monthlyWindowStart }, status: PledgeStatus.RECEIVED },
+        select: { date: true, amount: true }
       }),
-      prisma.donor.findMany({ select: { totalGiven: true } })
+      prisma.pledge.findMany({
+        where: { date: { gte: yearlyWindowStart }, status: PledgeStatus.RECEIVED },
+        select: { date: true, amount: true }
+      }),
+      prisma.donor.findMany({ select: { totalGiven: true } }),
+      prisma.$queryRaw<Array<{ year: number; total: Prisma.Decimal; count: bigint }>>`
+        SELECT EXTRACT(YEAR FROM "date")::int AS year,
+               SUM("amount") AS total,
+               COUNT(*)::bigint AS count
+        FROM "Pledge"
+        WHERE "status" = ${PledgeStatus.RECEIVED}::"PledgeStatus"
+          AND "date" >= ${allTimeStart}
+        GROUP BY year
+        ORDER BY year ASC
+      `
     ]);
 
     const formattedDonors = donors.map((donor) => ({
       ...donor,
+      emails: donor.emails.map((entry) => entry.email),
       totalGiven: toNumber(donor.totalGiven),
       totalPledged: toNumber(donor.totalPledged)
     }));
 
-    const acquisitions = acquisitionBuckets.map((bucket) => ({
-      label: bucket.label,
-      value: acquisitionSource.filter((entry) => entry.createdAt >= bucket.start && entry.createdAt <= bucket.end).length
+    const giftsMonthly = acquisitionBuckets.map((bucket) => {
+      const entries = monthlyGifts.filter(
+        (entry) => entry.date >= bucket.start && entry.date <= bucket.end
+      );
+      const totalAmount = entries.reduce((sum, entry) => sum + toNumber(entry.amount), 0);
+      return {
+        label: bucket.label,
+        value: totalAmount,
+        count: entries.length
+      };
+    });
+
+    const yearlyBuckets = new Map<number, { value: number; count: number }>();
+    for (const entry of yearlyGifts) {
+      const year = entry.date.getFullYear();
+      if (!yearlyBuckets.has(year)) {
+        yearlyBuckets.set(year, { value: 0, count: 0 });
+      }
+      const bucket = yearlyBuckets.get(year)!;
+      bucket.value += toNumber(entry.amount);
+      bucket.count += 1;
+    }
+    const giftsYearly = Array.from(yearlyBuckets.entries())
+      .sort(([a], [b]) => a - b)
+      .map(([year, bucket]) => ({
+        label: `${year}`,
+        value: bucket.value,
+        count: bucket.count
+      }));
+
+    const giftsAllTime = allTimeGifts.map((row) => ({
+      label: `${row.year}`,
+      value: toNumber(row.total),
+      count: Number(row.count)
     }));
 
     const giftDistribution = giftRanges.map((range) => ({
@@ -133,7 +226,9 @@ export async function getDonorList(params: DonorFilters & { page: number; pageSi
         averageLifetimeValue: toNumber(averageLifetimeValue._avg.totalGiven)
       },
       charts: {
-        acquisitions,
+        giftsMonthly,
+        giftsYearly,
+        giftsAllTime,
         giftDistribution
       }
     };
@@ -173,7 +268,9 @@ function buildFallbackDonorList({
       averageLifetimeValue: 0
     },
     charts: {
-      acquisitions: acquisitionBuckets.map((bucket) => ({ label: bucket.label, value: 0 })),
+      giftsMonthly: acquisitionBuckets.map((bucket) => ({ label: bucket.label, value: 0, count: 0 })),
+      giftsYearly: [],
+      giftsAllTime: [],
       giftDistribution: giftRanges.map((range) => ({ name: range.name, value: 0 }))
     }
   };

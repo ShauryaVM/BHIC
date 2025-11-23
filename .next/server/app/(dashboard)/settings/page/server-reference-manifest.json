@@ -1,6 +1,6 @@
 {
   "node": {
-    "40210996cd788b387e5d1fb55c8e58361568173498": {
+    "40bfcdc425a8882d2a6d3f630aae336ec8cd76680e": {
       "workers": {
         "app/(dashboard)/settings/page": {
           "moduleId": 36846,
@@ -15,7 +15,7 @@
       "exportedName": "updateSecureSettingAction",
       "filename": "src/app/(dashboard)/settings/actions.ts"
     },
-    "40aed5f3abb11153ae5a05ae4d6b41f8a6e5de3fa0": {
+    "40e2a2b0f9b76735a91fcfa73d6bdbf5eab7567714": {
       "workers": {
         "app/(dashboard)/settings/page": {
           "moduleId": 36846,

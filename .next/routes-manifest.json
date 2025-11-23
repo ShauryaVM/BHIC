@@ -79,18 +79,6 @@
       "namedRegex": "^/donors(?:/)?$"
     },
     {
-      "page": "/emails",
-      "regex": "^/emails(?:/)?$",
-      "routeKeys": {},
-      "namedRegex": "^/emails(?:/)?$"
-    },
-    {
-      "page": "/emails/create",
-      "regex": "^/emails/create(?:/)?$",
-      "routeKeys": {},
-      "namedRegex": "^/emails/create(?:/)?$"
-    },
-    {
       "page": "/events",
       "regex": "^/events(?:/)?$",
       "routeKeys": {},

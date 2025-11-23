@@ -1,8 +1,6 @@
 {
   "/(dashboard)/analytics/page": "/analytics",
   "/(dashboard)/donors/page": "/donors",
-  "/(dashboard)/emails/create/page": "/emails/create",
-  "/(dashboard)/emails/page": "/emails",
   "/(dashboard)/events/page": "/events",
   "/(dashboard)/insights/page": "/insights",
   "/(dashboard)/page": "/",

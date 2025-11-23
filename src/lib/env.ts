@@ -25,7 +25,7 @@ const envSchema = z.object({
   GA4_OAUTH_CLIENT_SECRET: z.string().optional(),
   GA4_OAUTH_REFRESH_TOKEN: z.string().optional(),
   GEMINI_API_KEY: z.string().min(1),
-  GEMINI_MODEL: z.string().default('models/gemini-1.5-flash'),
+  GEMINI_MODEL: z.string().default('gemini-pro'),
   SETTINGS_ENCRYPTION_KEY: z.string().min(44)
 });
 

@@ -467,42 +467,49 @@ export async function syncPledgesToDb(range?: Partial<FetchParams>) {
 }
 
 export async function recalculateDonorLifetimeValues() {
-  const pledged = await prisma.pledge.groupBy({
-    by: ['donorId'],
-    _sum: { amount: true }
-  });
+  await prisma.$executeRaw`
+    WITH donor_ids AS (
+      SELECT DISTINCT "donorId"
+      FROM "Pledge"
+      WHERE "donorId" IS NOT NULL
+    ),
+    pledged AS (
+      SELECT "donorId", SUM("amount") AS total
+      FROM "Pledge"
+      GROUP BY "donorId"
+    ),
+    received AS (
+      SELECT "donorId", SUM("amount") AS total
+      FROM "Pledge"
+      WHERE "status" = ${PledgeStatus.RECEIVED}::"PledgeStatus"
+      GROUP BY "donorId"
+    ),
+    last_gift AS (
+      SELECT DISTINCT ON ("donorId") "donorId", "date"
+      FROM "Pledge"
+      WHERE "status" = ${PledgeStatus.RECEIVED}::"PledgeStatus"
+      ORDER BY "donorId", "date" DESC
+    )
+    UPDATE "Donor" AS d
+    SET
+      "totalPledged" = COALESCE(p.total, 0),
+      "totalGiven" = COALESCE(r.total, 0),
+      "lastGiftDate" = l.date
+    FROM donor_ids ids
+    LEFT JOIN pledged p ON p."donorId" = ids."donorId"
+    LEFT JOIN received r ON r."donorId" = ids."donorId"
+    LEFT JOIN last_gift l ON l."donorId" = ids."donorId"
+    WHERE d."id" = ids."donorId";
+  `;
 
-  const received = await prisma.pledge.groupBy({
-    by: ['donorId'],
-    where: { status: PledgeStatus.RECEIVED },
-    _sum: { amount: true }
-  });
-
-  const receivedMap = new Map(received.map((item) => [item.donorId, item._sum.amount ?? new Prisma.Decimal(0)]));
-
-  const recentGifts = await prisma.pledge.findMany({
-    where: { status: PledgeStatus.RECEIVED },
-    select: { donorId: true, date: true },
-    orderBy: { date: 'desc' }
-  });
-
-  const lastGiftMap = new Map<string, Date>();
-  for (const gift of recentGifts) {
-    if (!lastGiftMap.has(gift.donorId)) {
-      lastGiftMap.set(gift.donorId, gift.date);
-    }
-  }
-
-  for (const donor of pledged) {
-    await prisma.donor.update({
-      where: { id: donor.donorId },
-      data: {
-        totalPledged: donor._sum.amount ?? new Prisma.Decimal(0),
-        totalGiven: receivedMap.get(donor.donorId) ?? new Prisma.Decimal(0),
-        lastGiftDate: lastGiftMap.get(donor.donorId)
-      }
-    });
-  }
+  await prisma.$executeRaw`
+    UPDATE "Donor" AS d
+    SET
+      "totalPledged" = 0,
+      "totalGiven" = 0,
+      "lastGiftDate" = NULL
+    WHERE NOT EXISTS (SELECT 1 FROM "Pledge" AS p WHERE p."donorId" = d."id");
+  `;
 }
 
 export async function getFundsRaisedSummary(range: FetchParams) {

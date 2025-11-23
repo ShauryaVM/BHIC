@@ -1,0 +1,8 @@
+ALTER TABLE "EmailCampaign"
+ADD COLUMN "goal" TEXT,
+ADD COLUMN "ctaLabel" TEXT,
+ADD COLUMN "ctaUrl" TEXT,
+ADD COLUMN "contextNotes" TEXT,
+ADD COLUMN "featuredEventId" TEXT REFERENCES "Event"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+

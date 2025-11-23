@@ -1,5 +1,5 @@
 import { PledgeStatus, Prisma } from '@prisma/client';
-import { startOfMonth, startOfYear, subDays, subMonths } from 'date-fns';
+import { format, startOfMonth, startOfYear, subDays, subMonths } from 'date-fns';
 
 import { getFundsRaisedSummary } from '@/lib/etapestry';
 import { getEventKpis } from '@/lib/eventbrite';
@@ -39,7 +39,7 @@ export async function getDashboardData(range: 'ytd' | '12m' = 'ytd'): Promise<Da
   const last30Start = subDays(now, 30);
 
   try {
-    const [fundsSummary, fundsYtdAggregate, totalDonors, activeDonors, eventKpis, gaSummary, gaSessions, attendance] = await Promise.all([
+    const [fundsSummary, fundsYtdAggregate, totalDonors, activeDonors, eventKpis, gaSummary, gaSessions, eventSeries] = await Promise.all([
       getFundsRaisedSummary(monthlyRange),
       prisma.pledge.aggregate({
         where: {
@@ -55,25 +55,27 @@ export async function getDashboardData(range: 'ytd' | '12m' = 'ytd'): Promise<Da
       getEventKpis({ from: summaryStart, to: now }),
       getSummaryMetrics({ from: last30Start, to: now }),
       getSessionsOverTime({ from: monthlyStart, to: now, granularity: 'MONTHLY' }),
-      prisma.eventAttendance.findMany({
-        where: { createdAt: { gte: monthlyStart, lte: now } },
-        select: { ticketsCount: true, createdAt: true }
+      prisma.event.findMany({
+        where: { startDate: { gte: monthlyStart, lte: now } },
+        select: { startDate: true, ticketsSold: true }
       })
     ]);
 
     const sessionsMap = new Map(gaSessions.points.map((point) => [point.label, point.value]));
     const fundsMap = new Map(fundsSummary.monthly.map((point) => [point.label, point.total]));
     const monthlyBuckets = getMonthlyBuckets(12, now);
+    const ticketsByMonth = new Map<string, number>();
+    for (const event of eventSeries) {
+      if (!event.startDate) continue;
+      const key = format(startOfMonth(event.startDate), 'yyyy-MM');
+      ticketsByMonth.set(key, (ticketsByMonth.get(key) ?? 0) + (event.ticketsSold ?? 0));
+    }
 
     const monthlySeries = monthlyBuckets.map((bucket) => {
-      const tickets = attendance
-        .filter((entry) => entry.createdAt >= bucket.start && entry.createdAt <= bucket.end)
-        .reduce((sum, entry) => sum + entry.ticketsCount, 0);
-
       return {
         label: bucket.label,
         funds: fundsMap.get(bucket.label) ?? 0,
-        tickets,
+        tickets: ticketsByMonth.get(bucket.key) ?? 0,
         sessions: sessionsMap.get(bucket.label) ?? 0
       };
     });

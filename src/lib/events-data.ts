@@ -10,6 +10,20 @@ export interface EventFilters {
   to?: Date;
 }
 
+export type EventSortField =
+  | 'name'
+  | 'startDate'
+  | 'venue'
+  | 'ticketsSold'
+  | 'ticketsTotal'
+  | 'grossRevenue'
+  | 'netRevenue';
+
+export interface EventSortOptions {
+  sortBy?: EventSortField;
+  sortDir?: 'asc' | 'desc';
+}
+
 export interface EventsPageData {
   events: Array<{
     id: string;
@@ -31,8 +45,8 @@ export interface EventsPageData {
     netRevenue: number;
   };
   charts: {
-    ticketsPerEvent: Array<{ name: string; tickets: number }>;
-    revenuePerEvent: Array<{ name: string; gross: number; net: number }>;
+    topTickets: Array<{ name: string; tickets: number }>;
+    topRevenue: Array<{ name: string; gross: number; net: number }>;
   };
 }
 
@@ -50,13 +64,31 @@ function buildWhere(filters: EventFilters) {
   return where;
 }
 
-export async function getEventsData(filters: EventFilters = {}): Promise<EventsPageData> {
+export async function getEventsData(
+  filters: EventFilters = {},
+  sortOptions: EventSortOptions = {}
+): Promise<EventsPageData> {
   const where = buildWhere(filters);
+
+  const sortFieldMap: Record<EventSortField, keyof Prisma.EventOrderByWithRelationInput> = {
+    name: 'name',
+    startDate: 'startDate',
+    venue: 'venue',
+    ticketsSold: 'ticketsSold',
+    ticketsTotal: 'ticketsTotal',
+    grossRevenue: 'grossRevenue',
+    netRevenue: 'netRevenue'
+  };
+
+  const orderBy: Prisma.EventOrderByWithRelationInput =
+    sortOptions.sortBy && sortOptions.sortDir
+      ? { [sortFieldMap[sortOptions.sortBy]]: sortOptions.sortDir }
+      : { startDate: 'desc' };
 
   try {
     const eventRecords = await prisma.event.findMany({
       where,
-      orderBy: { startDate: 'desc' }
+      orderBy: [orderBy, { id: 'asc' }]
     });
 
     const events = eventRecords.map((event) => ({
@@ -82,12 +114,20 @@ export async function getEventsData(filters: EventFilters = {}): Promise<EventsP
         netRevenue
       },
       charts: {
-        ticketsPerEvent: events.map((event) => ({ name: event.name, tickets: event.ticketsSold })),
-        revenuePerEvent: events.map((event) => ({
-          name: event.name,
-          gross: Number(event.grossRevenue ?? 0),
-          net: Number(event.netRevenue ?? 0)
-        }))
+        topTickets: events
+          .filter((event) => event.ticketsSold > 0)
+          .sort((a, b) => b.ticketsSold - a.ticketsSold)
+          .slice(0, 10)
+          .map((event) => ({ name: event.name, tickets: event.ticketsSold })),
+        topRevenue: events
+          .filter((event) => Number(event.grossRevenue ?? 0) > 0)
+          .sort((a, b) => Number(b.grossRevenue ?? 0) - Number(a.grossRevenue ?? 0))
+          .slice(0, 10)
+          .map((event) => ({
+            name: event.name,
+            gross: Number(event.grossRevenue ?? 0),
+            net: Number(event.netRevenue ?? 0)
+          }))
       }
     };
   } catch (error) {
@@ -107,8 +147,8 @@ function buildFallbackEventsData(): EventsPageData {
       netRevenue: 0
     },
     charts: {
-      ticketsPerEvent: [],
-      revenuePerEvent: []
+    topTickets: [],
+    topRevenue: []
     }
   };
 }

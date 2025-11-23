@@ -1,0 +1,35 @@
+{
+  "node": {
+    "00e796c46ae6800f9326b0250049149bc0be344449": {
+      "workers": {
+        "app/(dashboard)/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/app/(dashboard)/actions/sync-integrations.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/app/(dashboard)/actions/manual-import.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "syncIntegrationsAction",
+          "filename": "src/app/(dashboard)/actions/sync-integrations.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/page": "action-browser"
+      },
+      "exportedName": "syncIntegrationsAction",
+      "filename": "src/app/(dashboard)/actions/sync-integrations.ts"
+    },
+    "600ed49537ea6f4783ff1d6d42249a3194c15ba525": {
+      "workers": {
+        "app/(dashboard)/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/app/(dashboard)/actions/sync-integrations.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/app/(dashboard)/actions/manual-import.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "manualImportAction",
+          "filename": "src/app/(dashboard)/actions/manual-import.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/page": "action-browser"
+      },
+      "exportedName": "manualImportAction",
+      "filename": "src/app/(dashboard)/actions/manual-import.ts"
+    }
+  },
+  "edge": {}
+}

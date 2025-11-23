@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { Menu as HeadlessMenu, Transition } from "@headlessui/react";
 import clsx from "clsx";
-import { Fragment } from "react";
+import { Fragment, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
@@ -23,6 +23,14 @@ interface TopNavProps {
 
 export function TopNav({ user, onToggleSidebar }: TopNavProps) {
   const router = useRouter();
+  const mounted = useSyncExternalStore(
+    (callback) => {
+      callback();
+      return () => {};
+    },
+    () => true,
+    () => false
+  );
   const initials = user?.name
     ? user.name
         .split(" ")
@@ -86,51 +94,55 @@ export function TopNav({ user, onToggleSidebar }: TopNavProps) {
           <Sparkles className="h-4 w-4" />
           Visit bhic.org
         </Link>
-        <HeadlessMenu as="div" className="relative z-40">
-          <HeadlessMenu.Button className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-left shadow-sm">
-            {user?.image ? (
-              <Image src={user.image} alt={user?.name ?? "User"} width={32} height={32} className="rounded-full" />
-            ) : (
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-brand/10 text-sm font-semibold text-brand">
-                {initials}
-              </div>
-            )}
-            <div className="hidden text-left text-xs sm:block">
-              <p className="font-semibold text-slate-800">{user?.name ?? "BHIC Staff"}</p>
-              <p className="text-slate-500">{user?.role ?? "STAFF"}</p>
-            </div>
-          </HeadlessMenu.Button>
-          <Transition
-            as={Fragment}
-            enter="transition duration-100"
-            enterFrom="transform scale-95 opacity-0"
-            enterTo="transform scale-100 opacity-100"
-            leave="transition duration-75"
-            leaveFrom="transform scale-100 opacity-100"
-            leaveTo="transform scale-95 opacity-0"
-          >
-            <HeadlessMenu.Items className="absolute right-0 mt-3 w-52 rounded-2xl border border-slate-200 bg-white p-2 shadow-card focus:outline-none z-50">
-              <div className="px-3 py-2 text-xs">
+        {mounted ? (
+          <HeadlessMenu as="div" className="relative z-40">
+            <HeadlessMenu.Button className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-left shadow-sm">
+              {user?.image ? (
+                <Image src={user.image} alt={user?.name ?? "User"} width={32} height={32} className="rounded-full" />
+              ) : (
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-brand/10 text-sm font-semibold text-brand">
+                  {initials}
+                </div>
+              )}
+              <div className="hidden text-left text-xs sm:block">
                 <p className="font-semibold text-slate-800">{user?.name ?? "BHIC Staff"}</p>
-                <p className="text-slate-500">{user?.email ?? ""}</p>
+                <p className="text-slate-500">{user?.role ?? "STAFF"}</p>
               </div>
-              <HeadlessMenu.Item>
-                {({ active }) => (
-                  <button
-                    type="button"
-                    onClick={() => signOut({ callbackUrl: "/auth/signin" })}
-                    className={clsx(
-                      "w-full rounded-xl px-3 py-2 text-left text-sm font-semibold text-red-600 transition",
-                      active ? "bg-red-50" : "hover:bg-red-50"
-                    )}
-                  >
-                    Sign out
-                  </button>
-                )}
-              </HeadlessMenu.Item>
-            </HeadlessMenu.Items>
-          </Transition>
-        </HeadlessMenu>
+            </HeadlessMenu.Button>
+            <Transition
+              as={Fragment}
+              enter="transition duration-100"
+              enterFrom="transform scale-95 opacity-0"
+              enterTo="transform scale-100 opacity-100"
+              leave="transition duration-75"
+              leaveFrom="transform scale-100 opacity-100"
+              leaveTo="transform scale-95 opacity-0"
+            >
+              <HeadlessMenu.Items className="absolute right-0 mt-3 w-52 rounded-2xl border border-slate-200 bg-white p-2 shadow-card focus:outline-none z-50">
+                <div className="px-3 py-2 text-xs">
+                  <p className="font-semibold text-slate-800">{user?.name ?? "BHIC Staff"}</p>
+                  <p className="text-slate-500">{user?.email ?? ""}</p>
+                </div>
+                <HeadlessMenu.Item>
+                  {({ active }) => (
+                    <button
+                      type="button"
+                      onClick={() => signOut({ callbackUrl: "/auth/signin" })}
+                      className={clsx(
+                        "w-full rounded-xl px-3 py-2 text-left text-sm font-semibold text-red-600 transition",
+                        active ? "bg-red-50" : "hover:bg-red-50"
+                      )}
+                    >
+                      Sign out
+                    </button>
+                  )}
+                </HeadlessMenu.Item>
+              </HeadlessMenu.Items>
+            </Transition>
+          </HeadlessMenu>
+        ) : (
+          <div className="h-10 w-10 rounded-full bg-slate-100" aria-hidden />
+        )}
       </div>
     </header>
   );
