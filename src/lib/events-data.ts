@@ -1,5 +1,6 @@
 import { EventStatus, Prisma } from '@prisma/client';
 import { addDays, startOfDay, subDays } from 'date-fns';
+import { unstable_cache } from 'next/cache';
 
 import { prisma } from '@/lib/prisma';
 
@@ -64,7 +65,7 @@ function buildWhere(filters: EventFilters) {
   return where;
 }
 
-export async function getEventsData(
+async function _getEventsData(
   filters: EventFilters = {},
   sortOptions: EventSortOptions = {}
 ): Promise<EventsPageData> {
@@ -151,6 +152,19 @@ function buildFallbackEventsData(): EventsPageData {
     topRevenue: []
     }
   };
+}
+
+export async function getEventsData(
+  filters: EventFilters = {},
+  sortOptions: EventSortOptions = {}
+): Promise<EventsPageData> {
+  // Cache for 30 seconds to improve performance
+  const cacheKey = `events-${JSON.stringify({ filters, sortOptions })}`;
+  return unstable_cache(
+    () => _getEventsData(filters, sortOptions),
+    [cacheKey],
+    { revalidate: 30, tags: ['events'] }
+  )();
 }
 
 export function defaultEventFilters(): EventFilters {

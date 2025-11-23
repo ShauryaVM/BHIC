@@ -1,4 +1,5 @@
 import { Prisma } from '@prisma/client';
+import { unstable_cache } from 'next/cache';
 import zipcodes from 'zipcodes';
 
 import { prisma } from '@/lib/prisma';
@@ -23,7 +24,7 @@ export type DonorGeoPoint = {
   longitude: number;
 };
 
-export async function getDonorGeography(): Promise<DonorGeoPoint[]> {
+async function _getDonorGeography(): Promise<DonorGeoPoint[]> {
   const donors = await prisma.donor.findMany({
     where: {
       postalCode: { not: null },
@@ -76,6 +77,15 @@ export async function getDonorGeography(): Promise<DonorGeoPoint[]> {
   }
 
   return Array.from(points.values()).sort((a, b) => b.totalGiven - a.totalGiven);
+}
+
+export async function getDonorGeography(): Promise<DonorGeoPoint[]> {
+  // Cache for 60 seconds to improve performance
+  return unstable_cache(
+    () => _getDonorGeography(),
+    ['donor-geography'],
+    { revalidate: 60, tags: ['donors'] }
+  )();
 }
 
 

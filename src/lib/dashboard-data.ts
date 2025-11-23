@@ -1,5 +1,6 @@
 import { PledgeStatus, Prisma } from '@prisma/client';
 import { format, startOfMonth, startOfYear, subDays, subMonths } from 'date-fns';
+import { unstable_cache } from 'next/cache';
 
 import { getFundsRaisedSummary } from '@/lib/etapestry';
 import { getEventKpis } from '@/lib/eventbrite';
@@ -31,7 +32,7 @@ export interface DashboardData {
   };
 }
 
-export async function getDashboardData(range: 'ytd' | '12m' = 'ytd'): Promise<DashboardData> {
+async function _getDashboardData(range: 'ytd' | '12m' = 'ytd'): Promise<DashboardData> {
   const now = new Date();
   const summaryStart = range === '12m' ? subMonths(startOfMonth(now), 11) : startOfYear(now);
   const monthlyStart = subMonths(startOfMonth(now), 11);

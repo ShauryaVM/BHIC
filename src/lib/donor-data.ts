@@ -1,5 +1,6 @@
 import { PledgeStatus, Prisma } from '@prisma/client';
 import { startOfMonth, startOfYear, subDays, subMonths } from 'date-fns';
+import { unstable_cache } from 'next/cache';
 
 import { prisma } from '@/lib/prisma';
 import { getMonthlyBuckets, type MonthlyBucket } from '@/lib/time-series';
@@ -46,7 +47,7 @@ export interface DonorListResult {
   };
 }
 
-export async function getDonorList(
+async function _getDonorList(
   params: DonorFilters & { page: number; pageSize: number; sortBy?: DonorSortField; sortDir?: 'asc' | 'desc' }
 ): Promise<DonorListResult> {
   const { page, pageSize, query, minTotalGiven, lastGiftFrom, lastGiftTo, status, sortBy, sortDir } = params;
@@ -113,9 +114,9 @@ export async function getDonorList(
       totalDonors,
       activeDonors,
       averageLifetimeValue,
-      monthlyGifts,
-      yearlyGifts,
-      lifetimeValues,
+      monthlyGiftsRaw,
+      yearlyGiftsRaw,
+      giftDistributionRaw,
       allTimeGifts
     ] = await Promise.all([
       prisma.donor.count({ where }),
@@ -140,15 +141,37 @@ export async function getDonorList(
       prisma.donor.count(),
       prisma.donor.count({ where: { lastGiftDate: { gte: subDays(now, 365) } } }),
       prisma.donor.aggregate({ _avg: { totalGiven: true } }),
-      prisma.pledge.findMany({
-        where: { date: { gte: monthlyWindowStart }, status: PledgeStatus.RECEIVED },
-        select: { date: true, amount: true }
-      }),
-      prisma.pledge.findMany({
-        where: { date: { gte: yearlyWindowStart }, status: PledgeStatus.RECEIVED },
-        select: { date: true, amount: true }
-      }),
-      prisma.donor.findMany({ select: { totalGiven: true } }),
+      prisma.$queryRaw<Array<{ month: string; total: Prisma.Decimal; count: bigint }>>`
+        SELECT TO_CHAR("date", 'YYYY-MM') AS month,
+               SUM("amount") AS total,
+               COUNT(*)::bigint AS count
+        FROM "Pledge"
+        WHERE "status" = ${PledgeStatus.RECEIVED}::"PledgeStatus"
+          AND "date" >= ${monthlyWindowStart}
+        GROUP BY month
+        ORDER BY month ASC
+      `,
+      prisma.$queryRaw<Array<{ year: number; total: Prisma.Decimal; count: bigint }>>`
+        SELECT EXTRACT(YEAR FROM "date")::int AS year,
+               SUM("amount") AS total,
+               COUNT(*)::bigint AS count
+        FROM "Pledge"
+        WHERE "status" = ${PledgeStatus.RECEIVED}::"PledgeStatus"
+          AND "date" >= ${yearlyWindowStart}
+        GROUP BY year
+        ORDER BY year ASC
+      `,
+      prisma.$queryRaw<Array<{ range: string; count: bigint }>>`
+        SELECT CASE
+          WHEN "totalGiven" < 1000 THEN '< $1k'
+          WHEN "totalGiven" < 5000 THEN '$1k - $5k'
+          WHEN "totalGiven" < 10000 THEN '$5k - $10k'
+          ELSE '$10k+'
+        END AS range,
+        COUNT(*)::bigint AS count
+        FROM "Donor"
+        GROUP BY range
+      `,
       prisma.$queryRaw<Array<{ year: number; total: Prisma.Decimal; count: bigint }>>`
         SELECT EXTRACT(YEAR FROM "date")::int AS year,
                SUM("amount") AS total,
@@ -168,35 +191,21 @@ export async function getDonorList(
       totalPledged: toNumber(donor.totalPledged)
     }));
 
+    const monthlyGiftsMap = new Map(monthlyGiftsRaw.map((row) => [row.month, { total: toNumber(row.total), count: Number(row.count) }]));
     const giftsMonthly = acquisitionBuckets.map((bucket) => {
-      const entries = monthlyGifts.filter(
-        (entry) => entry.date >= bucket.start && entry.date <= bucket.end
-      );
-      const totalAmount = entries.reduce((sum, entry) => sum + toNumber(entry.amount), 0);
+      const data = monthlyGiftsMap.get(bucket.key) ?? { total: 0, count: 0 };
       return {
         label: bucket.label,
-        value: totalAmount,
-        count: entries.length
+        value: data.total,
+        count: data.count
       };
     });
 
-    const yearlyBuckets = new Map<number, { value: number; count: number }>();
-    for (const entry of yearlyGifts) {
-      const year = entry.date.getFullYear();
-      if (!yearlyBuckets.has(year)) {
-        yearlyBuckets.set(year, { value: 0, count: 0 });
-      }
-      const bucket = yearlyBuckets.get(year)!;
-      bucket.value += toNumber(entry.amount);
-      bucket.count += 1;
-    }
-    const giftsYearly = Array.from(yearlyBuckets.entries())
-      .sort(([a], [b]) => a - b)
-      .map(([year, bucket]) => ({
-        label: `${year}`,
-        value: bucket.value,
-        count: bucket.count
-      }));
+    const giftsYearly = yearlyGiftsRaw.map((row) => ({
+      label: `${row.year}`,
+      value: toNumber(row.total),
+      count: Number(row.count)
+    }));
 
     const giftsAllTime = allTimeGifts.map((row) => ({
       label: `${row.year}`,
@@ -204,12 +213,10 @@ export async function getDonorList(
       count: Number(row.count)
     }));
 
+    const giftDistributionMap = new Map(giftDistributionRaw.map((row) => [row.range, Number(row.count)]));
     const giftDistribution = giftRanges.map((range) => ({
       name: range.name,
-      value: lifetimeValues.filter((value) => {
-        const amount = toNumber(value.totalGiven);
-        return amount >= range.min && amount < range.max;
-      }).length
+      value: giftDistributionMap.get(range.name) ?? 0
     }));
 
     return {
@@ -274,5 +281,17 @@ function buildFallbackDonorList({
       giftDistribution: giftRanges.map((range) => ({ name: range.name, value: 0 }))
     }
   };
+}
+
+export async function getDonorList(
+  params: DonorFilters & { page: number; pageSize: number; sortBy?: DonorSortField; sortDir?: 'asc' | 'desc' }
+): Promise<DonorListResult> {
+  // Cache for 30 seconds to improve performance
+  const cacheKey = `donor-list-${JSON.stringify(params)}`;
+  return unstable_cache(
+    () => _getDonorList(params),
+    [cacheKey],
+    { revalidate: 30, tags: ['donors'] }
+  )();
 }
 
