@@ -2,7 +2,7 @@
 
 import { createHash } from 'crypto';
 
-import { MetricSource } from '@prisma/client';
+import { MetricSource, Prisma } from '@prisma/client';
 import { parse } from 'csv-parse/sync';
 import { getServerSession } from 'next-auth';
 import { revalidatePath } from 'next/cache';
@@ -142,6 +142,27 @@ function detectLegacyEtapestryFormat(rows: Record<string, string>[]) {
   return false;
 }
 
+function deriveManualDonorKey(row: NormalizedPledgeRow) {
+  const email = row.donor_email?.trim().toLowerCase();
+  if (email) {
+    return `manual-etp:email:${email}`;
+  }
+  const token = createHash('sha1')
+    .update(`${row.donor_name.trim().toLowerCase()}|${row.donor_phone?.replace(/\D+/g, '') ?? ''}`)
+    .digest('hex')
+    .slice(0, 16);
+  return `manual-etp:acct:${token}`;
+}
+
+function chunkArray<T>(items: T[], size: number): T[][] {
+  if (size <= 0) return [items];
+  const chunks: T[][] = [];
+  for (let index = 0; index < items.length; index += size) {
+    chunks.push(items.slice(index, index + size));
+  }
+  return chunks;
+}
+
 function deriveLegacyPledgeId(row: LegacyEtapestryRow) {
   const token = createHash('sha1')
     .update(
@@ -169,6 +190,52 @@ function mapLegacyRow(row: LegacyEtapestryRow): NormalizedPledgeRow {
     status: row.type,
     campaign: row.fund
   };
+}
+
+async function upsertManualDonors(payloads: ManualDonorPayload[]) {
+  if (!payloads.length) {
+    return [] as Array<{ id: string; externalId: string; email: string | null }>;
+  }
+  const results: Array<{ id: string; externalId: string; email: string | null }> = [];
+  for (const chunk of chunkArray(payloads, 400)) {
+    if (!chunk.length) continue;
+    const values = chunk.map((donor) =>
+      Prisma.sql`(${donor.externalId}, ${donor.name}, ${donor.email}, ${donor.phone})`
+    );
+    const rows = await prisma.$queryRaw<Array<{ id: string; externalId: string; email: string | null }>>`
+      INSERT INTO "Donor" ("externalId","name","email","phone")
+      VALUES ${Prisma.join(values)}
+      ON CONFLICT ("externalId") DO UPDATE SET
+        "name" = EXCLUDED."name",
+        "email" = EXCLUDED."email",
+        "phone" = EXCLUDED."phone",
+        "updatedAt" = NOW()
+      RETURNING "id","externalId","email";
+    `;
+    results.push(...rows);
+  }
+  return results;
+}
+
+async function upsertPledgesRaw(payloads: PledgeUpsertPayload[]) {
+  if (!payloads.length) return;
+  for (const chunk of chunkArray(payloads, 400)) {
+    if (!chunk.length) continue;
+    const values = chunk.map((pledge) =>
+      Prisma.sql`(${pledge.externalId}, ${pledge.donorId}, ${pledge.amount}, ${pledge.date}, ${pledge.campaign}, ${pledge.status})`
+    );
+    await prisma.$executeRaw`
+      INSERT INTO "Pledge" ("externalId","donorId","amount","date","campaign","status")
+      VALUES ${Prisma.join(values)}
+      ON CONFLICT ("externalId") DO UPDATE SET
+        "donorId" = EXCLUDED."donorId",
+        "amount" = EXCLUDED."amount",
+        "date" = EXCLUDED."date",
+        "campaign" = EXCLUDED."campaign",
+        "status" = EXCLUDED."status",
+        "updatedAt" = NOW()
+    `;
+  }
 }
 
 function parseLegacyEventbriteRows(rows: Record<string, string>[]): LegacyEventbriteRowWithMeta[] {
@@ -246,101 +313,143 @@ function aggregateEventbriteOrders(rows: LegacyEventbriteRowWithMeta[]): Normali
   }));
 }
 
+interface ManualDonorPayload {
+  externalId: string;
+  name: string;
+  email: string | null;
+  phone: string | null;
+}
+
+interface PledgeUpsertPayload {
+  externalId: string;
+  donorId: string;
+  amount: Prisma.Decimal;
+  date: Date;
+  campaign: string | null;
+  status: ReturnType<typeof normalizePledgeStatus>;
+}
+
 async function importPledges(rows: Record<string, string>[], options: { legacyFormat?: boolean } = {}) {
-  let imported = 0;
   const legacyFormat = options.legacyFormat ?? false;
   const normalizedRows: Array<{ rowNumber: number; data: NormalizedPledgeRow }> = [];
 
   for (let index = 0; index < rows.length; index += 1) {
     const row = rows[index];
-    if (legacyFormat && isSummaryLegacyRow(row)) {
-      continue;
-    }
-    let normalized: NormalizedPledgeRow;
     if (legacyFormat) {
+      if (isSummaryLegacyRow(row)) continue;
       const parsed = etapestryExportSchema.safeParse(row);
       if (!parsed.success) {
         throw new Error(`Row ${index + 2}: ${parsed.error.issues[0]?.message ?? 'Invalid pledge row'}`);
       }
-      normalized = mapLegacyRow(parsed.data);
+      normalizedRows.push({ rowNumber: index + 2, data: mapLegacyRow(parsed.data) });
     } else {
       const parsed = pledgeRowSchema.safeParse(row);
       if (!parsed.success) {
         throw new Error(`Row ${index + 2}: ${parsed.error.issues[0]?.message ?? 'Invalid pledge row'}`);
       }
-      normalized = parsed.data;
+      normalizedRows.push({ rowNumber: index + 2, data: parsed.data });
     }
-    normalizedRows.push({ rowNumber: index + 2, data: normalized });
   }
 
-  const batchSize = 40;
-  for (let index = 0; index < normalizedRows.length; index += batchSize) {
-    const batch = normalizedRows.slice(index, index + batchSize);
-    await Promise.all(
-      batch.map(async ({ data, rowNumber }) => {
-        const amount = parseCurrency(data.amount);
-        const date = new Date(data.date);
-        if (Number.isNaN(date.getTime())) {
-          throw new Error(`Row ${rowNumber}: Invalid date "${data.date}"`);
-        }
-        const donorEmail = data.donor_email?.trim() || null;
+  if (!normalizedRows.length) {
+    return 0;
+  }
 
-        let donor =
-          donorEmail ? await prisma.donor.findUnique({ where: { email: donorEmail } }) : null;
-        if (!donor) {
-          donor = await prisma.donor.upsert({
-            where: { externalId: `manual-etp:${data.pledge_id}` },
-            update: {
-              name: data.donor_name,
-              email: donorEmail,
-              phone: data.donor_phone?.trim() || null
-            },
-            create: {
-              externalId: `manual-etp:${data.pledge_id}`,
-              name: data.donor_name,
-              email: donorEmail,
-              phone: data.donor_phone?.trim() || null
-            }
-          });
-        } else {
-          await prisma.donor.update({
-            where: { id: donor.id },
-            data: {
-              name: data.donor_name,
-              phone: data.donor_phone?.trim() || donor.phone
-            }
-          });
-        }
+  const prepared = normalizedRows.map(({ rowNumber, data }) => {
+    const amount = parseCurrency(data.amount);
+    const date = new Date(data.date);
+    if (Number.isNaN(date.getTime())) {
+      throw new Error(`Row ${rowNumber}: Invalid date "${data.date}"`);
+    }
+    const donorEmailRaw = data.donor_email?.trim() || null;
+    const donorEmail = donorEmailRaw ? donorEmailRaw.toLowerCase() : null;
+    return {
+      rowNumber,
+      pledgeId: data.pledge_id,
+      donorKey: deriveManualDonorKey(data),
+      donorName: data.donor_name,
+      donorEmailRaw,
+      donorEmail,
+      donorPhone: data.donor_phone?.trim() || null,
+      amount,
+      date,
+      campaign: data.campaign?.trim() || null,
+      status: normalizePledgeStatus(data.status)
+    };
+  });
 
-        await prisma.pledge.upsert({
-          where: { externalId: data.pledge_id },
-          update: {
-            donorId: donor.id,
-            amount,
-            date,
-            campaign: data.campaign?.trim() || null,
-            status: normalizePledgeStatus(data.status)
-          },
-          create: {
-            externalId: data.pledge_id,
-            donorId: donor.id,
-            amount,
-            date,
-            campaign: data.campaign?.trim() || null,
-            status: normalizePledgeStatus(data.status)
-          }
-        });
-        imported += 1;
+  const emailRows = prepared.filter((row) => row.donorEmailRaw);
+  const uniqueEmails = Array.from(new Set(emailRows.map((row) => row.donorEmailRaw!)));
+  const existingEmailDonors = uniqueEmails.length
+    ? await prisma.donor.findMany({
+        where: { email: { in: uniqueEmails } },
+        select: { id: true, email: true }
       })
-    );
+    : [];
+  const emailToDonorId = new Map(
+    existingEmailDonors
+      .filter((donor) => donor.email)
+      .map((donor) => [donor.email!.trim().toLowerCase(), donor.id])
+  );
+
+  const manualDonorPayloads: ManualDonorPayload[] = [];
+  const manualDonorKeys = new Set<string>();
+  const donorIdByKey = new Map<string, string>();
+
+  for (const donor of existingEmailDonors) {
+    if (donor.email) {
+      donorIdByKey.set(`manual-etp:email:${donor.email.trim().toLowerCase()}`, donor.id);
+    }
   }
+
+  for (const row of prepared) {
+    const hasExistingEmail = row.donorEmail ? emailToDonorId.has(row.donorEmail) : false;
+    if (hasExistingEmail) {
+      continue;
+    }
+    if (!manualDonorKeys.has(row.donorKey)) {
+      manualDonorKeys.add(row.donorKey);
+      manualDonorPayloads.push({
+        externalId: row.donorKey,
+        name: row.donorName,
+        email: row.donorEmail,
+        phone: row.donorPhone
+      });
+    }
+  }
+
+  if (manualDonorPayloads.length) {
+    const inserted = await upsertManualDonors(manualDonorPayloads);
+    for (const donor of inserted) {
+      donorIdByKey.set(donor.externalId, donor.id);
+    }
+  }
+
+  const pledgePayloads: PledgeUpsertPayload[] = prepared.map((row) => {
+    const donorKey =
+      row.donorEmail && emailToDonorId.has(row.donorEmail) ? `manual-etp:email:${row.donorEmail}` : row.donorKey;
+    const donorId = donorIdByKey.get(donorKey);
+    if (!donorId) {
+      throw new Error(`Unable to resolve donor for row ${row.rowNumber}`);
+    }
+    return {
+      externalId: row.pledgeId,
+      donorId,
+      amount: new Prisma.Decimal(row.amount),
+      date: row.date,
+      campaign: row.campaign,
+      status: row.status
+    };
+  });
+
+  await upsertPledgesRaw(pledgePayloads);
 
   await recalculateDonorLifetimeValues();
   await invalidateMetricsForSources([MetricSource.ETAPESTRY]);
-  await recordIntegrationSync(MetricSource.ETAPESTRY, { synced: imported });
+  await recordIntegrationSync(MetricSource.ETAPESTRY, { synced: pledgePayloads.length });
   revalidatePath('/');
   revalidatePath('/donors');
-  return imported;
+  return pledgePayloads.length;
 }
 
 function isEventbriteOrderRow(row: Record<string, string> | undefined) {
