@@ -124,3 +124,12 @@ function buildFallbackDashboardData(anchor: Date): DashboardData {
   };
 }
 
+export async function getDashboardData(range: 'ytd' | '12m' = 'ytd'): Promise<DashboardData> {
+  // Cache for 60 seconds to improve performance
+  return unstable_cache(
+    () => _getDashboardData(range),
+    [`dashboard-${range}`],
+    { revalidate: 60, tags: ['dashboard', 'donors', 'events'] }
+  )();
+}
+
