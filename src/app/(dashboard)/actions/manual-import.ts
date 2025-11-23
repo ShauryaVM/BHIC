@@ -249,6 +249,7 @@ function aggregateEventbriteOrders(rows: LegacyEventbriteRowWithMeta[]): Normali
 async function importPledges(rows: Record<string, string>[], options: { legacyFormat?: boolean } = {}) {
   let imported = 0;
   const legacyFormat = options.legacyFormat ?? false;
+  const normalizedRows: Array<{ rowNumber: number; data: NormalizedPledgeRow }> = [];
 
   for (let index = 0; index < rows.length; index += 1) {
     const row = rows[index];
@@ -269,59 +270,69 @@ async function importPledges(rows: Record<string, string>[], options: { legacyFo
       }
       normalized = parsed.data;
     }
-    const amount = parseCurrency(normalized.amount);
-    const date = new Date(normalized.date);
-    if (Number.isNaN(date.getTime())) {
-      throw new Error(`Row ${index + 2}: Invalid date "${normalized.date}"`);
-    }
-    const donorEmail = normalized.donor_email?.trim() || null;
+    normalizedRows.push({ rowNumber: index + 2, data: normalized });
+  }
 
-    let donor =
-      donorEmail ? await prisma.donor.findUnique({ where: { email: donorEmail } }) : null;
-    if (!donor) {
-      donor = await prisma.donor.upsert({
-        where: { externalId: `manual-etp:${normalized.pledge_id}` },
-        update: {
-          name: normalized.donor_name,
-          email: donorEmail,
-          phone: normalized.donor_phone?.trim() || null
-        },
-        create: {
-          externalId: `manual-etp:${normalized.pledge_id}`,
-          name: normalized.donor_name,
-          email: donorEmail,
-          phone: normalized.donor_phone?.trim() || null
+  const batchSize = 40;
+  for (let index = 0; index < normalizedRows.length; index += batchSize) {
+    const batch = normalizedRows.slice(index, index + batchSize);
+    await Promise.all(
+      batch.map(async ({ data, rowNumber }) => {
+        const amount = parseCurrency(data.amount);
+        const date = new Date(data.date);
+        if (Number.isNaN(date.getTime())) {
+          throw new Error(`Row ${rowNumber}: Invalid date "${data.date}"`);
         }
-      });
-    } else {
-      await prisma.donor.update({
-        where: { id: donor.id },
-        data: {
-          name: normalized.donor_name,
-          phone: normalized.donor_phone?.trim() || donor.phone
-        }
-      });
-    }
+        const donorEmail = data.donor_email?.trim() || null;
 
-    await prisma.pledge.upsert({
-      where: { externalId: normalized.pledge_id },
-      update: {
-        donorId: donor.id,
-        amount,
-        date,
-        campaign: normalized.campaign?.trim() || null,
-        status: normalizePledgeStatus(normalized.status)
-      },
-      create: {
-        externalId: normalized.pledge_id,
-        donorId: donor.id,
-        amount,
-        date,
-        campaign: normalized.campaign?.trim() || null,
-        status: normalizePledgeStatus(normalized.status)
-      }
-    });
-    imported += 1;
+        let donor =
+          donorEmail ? await prisma.donor.findUnique({ where: { email: donorEmail } }) : null;
+        if (!donor) {
+          donor = await prisma.donor.upsert({
+            where: { externalId: `manual-etp:${data.pledge_id}` },
+            update: {
+              name: data.donor_name,
+              email: donorEmail,
+              phone: data.donor_phone?.trim() || null
+            },
+            create: {
+              externalId: `manual-etp:${data.pledge_id}`,
+              name: data.donor_name,
+              email: donorEmail,
+              phone: data.donor_phone?.trim() || null
+            }
+          });
+        } else {
+          await prisma.donor.update({
+            where: { id: donor.id },
+            data: {
+              name: data.donor_name,
+              phone: data.donor_phone?.trim() || donor.phone
+            }
+          });
+        }
+
+        await prisma.pledge.upsert({
+          where: { externalId: data.pledge_id },
+          update: {
+            donorId: donor.id,
+            amount,
+            date,
+            campaign: data.campaign?.trim() || null,
+            status: normalizePledgeStatus(data.status)
+          },
+          create: {
+            externalId: data.pledge_id,
+            donorId: donor.id,
+            amount,
+            date,
+            campaign: data.campaign?.trim() || null,
+            status: normalizePledgeStatus(data.status)
+          }
+        });
+        imported += 1;
+      })
+    );
   }
 
   await recalculateDonorLifetimeValues();
@@ -356,48 +367,54 @@ async function importEvents(rows: Record<string, string>[], options: { legacyFor
     }
   }
 
-  for (const row of normalizedRows) {
-    const rowPrefix = row.__rowNumber ? `Row ${row.__rowNumber}` : `Event ${row.name}`;
-    const startDate = new Date(row.start_date);
-    const endDate = new Date(row.end_date || row.start_date);
-    if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) {
-      throw new Error(`${rowPrefix}: Invalid start/end date`);
-    }
+  const batchSize = 40;
+  for (let index = 0; index < normalizedRows.length; index += batchSize) {
+    const batch = normalizedRows.slice(index, index + batchSize);
+    await Promise.all(
+      batch.map(async (row) => {
+        const rowPrefix = row.__rowNumber ? `Row ${row.__rowNumber}` : `Event ${row.name}`;
+        const startDate = new Date(row.start_date);
+        const endDate = new Date(row.end_date || row.start_date);
+        if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) {
+          throw new Error(`${rowPrefix}: Invalid start/end date`);
+        }
 
-    const ticketsTotal = parseInteger(row.tickets_total);
-    const ticketsSold = parseInteger(row.tickets_sold);
-    const grossRevenue = parseCurrency(row.gross_revenue);
-    const netRevenue = row.net_revenue
-      ? parseCurrency(row.net_revenue)
-      : Math.round(grossRevenue * 0.88 * 100) / 100;
+        const ticketsTotal = parseInteger(row.tickets_total);
+        const ticketsSold = parseInteger(row.tickets_sold);
+        const grossRevenue = parseCurrency(row.gross_revenue);
+        const netRevenue = row.net_revenue
+          ? parseCurrency(row.net_revenue)
+          : Math.round(grossRevenue * 0.88 * 100) / 100;
 
-    await prisma.event.upsert({
-      where: { externalId: row.event_id },
-      update: {
-        name: row.name,
-        startDate,
-        endDate,
-        venue: row.venue?.trim() || null,
-        status: normalizeEventStatus(row.status),
-        ticketsTotal,
-        ticketsSold,
-        grossRevenue,
-        netRevenue
-      },
-      create: {
-        externalId: row.event_id,
-        name: row.name,
-        startDate,
-        endDate,
-        venue: row.venue?.trim() || null,
-        status: normalizeEventStatus(row.status),
-        ticketsTotal,
-        ticketsSold,
-        grossRevenue,
-        netRevenue
-      }
-    });
-    imported += 1;
+        await prisma.event.upsert({
+          where: { externalId: row.event_id },
+          update: {
+            name: row.name,
+            startDate,
+            endDate,
+            venue: row.venue?.trim() || null,
+            status: normalizeEventStatus(row.status),
+            ticketsTotal,
+            ticketsSold,
+            grossRevenue,
+            netRevenue
+          },
+          create: {
+            externalId: row.event_id,
+            name: row.name,
+            startDate,
+            endDate,
+            venue: row.venue?.trim() || null,
+            status: normalizeEventStatus(row.status),
+            ticketsTotal,
+            ticketsSold,
+            grossRevenue,
+            netRevenue
+          }
+        });
+        imported += 1;
+      })
+    );
   }
 
   await invalidateMetricsForSources([MetricSource.EVENTBRITE]);
