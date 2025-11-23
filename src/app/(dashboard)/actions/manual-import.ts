@@ -202,7 +202,7 @@ async function upsertManualDonors(payloads: ManualDonorPayload[]) {
     const values = chunk.map((donor) =>
       Prisma.sql`(${donor.id}, ${donor.externalId}, ${donor.name}, ${donor.email}, ${donor.phone}, ${new Prisma.Decimal(
         donor.totalPledged
-      )}, ${new Prisma.Decimal(donor.totalGiven)}, ${donor.lastGiftDate}, ${new Date()})`
+      )}, ${new Prisma.Decimal(donor.totalGiven)}, ${donor.lastGiftDate}, NOW())`
     );
     const rows = await prisma.$queryRaw<Array<{ id: string; externalId: string; email: string | null }>>`
       INSERT INTO "Donor" ("id","externalId","name","email","phone","totalPledged","totalGiven","lastGiftDate","updatedAt")
