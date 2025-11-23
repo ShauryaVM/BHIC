@@ -8,6 +8,12 @@ import {
   isIntegrationStale
 } from '@/lib/integration-sync';
 
+const STATUS_TIMESTAMP_FORMATTER = new Intl.DateTimeFormat('en-US', {
+  dateStyle: 'medium',
+  timeStyle: 'short',
+  timeZone: 'UTC'
+});
+
 interface ManualImportNoticeProps {
   statuses: IntegrationStatuses;
   urgent?: boolean;
@@ -21,7 +27,9 @@ function formatStatus(status: IntegrationStatusValue | null) {
     return `Last attempt failed: ${status.error}`;
   }
   const timestamp = new Date(status.timestamp);
-  const formatted = Number.isNaN(timestamp.getTime()) ? 'Unknown time' : timestamp.toLocaleString();
+  const formatted = Number.isNaN(timestamp.getTime())
+    ? 'Unknown time'
+    : `${STATUS_TIMESTAMP_FORMATTER.format(timestamp)} UTC`;
   return `Last automatic sync: ${formatted}`;
 }
 
