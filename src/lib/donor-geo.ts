@@ -81,8 +81,16 @@ async function _getDonorGeography(): Promise<DonorGeoPoint[]> {
 
 export async function getDonorGeography(): Promise<DonorGeoPoint[]> {
   // Cache for 60 seconds to improve performance
+  // Only cache successful results, not errors
   return unstable_cache(
-    () => _getDonorGeography(),
+    async () => {
+      try {
+        return await _getDonorGeography();
+      } catch (error) {
+        // Don't cache errors - throw them immediately
+        throw error;
+      }
+    },
     ['donor-geography'],
     { revalidate: 60, tags: ['donors'] }
   )();

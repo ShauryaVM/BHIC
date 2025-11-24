@@ -287,9 +287,17 @@ export async function getDonorList(
   params: DonorFilters & { page: number; pageSize: number; sortBy?: DonorSortField; sortDir?: 'asc' | 'desc' }
 ): Promise<DonorListResult> {
   // Cache for 30 seconds to improve performance
+  // Only cache successful results, not errors
   const cacheKey = `donor-list-${JSON.stringify(params)}`;
   return unstable_cache(
-    () => _getDonorList(params),
+    async () => {
+      try {
+        return await _getDonorList(params);
+      } catch (error) {
+        // Don't cache errors - throw them immediately
+        throw error;
+      }
+    },
     [cacheKey],
     { revalidate: 30, tags: ['donors'] }
   )();

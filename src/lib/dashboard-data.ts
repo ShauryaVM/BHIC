@@ -126,8 +126,16 @@ function buildFallbackDashboardData(anchor: Date): DashboardData {
 
 export async function getDashboardData(range: 'ytd' | '12m' = 'ytd'): Promise<DashboardData> {
   // Cache for 60 seconds to improve performance
+  // Only cache successful results, not errors
   return unstable_cache(
-    () => _getDashboardData(range),
+    async () => {
+      try {
+        return await _getDashboardData(range);
+      } catch (error) {
+        // Don't cache errors - throw them immediately
+        throw error;
+      }
+    },
     [`dashboard-${range}`],
     { revalidate: 60, tags: ['dashboard', 'donors', 'events'] }
   )();

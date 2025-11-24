@@ -159,9 +159,17 @@ export async function getEventsData(
   sortOptions: EventSortOptions = {}
 ): Promise<EventsPageData> {
   // Cache for 30 seconds to improve performance
+  // Only cache successful results, not errors
   const cacheKey = `events-${JSON.stringify({ filters, sortOptions })}`;
   return unstable_cache(
-    () => _getEventsData(filters, sortOptions),
+    async () => {
+      try {
+        return await _getEventsData(filters, sortOptions);
+      } catch (error) {
+        // Don't cache errors - throw them immediately
+        throw error;
+      }
+    },
     [cacheKey],
     { revalidate: 30, tags: ['events'] }
   )();
