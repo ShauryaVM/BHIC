@@ -10,7 +10,12 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
   title: "BHIC Mission Control",
-  description: "Bald Head Island Conservancy operational dashboard"
+  description: "Bald Head Island Conservancy operational dashboard",
+  icons: {
+    icon: '/logo.svg',
+    shortcut: '/logo.svg',
+    apple: '/logo.svg',
+  }
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
