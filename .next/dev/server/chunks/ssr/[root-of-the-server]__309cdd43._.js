@@ -418,6 +418,7 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$startOfYear$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/date-fns/startOfYear.js [app-rsc] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$subDays$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/date-fns/subDays.js [app-rsc] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$subMonths$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/date-fns/subMonths.js [app-rsc] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$cache$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/cache.js [app-rsc] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$etapestry$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/etapestry.ts [app-rsc] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$eventbrite$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/eventbrite.ts [app-rsc] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$ga4$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/ga4.ts [app-rsc] (ecmascript)");
@@ -430,8 +431,9 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$time$2d$series
 ;
 ;
 ;
+;
 const toNumber = (value)=>Number(value ?? 0);
-async function getDashboardData(range = 'ytd') {
+async function _getDashboardData(range = 'ytd') {
     const now = new Date();
     const summaryStart = range === '12m' ? (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$subMonths$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["subMonths"])((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$startOfMonth$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["startOfMonth"])(now), 11) : (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$startOfYear$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["startOfYear"])(now);
     const monthlyStart = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$subMonths$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["subMonths"])((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$startOfMonth$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["startOfMonth"])(now), 11);
@@ -557,6 +559,27 @@ function buildFallbackDashboardData(anchor) {
                 }))
         }
     };
+}
+async function getDashboardData(range = 'ytd') {
+    // Cache for 60 seconds to improve performance
+    // Only cache successful results, not errors
+    return (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$cache$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["unstable_cache"])(async ()=>{
+        try {
+            return await _getDashboardData(range);
+        } catch (error) {
+            // Don't cache errors - throw them immediately
+            throw error;
+        }
+    }, [
+        `dashboard-${range}`
+    ], {
+        revalidate: 60,
+        tags: [
+            'dashboard',
+            'donors',
+            'events'
+        ]
+    })();
 }
 }),
 "[project]/src/lib/format.ts [app-rsc] (ecmascript)", ((__turbopack_context__) => {
@@ -889,12 +912,14 @@ function formatStatus(status) {
     if (!status) {
         return 'No successful sync detected.';
     }
+    const attemptTimestamp = new Date(status.timestamp);
+    const attemptFormatted = Number.isNaN(attemptTimestamp.getTime()) ? 'Unknown time' : `${STATUS_TIMESTAMP_FORMATTER.format(attemptTimestamp)} UTC`;
+    const successTimestamp = status.lastSuccessTimestamp ? new Date(status.lastSuccessTimestamp) : null;
+    const successFormatted = successTimestamp && !Number.isNaN(successTimestamp.getTime()) ? `${STATUS_TIMESTAMP_FORMATTER.format(successTimestamp)} UTC` : null;
     if (status.error) {
-        return `Last attempt failed: ${status.error}`;
+        return successFormatted ? `Last attempt failed (${status.error}). Last successful sync: ${successFormatted}.` : `Last attempt failed (${status.error}). No successful sync recorded.`;
     }
-    const timestamp = new Date(status.timestamp);
-    const formatted = Number.isNaN(timestamp.getTime()) ? 'Unknown time' : `${STATUS_TIMESTAMP_FORMATTER.format(timestamp)} UTC`;
-    return `Last automatic sync: ${formatted}`;
+    return `Last automatic sync: ${attemptFormatted}`;
 }
 function ManualImportNotice({ statuses, urgent = false }) {
     const etapestryStale = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$integration$2d$sync$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["isIntegrationStale"])(statuses.etapestry);
@@ -912,7 +937,7 @@ function ManualImportNotice({ statuses, urgent = false }) {
                                 children: "Manual import required"
                             }, void 0, false, {
                                 fileName: "[project]/src/app/(dashboard)/_components/manual-import-notice.tsx",
-                                lineNumber: 51,
+                                lineNumber: 62,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
@@ -920,7 +945,7 @@ function ManualImportNotice({ statuses, urgent = false }) {
                                 children: "Vendor APIs are unavailable"
                             }, void 0, false, {
                                 fileName: "[project]/src/app/(dashboard)/_components/manual-import-notice.tsx",
-                                lineNumber: 52,
+                                lineNumber: 63,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -928,7 +953,7 @@ function ManualImportNotice({ statuses, urgent = false }) {
                                 children: "Automated syncs from eTapestry and Eventbrite are failing. Until Blackbaud/Eventbrite restore API access, download the data exports and upload them here so dashboards stay up to date."
                             }, void 0, false, {
                                 fileName: "[project]/src/app/(dashboard)/_components/manual-import-notice.tsx",
-                                lineNumber: 53,
+                                lineNumber: 64,
                                 columnNumber: 13
                             }, this)
                         ]
@@ -939,7 +964,7 @@ function ManualImportNotice({ statuses, urgent = false }) {
                                 children: "Manual CSV upload"
                             }, void 0, false, {
                                 fileName: "[project]/src/app/(dashboard)/_components/manual-import-notice.tsx",
-                                lineNumber: 60,
+                                lineNumber: 71,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
@@ -947,7 +972,7 @@ function ManualImportNotice({ statuses, urgent = false }) {
                                 children: "Refresh pledges and events manually"
                             }, void 0, false, {
                                 fileName: "[project]/src/app/(dashboard)/_components/manual-import-notice.tsx",
-                                lineNumber: 61,
+                                lineNumber: 72,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -955,7 +980,7 @@ function ManualImportNotice({ statuses, urgent = false }) {
                                 children: "Use this fallback any time you want to push ad-hoc updates or reconcile with exports—no need to wait for the automated sync."
                             }, void 0, false, {
                                 fileName: "[project]/src/app/(dashboard)/_components/manual-import-notice.tsx",
-                                lineNumber: 62,
+                                lineNumber: 73,
                                 columnNumber: 13
                             }, this)
                         ]
@@ -970,7 +995,7 @@ function ManualImportNotice({ statuses, urgent = false }) {
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/(dashboard)/_components/manual-import-notice.tsx",
-                                lineNumber: 69,
+                                lineNumber: 80,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
@@ -980,23 +1005,33 @@ function ManualImportNotice({ statuses, urgent = false }) {
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/(dashboard)/_components/manual-import-notice.tsx",
-                                lineNumber: 70,
+                                lineNumber: 81,
                                 columnNumber: 11
+                            }, this),
+                            statuses.custom && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
+                                children: [
+                                    "• Custom Sources: ",
+                                    formatStatus(statuses.custom)
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/src/app/(dashboard)/_components/manual-import-notice.tsx",
+                                lineNumber: 83,
+                                columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/(dashboard)/_components/manual-import-notice.tsx",
-                        lineNumber: 68,
+                        lineNumber: 79,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/(dashboard)/_components/manual-import-notice.tsx",
-                lineNumber: 48,
+                lineNumber: 59,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                className: "mt-6 grid gap-6 md:grid-cols-2",
+                className: "mt-6 grid gap-6 md:grid-cols-2 lg:grid-cols-3",
                 children: [
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                         className: `rounded-2xl border p-5 shadow-sm ${urgent ? 'border-amber-200 bg-white/80' : 'border-slate-200 bg-slate-50'}`,
@@ -1011,7 +1046,7 @@ function ManualImportNotice({ statuses, urgent = false }) {
                                                 children: "eTapestry pledges"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(dashboard)/_components/manual-import-notice.tsx",
-                                                lineNumber: 82,
+                                                lineNumber: 96,
                                                 columnNumber: 15
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
@@ -1019,13 +1054,13 @@ function ManualImportNotice({ statuses, urgent = false }) {
                                                 children: etapestryStale ? 'Sync overdue' : 'Sync healthy'
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(dashboard)/_components/manual-import-notice.tsx",
-                                                lineNumber: 83,
+                                                lineNumber: 97,
                                                 columnNumber: 15
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/(dashboard)/_components/manual-import-notice.tsx",
-                                        lineNumber: 81,
+                                        lineNumber: 95,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$react$2d$server$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["default"], {
@@ -1035,43 +1070,43 @@ function ManualImportNotice({ statuses, urgent = false }) {
                                         children: "Download template"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/(dashboard)/_components/manual-import-notice.tsx",
-                                        lineNumber: 87,
-                                        columnNumber: 13
-                                    }, this)
-                                ]
-                            }, void 0, true, {
-                                fileName: "[project]/src/app/(dashboard)/_components/manual-import-notice.tsx",
-                                lineNumber: 80,
-                                columnNumber: 11
-                            }, this),
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("ol", {
-                                className: "mt-3 list-decimal space-y-1.5 pl-4 text-sm text-slate-600",
-                                children: [
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
-                                        children: "Log into eTapestry → Reports → Queries → run the “BHIC pledge export” or “Data Extraction” query."
-                                    }, void 0, false, {
-                                        fileName: "[project]/src/app/(dashboard)/_components/manual-import-notice.tsx",
-                                        lineNumber: 96,
-                                        columnNumber: 13
-                                    }, this),
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
-                                        children: "Export the results as CSV. The default columns (Date, Role, Account Name, Type, Pledged, Received, Fund) or the template-based export both work."
-                                    }, void 0, false, {
-                                        fileName: "[project]/src/app/(dashboard)/_components/manual-import-notice.tsx",
-                                        lineNumber: 97,
-                                        columnNumber: 13
-                                    }, this),
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
-                                        children: "Upload the CSV below to load pledges and donor updates into BHIC Dashboard."
-                                    }, void 0, false, {
-                                        fileName: "[project]/src/app/(dashboard)/_components/manual-import-notice.tsx",
                                         lineNumber: 101,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/(dashboard)/_components/manual-import-notice.tsx",
-                                lineNumber: 95,
+                                lineNumber: 94,
+                                columnNumber: 11
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("ol", {
+                                className: "mt-3 list-decimal space-y-1.5 pl-4 text-sm text-slate-600",
+                                children: [
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
+                                        children: 'Log into eTapestry → Reports → Search for "BHIC Data" in search box on left side of page → Click "Run Report"'
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/app/(dashboard)/_components/manual-import-notice.tsx",
+                                        lineNumber: 110,
+                                        columnNumber: 13
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
+                                        children: 'Select "CSV File - Download" from the dropdown menu for "Report Format". Click "Submit" to download the CSV file.'
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/app/(dashboard)/_components/manual-import-notice.tsx",
+                                        lineNumber: 111,
+                                        columnNumber: 13
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
+                                        children: "Upload the CSV below to load pledges and donor updates into BHIC Dashboard."
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/app/(dashboard)/_components/manual-import-notice.tsx",
+                                        lineNumber: 114,
+                                        columnNumber: 13
+                                    }, this)
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/src/app/(dashboard)/_components/manual-import-notice.tsx",
+                                lineNumber: 109,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1081,18 +1116,18 @@ function ManualImportNotice({ statuses, urgent = false }) {
                                     label: "pledges"
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/(dashboard)/_components/manual-import-notice.tsx",
-                                    lineNumber: 104,
+                                    lineNumber: 117,
                                     columnNumber: 13
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/src/app/(dashboard)/_components/manual-import-notice.tsx",
-                                lineNumber: 103,
+                                lineNumber: 116,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/(dashboard)/_components/manual-import-notice.tsx",
-                        lineNumber: 75,
+                        lineNumber: 89,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1108,7 +1143,7 @@ function ManualImportNotice({ statuses, urgent = false }) {
                                                 children: "Eventbrite events"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(dashboard)/_components/manual-import-notice.tsx",
-                                                lineNumber: 115,
+                                                lineNumber: 128,
                                                 columnNumber: 15
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
@@ -1116,13 +1151,13 @@ function ManualImportNotice({ statuses, urgent = false }) {
                                                 children: eventbriteStale ? 'Sync overdue' : 'Sync healthy'
                                             }, void 0, false, {
                                                 fileName: "[project]/src/app/(dashboard)/_components/manual-import-notice.tsx",
-                                                lineNumber: 116,
+                                                lineNumber: 129,
                                                 columnNumber: 15
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/(dashboard)/_components/manual-import-notice.tsx",
-                                        lineNumber: 114,
+                                        lineNumber: 127,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$react$2d$server$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["default"], {
@@ -1132,43 +1167,43 @@ function ManualImportNotice({ statuses, urgent = false }) {
                                         children: "Download template"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/(dashboard)/_components/manual-import-notice.tsx",
-                                        lineNumber: 120,
+                                        lineNumber: 133,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/(dashboard)/_components/manual-import-notice.tsx",
-                                lineNumber: 113,
+                                lineNumber: 126,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("ol", {
                                 className: "mt-3 list-decimal space-y-1.5 pl-4 text-sm text-slate-600",
                                 children: [
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
-                                        children: "In Eventbrite, open Reports → Orders (or the “BHIC Orders” saved report)."
+                                        children: "In Eventbrite, open Manage My Orders → Go to the Orders page on the left side of the page."
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/(dashboard)/_components/manual-import-notice.tsx",
-                                        lineNumber: 129,
+                                        lineNumber: 142,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
-                                        children: "Export the orders table as CSV—the default columns (Order ID, Event name, Ticket quantity, Net sales, etc.) already match what the uploader expects."
+                                        children: "Select all orders and run report. Export the CSV file."
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/(dashboard)/_components/manual-import-notice.tsx",
-                                        lineNumber: 130,
+                                        lineNumber: 143,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
                                         children: "Upload the CSV to refresh event counts, tickets sold, and revenue."
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/(dashboard)/_components/manual-import-notice.tsx",
-                                        lineNumber: 134,
+                                        lineNumber: 146,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/(dashboard)/_components/manual-import-notice.tsx",
-                                lineNumber: 128,
+                                lineNumber: 141,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1178,30 +1213,112 @@ function ManualImportNotice({ statuses, urgent = false }) {
                                     label: "events"
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/(dashboard)/_components/manual-import-notice.tsx",
-                                    lineNumber: 137,
+                                    lineNumber: 149,
                                     columnNumber: 13
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/src/app/(dashboard)/_components/manual-import-notice.tsx",
-                                lineNumber: 136,
+                                lineNumber: 148,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/(dashboard)/_components/manual-import-notice.tsx",
-                        lineNumber: 108,
+                        lineNumber: 121,
+                        columnNumber: 9
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: `rounded-2xl border p-5 shadow-sm ${urgent ? 'border-amber-200 bg-white/80' : 'border-slate-200 bg-slate-50'}`,
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                className: "flex items-center justify-between",
+                                children: [
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        children: [
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                className: "text-xs font-semibold uppercase tracking-widest text-slate-500",
+                                                children: "Custom Data Sources"
+                                            }, void 0, false, {
+                                                fileName: "[project]/src/app/(dashboard)/_components/manual-import-notice.tsx",
+                                                lineNumber: 160,
+                                                columnNumber: 15
+                                            }, this),
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
+                                                className: "text-lg font-semibold text-slate-900",
+                                                children: "Upload Any CSV"
+                                            }, void 0, false, {
+                                                fileName: "[project]/src/app/(dashboard)/_components/manual-import-notice.tsx",
+                                                lineNumber: 161,
+                                                columnNumber: 15
+                                            }, this)
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/src/app/(dashboard)/_components/manual-import-notice.tsx",
+                                        lineNumber: 159,
+                                        columnNumber: 13
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$react$2d$server$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["default"], {
+                                        href: "/settings/data-sources",
+                                        className: "text-xs font-semibold text-brand hover:underline",
+                                        children: "Manage"
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/app/(dashboard)/_components/manual-import-notice.tsx",
+                                        lineNumber: 163,
+                                        columnNumber: 13
+                                    }, this)
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/src/app/(dashboard)/_components/manual-import-notice.tsx",
+                                lineNumber: 158,
+                                columnNumber: 11
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                className: "mt-3 text-sm text-slate-600",
+                                children: "Create custom data sources for any CSV data. The system will automatically detect structure and map fields."
+                            }, void 0, false, {
+                                fileName: "[project]/src/app/(dashboard)/_components/manual-import-notice.tsx",
+                                lineNumber: 170,
+                                columnNumber: 11
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                className: "mt-4",
+                                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$react$2d$server$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["default"], {
+                                    href: "/settings/data-sources/new",
+                                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])(Button, {
+                                        variant: "outline",
+                                        className: "w-full",
+                                        children: "Create Data Source"
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/app/(dashboard)/_components/manual-import-notice.tsx",
+                                        lineNumber: 175,
+                                        columnNumber: 15
+                                    }, this)
+                                }, void 0, false, {
+                                    fileName: "[project]/src/app/(dashboard)/_components/manual-import-notice.tsx",
+                                    lineNumber: 174,
+                                    columnNumber: 13
+                                }, this)
+                            }, void 0, false, {
+                                fileName: "[project]/src/app/(dashboard)/_components/manual-import-notice.tsx",
+                                lineNumber: 173,
+                                columnNumber: 11
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/src/app/(dashboard)/_components/manual-import-notice.tsx",
+                        lineNumber: 153,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/(dashboard)/_components/manual-import-notice.tsx",
-                lineNumber: 74,
+                lineNumber: 88,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/app/(dashboard)/_components/manual-import-notice.tsx",
-        lineNumber: 41,
+        lineNumber: 52,
         columnNumber: 5
     }, this);
 }

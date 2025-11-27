@@ -1,11 +1,15 @@
 {
   "/(dashboard)/analytics/page": "app/(dashboard)/analytics/page.js",
+  "/(dashboard)/chat/page": "app/(dashboard)/chat/page.js",
   "/(dashboard)/donors/page": "app/(dashboard)/donors/page.js",
   "/(dashboard)/events/page": "app/(dashboard)/events/page.js",
   "/(dashboard)/insights/page": "app/(dashboard)/insights/page.js",
   "/(dashboard)/page": "app/(dashboard)/page.js",
+  "/(dashboard)/settings/data-sources/[id]/page": "app/(dashboard)/settings/data-sources/[id]/page.js",
+  "/(dashboard)/settings/data-sources/[id]/upload/page": "app/(dashboard)/settings/data-sources/[id]/upload/page.js",
+  "/(dashboard)/settings/data-sources/new/page": "app/(dashboard)/settings/data-sources/new/page.js",
+  "/(dashboard)/settings/data-sources/page": "app/(dashboard)/settings/data-sources/page.js",
   "/(dashboard)/settings/page": "app/(dashboard)/settings/page.js",
   "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
-  "/api/insights/report/route": "app/api/insights/report/route.js",
-  "/auth/signin/page": "app/auth/signin/page.js"
+  "/api/insights/report/route": "app/api/insights/report/route.js"
 }

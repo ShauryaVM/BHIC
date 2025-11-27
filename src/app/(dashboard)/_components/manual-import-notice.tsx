@@ -2,6 +2,7 @@ import Link from 'next/link';
 
 import { ManualImportForm } from '@/app/(dashboard)/_components/manual-import-form';
 import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import {
   IntegrationStatuses,
   IntegrationStatusValue,
@@ -23,14 +24,25 @@ function formatStatus(status: IntegrationStatusValue | null) {
   if (!status) {
     return 'No successful sync detected.';
   }
-  if (status.error) {
-    return `Last attempt failed: ${status.error}`;
-  }
-  const timestamp = new Date(status.timestamp);
-  const formatted = Number.isNaN(timestamp.getTime())
+
+  const attemptTimestamp = new Date(status.timestamp);
+  const attemptFormatted = Number.isNaN(attemptTimestamp.getTime())
     ? 'Unknown time'
-    : `${STATUS_TIMESTAMP_FORMATTER.format(timestamp)} UTC`;
-  return `Last automatic sync: ${formatted}`;
+    : `${STATUS_TIMESTAMP_FORMATTER.format(attemptTimestamp)} UTC`;
+
+  const successTimestamp = status.lastSuccessTimestamp ? new Date(status.lastSuccessTimestamp) : null;
+  const successFormatted =
+    successTimestamp && !Number.isNaN(successTimestamp.getTime())
+      ? `${STATUS_TIMESTAMP_FORMATTER.format(successTimestamp)} UTC`
+      : null;
+
+  if (status.error) {
+    return successFormatted
+      ? `Last attempt failed (${status.error}). Last successful sync: ${successFormatted}.`
+      : `Last attempt failed (${status.error}). No successful sync recorded.`;
+  }
+
+  return `Last automatic sync: ${attemptFormatted}`;
 }
 
 export function ManualImportNotice({ statuses, urgent = false }: ManualImportNoticeProps) {
@@ -68,10 +80,13 @@ export function ManualImportNotice({ statuses, urgent = false }: ManualImportNot
         <ul className="mt-2 space-y-1 text-sm text-slate-700">
           <li>• eTapestry: {formatStatus(statuses.etapestry)}</li>
           <li>• Eventbrite: {formatStatus(statuses.eventbrite)}</li>
+          {statuses.custom && (
+            <li>• Custom Sources: {formatStatus(statuses.custom)}</li>
+          )}
         </ul>
       </div>
 
-      <div className="mt-6 grid gap-6 md:grid-cols-2">
+      <div className="mt-6 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         <div
           className={`rounded-2xl border p-5 shadow-sm ${
             urgent ? 'border-amber-200 bg-white/80' : 'border-slate-200 bg-slate-50'
@@ -93,10 +108,9 @@ export function ManualImportNotice({ statuses, urgent = false }: ManualImportNot
             </Link>
           </div>
           <ol className="mt-3 list-decimal space-y-1.5 pl-4 text-sm text-slate-600">
-            <li>Log into eTapestry → Reports → Queries → run the “BHIC pledge export” or “Data Extraction” query.</li>
+            <li>Log into eTapestry → Reports → Search for "BHIC Data" in search box on left side of page → Click "Run Report"</li>
             <li>
-              Export the results as CSV. The default columns (Date, Role, Account Name, Type, Pledged, Received, Fund) or
-              the template-based export both work.
+              Select "CSV File - Download" from the dropdown menu for "Report Format". Click "Submit" to download the CSV file.
             </li>
             <li>Upload the CSV below to load pledges and donor updates into BHIC Dashboard.</li>
           </ol>
@@ -126,15 +140,43 @@ export function ManualImportNotice({ statuses, urgent = false }: ManualImportNot
             </Link>
           </div>
           <ol className="mt-3 list-decimal space-y-1.5 pl-4 text-sm text-slate-600">
-            <li>In Eventbrite, open Reports → Orders (or the “BHIC Orders” saved report).</li>
+            <li>In Eventbrite, open Manage My Orders → Go to the Orders page on the left side of the page.</li>
             <li>
-              Export the orders table as CSV—the default columns (Order ID, Event name, Ticket quantity, Net sales, etc.)
-              already match what the uploader expects.
+              Select all orders and run report. Export the CSV file.
             </li>
             <li>Upload the CSV to refresh event counts, tickets sold, and revenue.</li>
           </ol>
           <div className="mt-4">
             <ManualImportForm source="eventbrite" label="events" />
+          </div>
+        </div>
+
+        <div
+          className={`rounded-2xl border p-5 shadow-sm ${
+            urgent ? 'border-amber-200 bg-white/80' : 'border-slate-200 bg-slate-50'
+          }`}
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-widest text-slate-500">Custom Data Sources</p>
+              <h3 className="text-lg font-semibold text-slate-900">Upload Any CSV</h3>
+            </div>
+            <Link
+              href="/settings/data-sources"
+              className="text-xs font-semibold text-brand hover:underline"
+            >
+              Manage
+            </Link>
+          </div>
+          <p className="mt-3 text-sm text-slate-600">
+            Create custom data sources for any CSV data. The system will automatically detect structure and map fields.
+          </p>
+          <div className="mt-4">
+            <Link href="/settings/data-sources/new">
+              <Button variant="secondary" className="w-full">
+                Create Data Source
+              </Button>
+            </Link>
           </div>
         </div>
       </div>

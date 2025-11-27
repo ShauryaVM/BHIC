@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
 import type { LucideIcon } from "lucide-react";
-import { Activity, CalendarDays, Gauge, Lightbulb, Settings, Users2, X } from "lucide-react";
+import { Activity, CalendarDays, Gauge, Lightbulb, MessageSquare, Settings, Users2, X } from "lucide-react";
 
 const navItems: Array<{ href: string; label: string; icon: LucideIcon }> = [
   { href: "/", label: "Dashboard", icon: Gauge },
@@ -13,6 +13,7 @@ const navItems: Array<{ href: string; label: string; icon: LucideIcon }> = [
   { href: "/events", label: "Events", icon: CalendarDays },
   { href: "/analytics", label: "Analytics", icon: Activity },
   { href: "/insights", label: "Insights", icon: Lightbulb },
+  { href: "/chat", label: "AI Assistant", icon: MessageSquare },
   { href: "/settings", label: "Settings", icon: Settings }
 ];
 

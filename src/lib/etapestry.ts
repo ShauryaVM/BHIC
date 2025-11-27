@@ -420,6 +420,18 @@ export async function syncPledgesToDb(range?: Partial<FetchParams>) {
   const window = pledgeSyncRange(range);
   const pledges = await fetchPledges(window);
 
+  if (!pledges.length) {
+    const existingCount = await prisma.pledge.count();
+    if (existingCount > 0) {
+      throw new Error(
+        'eTapestry returned zero pledges. Existing manual data was kept—verify API credentials or widen the sync date range.'
+      );
+    }
+    await invalidateMetricsForSources([MetricSource.ETAPESTRY]);
+    await recordIntegrationSync(MetricSource.ETAPESTRY, { synced: 0 });
+    return { synced: 0 };
+  }
+
   for (const pledge of pledges) {
     const donorExternalId = pledge.donor.externalId ?? pledge.donor.id ?? `etp-${pledge.donor.email ?? pledge.id}`;
     const donor = await prisma.donor.upsert({

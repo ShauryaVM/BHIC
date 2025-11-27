@@ -28,7 +28,10 @@ export function IntegrationSyncPanel({ statuses }: IntegrationSyncPanelProps) {
       return "Never synced";
     }
     if (status.error) {
-      return `Failed · ${status.error}`;
+      const fallback = status.lastSuccessTimestamp
+        ? `Last success ${formatTimestamp(status.lastSuccessTimestamp)}`
+        : "No successful sync recorded";
+      return `Failed · ${status.error} · ${fallback}`;
     }
     return `Last synced ${formatTimestamp(status.timestamp)} · ${status.synced ?? 0} records`;
   }
@@ -47,12 +50,17 @@ export function IntegrationSyncPanel({ statuses }: IntegrationSyncPanelProps) {
         setLatest({
           etapestry: {
             synced: result.result.etapestry?.synced,
-            timestamp
+            timestamp,
+            lastSuccessTimestamp: timestamp,
+            lastSuccessSynced: result.result.etapestry?.synced
           },
           eventbrite: {
             synced: result.result.eventbrite?.synced,
-            timestamp
-          }
+            timestamp,
+            lastSuccessTimestamp: timestamp,
+            lastSuccessSynced: result.result.eventbrite?.synced
+          },
+          custom: latest.custom
         });
         setMessage(
           `eTapestry synced ${result.result.etapestry?.synced ?? 0} pledges · Eventbrite synced ${

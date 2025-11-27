@@ -411,14 +411,16 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$startOfYear$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/date-fns/startOfYear.js [app-rsc] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$subDays$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/date-fns/subDays.js [app-rsc] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$subMonths$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/date-fns/subMonths.js [app-rsc] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$cache$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/cache.js [app-rsc] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/prisma.ts [app-rsc] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$time$2d$series$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/time-series.ts [app-rsc] (ecmascript)");
 ;
 ;
 ;
 ;
+;
 const toNumber = (value)=>Number(value ?? 0);
-async function getDonorList(params) {
+async function _getDonorList(params) {
     const { page, pageSize, query, minTotalGiven, lastGiftFrom, lastGiftTo, status, sortBy, sortDir } = params;
     const where = {};
     const giftRanges = [
@@ -503,7 +505,7 @@ async function getDonorList(params) {
         const monthlyWindowStart = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$subMonths$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["subMonths"])((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$startOfMonth$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["startOfMonth"])(now), 11);
         const yearlyWindowStart = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$startOfYear$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["startOfYear"])(new Date(now.getFullYear() - 5, 0, 1));
         const allTimeStart = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$startOfYear$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["startOfYear"])(new Date(2006, 0, 1));
-        const [totalMatching, donors, totalDonors, activeDonors, averageLifetimeValue, monthlyGifts, yearlyGifts, lifetimeValues, allTimeGifts] = await Promise.all([
+        const [totalMatching, donors, totalDonors, activeDonors, averageLifetimeValue, monthlyGiftsRaw, yearlyGiftsRaw, giftDistributionRaw, allTimeGifts] = await Promise.all([
             __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].donor.count({
                 where
             }),
@@ -540,35 +542,37 @@ async function getDonorList(params) {
                     totalGiven: true
                 }
             }),
-            __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].pledge.findMany({
-                where: {
-                    date: {
-                        gte: monthlyWindowStart
-                    },
-                    status: __TURBOPACK__imported__module__$5b$externals$5d2f40$prisma$2f$client__$5b$external$5d$__$2840$prisma$2f$client$2c$__cjs$29$__["PledgeStatus"].RECEIVED
-                },
-                select: {
-                    date: true,
-                    amount: true
-                }
-            }),
-            __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].pledge.findMany({
-                where: {
-                    date: {
-                        gte: yearlyWindowStart
-                    },
-                    status: __TURBOPACK__imported__module__$5b$externals$5d2f40$prisma$2f$client__$5b$external$5d$__$2840$prisma$2f$client$2c$__cjs$29$__["PledgeStatus"].RECEIVED
-                },
-                select: {
-                    date: true,
-                    amount: true
-                }
-            }),
-            __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].donor.findMany({
-                select: {
-                    totalGiven: true
-                }
-            }),
+            __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].$queryRaw`
+        SELECT TO_CHAR("date", 'YYYY-MM') AS month,
+               SUM("amount") AS total,
+               COUNT(*)::bigint AS count
+        FROM "Pledge"
+        WHERE "status" = ${__TURBOPACK__imported__module__$5b$externals$5d2f40$prisma$2f$client__$5b$external$5d$__$2840$prisma$2f$client$2c$__cjs$29$__["PledgeStatus"].RECEIVED}::"PledgeStatus"
+          AND "date" >= ${monthlyWindowStart}
+        GROUP BY month
+        ORDER BY month ASC
+      `,
+            __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].$queryRaw`
+        SELECT EXTRACT(YEAR FROM "date")::int AS year,
+               SUM("amount") AS total,
+               COUNT(*)::bigint AS count
+        FROM "Pledge"
+        WHERE "status" = ${__TURBOPACK__imported__module__$5b$externals$5d2f40$prisma$2f$client__$5b$external$5d$__$2840$prisma$2f$client$2c$__cjs$29$__["PledgeStatus"].RECEIVED}::"PledgeStatus"
+          AND "date" >= ${yearlyWindowStart}
+        GROUP BY year
+        ORDER BY year ASC
+      `,
+            __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].$queryRaw`
+        SELECT CASE
+          WHEN "totalGiven" < 1000 THEN '< $1k'
+          WHEN "totalGiven" < 5000 THEN '$1k - $5k'
+          WHEN "totalGiven" < 10000 THEN '$5k - $10k'
+          ELSE '$10k+'
+        END AS range,
+        COUNT(*)::bigint AS count
+        FROM "Donor"
+        GROUP BY range
+      `,
             __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].$queryRaw`
         SELECT EXTRACT(YEAR FROM "date")::int AS year,
                SUM("amount") AS total,
@@ -586,44 +590,41 @@ async function getDonorList(params) {
                 totalGiven: toNumber(donor.totalGiven),
                 totalPledged: toNumber(donor.totalPledged)
             }));
+        const monthlyGiftsMap = new Map(monthlyGiftsRaw.map((row)=>[
+                row.month,
+                {
+                    total: toNumber(row.total),
+                    count: Number(row.count)
+                }
+            ]));
         const giftsMonthly = acquisitionBuckets.map((bucket)=>{
-            const entries = monthlyGifts.filter((entry)=>entry.date >= bucket.start && entry.date <= bucket.end);
-            const totalAmount = entries.reduce((sum, entry)=>sum + toNumber(entry.amount), 0);
+            const data = monthlyGiftsMap.get(bucket.key) ?? {
+                total: 0,
+                count: 0
+            };
             return {
                 label: bucket.label,
-                value: totalAmount,
-                count: entries.length
+                value: data.total,
+                count: data.count
             };
         });
-        const yearlyBuckets = new Map();
-        for (const entry of yearlyGifts){
-            const year = entry.date.getFullYear();
-            if (!yearlyBuckets.has(year)) {
-                yearlyBuckets.set(year, {
-                    value: 0,
-                    count: 0
-                });
-            }
-            const bucket = yearlyBuckets.get(year);
-            bucket.value += toNumber(entry.amount);
-            bucket.count += 1;
-        }
-        const giftsYearly = Array.from(yearlyBuckets.entries()).sort(([a], [b])=>a - b).map(([year, bucket])=>({
-                label: `${year}`,
-                value: bucket.value,
-                count: bucket.count
+        const giftsYearly = yearlyGiftsRaw.map((row)=>({
+                label: `${row.year}`,
+                value: toNumber(row.total),
+                count: Number(row.count)
             }));
         const giftsAllTime = allTimeGifts.map((row)=>({
                 label: `${row.year}`,
                 value: toNumber(row.total),
                 count: Number(row.count)
             }));
+        const giftDistributionMap = new Map(giftDistributionRaw.map((row)=>[
+                row.range,
+                Number(row.count)
+            ]));
         const giftDistribution = giftRanges.map((range)=>({
                 name: range.name,
-                value: lifetimeValues.filter((value)=>{
-                    const amount = toNumber(value.totalGiven);
-                    return amount >= range.min && amount < range.max;
-                }).length
+                value: giftDistributionMap.get(range.name) ?? 0
             }));
         return {
             donors: formattedDonors,
@@ -684,6 +685,26 @@ function buildFallbackDonorList({ page, pageSize, acquisitionBuckets, giftRanges
         }
     };
 }
+async function getDonorList(params) {
+    // Cache for 30 seconds to improve performance
+    // Only cache successful results, not errors
+    const cacheKey = `donor-list-${JSON.stringify(params)}`;
+    return (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$cache$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["unstable_cache"])(async ()=>{
+        try {
+            return await _getDonorList(params);
+        } catch (error) {
+            // Don't cache errors - throw them immediately
+            throw error;
+        }
+    }, [
+        cacheKey
+    ], {
+        revalidate: 30,
+        tags: [
+            'donors'
+        ]
+    })();
+}
 }),
 "[project]/src/lib/donor-geo.ts [app-rsc] (ecmascript)", ((__turbopack_context__) => {
 "use strict";
@@ -692,8 +713,10 @@ __turbopack_context__.s([
     "getDonorGeography",
     ()=>getDonorGeography
 ]);
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$cache$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/cache.js [app-rsc] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zipcodes$2f$lib$2f$index$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/zipcodes/lib/index.js [app-rsc] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/prisma.ts [app-rsc] (ecmascript)");
+;
 ;
 ;
 const decimalToNumber = (value)=>Number(value ?? 0);
@@ -702,7 +725,7 @@ const normalizePostal = (postal)=>{
     const match = postal.match(/\d{5}/);
     return match ? match[0] : null;
 };
-async function getDonorGeography() {
+async function _getDonorGeography() {
     const donors = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].donor.findMany({
         where: {
             postalCode: {
@@ -751,6 +774,25 @@ async function getDonorGeography() {
         });
     }
     return Array.from(points.values()).sort((a, b)=>b.totalGiven - a.totalGiven);
+}
+async function getDonorGeography() {
+    // Cache for 60 seconds to improve performance
+    // Only cache successful results, not errors
+    return (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$cache$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["unstable_cache"])(async ()=>{
+        try {
+            return await _getDonorGeography();
+        } catch (error) {
+            // Don't cache errors - throw them immediately
+            throw error;
+        }
+    }, [
+        'donor-geography'
+    ], {
+        revalidate: 60,
+        tags: [
+            'donors'
+        ]
+    })();
 }
 }),
 "[project]/src/lib/format.ts [app-rsc] (ecmascript)", ((__turbopack_context__) => {

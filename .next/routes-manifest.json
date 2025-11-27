@@ -27,6 +27,22 @@
         "nxtPnextauth": "nxtPnextauth"
       },
       "namedRegex": "^/api/auth/(?<nxtPnextauth>.+?)(?:/)?$"
+    },
+    {
+      "page": "/settings/data-sources/[id]",
+      "regex": "^/settings/data\\-sources/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/settings/data\\-sources/(?<nxtPid>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/settings/data-sources/[id]/upload",
+      "regex": "^/settings/data\\-sources/([^/]+?)/upload(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/settings/data\\-sources/(?<nxtPid>[^/]+?)/upload(?:/)?$"
     }
   ],
   "staticRoutes": [
@@ -73,6 +89,12 @@
       "namedRegex": "^/auth/signin(?:/)?$"
     },
     {
+      "page": "/chat",
+      "regex": "^/chat(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/chat(?:/)?$"
+    },
+    {
       "page": "/donors",
       "regex": "^/donors(?:/)?$",
       "routeKeys": {},
@@ -95,6 +117,18 @@
       "regex": "^/settings(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/settings(?:/)?$"
+    },
+    {
+      "page": "/settings/data-sources",
+      "regex": "^/settings/data\\-sources(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/settings/data\\-sources(?:/)?$"
+    },
+    {
+      "page": "/settings/data-sources/new",
+      "regex": "^/settings/data\\-sources/new(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/settings/data\\-sources/new(?:/)?$"
     }
   ],
   "dataRoutes": [],

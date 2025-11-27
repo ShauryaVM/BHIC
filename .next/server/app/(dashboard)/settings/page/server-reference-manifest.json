@@ -1,9 +1,24 @@
 {
   "node": {
+    "601493cf293fd13ffca7ecda555c1ce3c8833dff6c": {
+      "workers": {
+        "app/(dashboard)/settings/page": {
+          "moduleId": 69661,
+          "async": false,
+          "exportedName": "sendChatMessage",
+          "filename": "src/app/(dashboard)/actions/chat.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/settings/page": "action-browser"
+      },
+      "exportedName": "sendChatMessage",
+      "filename": "src/app/(dashboard)/actions/chat.ts"
+    },
     "40bfcdc425a8882d2a6d3f630aae336ec8cd76680e": {
       "workers": {
         "app/(dashboard)/settings/page": {
-          "moduleId": 36846,
+          "moduleId": 69661,
           "async": false,
           "exportedName": "updateSecureSettingAction",
           "filename": "src/app/(dashboard)/settings/actions.ts"
@@ -18,7 +33,7 @@
     "40e2a2b0f9b76735a91fcfa73d6bdbf5eab7567714": {
       "workers": {
         "app/(dashboard)/settings/page": {
-          "moduleId": 36846,
+          "moduleId": 69661,
           "async": false,
           "exportedName": "updateUserRoleAction",
           "filename": "src/app/(dashboard)/settings/actions.ts"

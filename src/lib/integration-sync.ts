@@ -2,11 +2,12 @@ import { MetricSource } from '@prisma/client';
 
 import { prisma } from '@/lib/prisma';
 
-type IntegrationKey = 'integration:etapestry' | 'integration:eventbrite';
+type IntegrationKey = 'integration:etapestry' | 'integration:eventbrite' | 'integration:custom';
 
 const STATUS_KEYS: Record<MetricSource, IntegrationKey | null> = {
   [MetricSource.ETAPESTRY]: 'integration:etapestry',
   [MetricSource.EVENTBRITE]: 'integration:eventbrite',
+  [MetricSource.CUSTOM]: 'integration:custom',
   [MetricSource.GA4]: null,
   [MetricSource.INTERNAL]: null
 };
@@ -23,11 +24,14 @@ export interface IntegrationStatusValue {
   synced?: number;
   error?: string;
   timestamp: string;
+  lastSuccessTimestamp?: string;
+  lastSuccessSynced?: number;
 }
 
 export interface IntegrationStatuses {
   etapestry: IntegrationStatusValue | null;
   eventbrite: IntegrationStatusValue | null;
+  custom: IntegrationStatusValue | null;
 }
 
 export async function recordIntegrationSync(source: MetricSource, payload: Omit<IntegrationStatusValue, 'timestamp'>) {
@@ -58,9 +62,16 @@ export async function getIntegrationStatuses(): Promise<IntegrationStatuses> {
   });
 
   const latest = new Map<string, typeof rows[number]>();
+  const lastSuccess = new Map<string, typeof rows[number]>();
+
   for (const row of rows) {
     if (!latest.has(row.key)) {
       latest.set(row.key, row);
+    }
+    const value = row.value as Partial<IntegrationStatusValue> | null;
+    const isSuccess = !value?.error;
+    if (isSuccess && !lastSuccess.has(row.key)) {
+      lastSuccess.set(row.key, row);
     }
   }
 
@@ -69,19 +80,36 @@ export async function getIntegrationStatuses(): Promise<IntegrationStatuses> {
     if (!entry) return null;
     const value = entry.value as Partial<IntegrationStatusValue> | null;
     const timestamp =
-      (value?.timestamp && typeof value.timestamp === 'string'
+      value?.timestamp && typeof value.timestamp === 'string'
         ? value.timestamp
-        : entry.createdAt.toISOString());
+        : entry.createdAt.toISOString();
+
+    const successEntry = lastSuccess.get(key) ?? (!value?.error ? entry : undefined);
+    const successValue = successEntry?.value as Partial<IntegrationStatusValue> | null;
+    const lastSuccessTimestamp =
+      successEntry &&
+      (successValue?.timestamp && typeof successValue.timestamp === 'string'
+        ? successValue.timestamp
+        : successEntry.createdAt.toISOString());
+
     return {
       synced: typeof value?.synced === 'number' ? value.synced : undefined,
       error: typeof value?.error === 'string' ? value.error : undefined,
-      timestamp
+      timestamp,
+      lastSuccessTimestamp,
+      lastSuccessSynced:
+        typeof successValue?.synced === 'number'
+          ? successValue.synced
+          : !value?.error && typeof value?.synced === 'number'
+            ? value.synced
+            : undefined
     };
   };
 
   return {
     etapestry: formatStatus('integration:etapestry'),
-    eventbrite: formatStatus('integration:eventbrite')
+    eventbrite: formatStatus('integration:eventbrite'),
+    custom: formatStatus('integration:custom')
   };
 }
 
@@ -91,11 +119,15 @@ export function isIntegrationStale(
 ): boolean {
   const { maxAgeHours = 12 } = options;
   if (!status) return true;
-  if (status.error) return true;
-  const timestamp = new Date(status.timestamp);
+  const referenceTimestamp = status.lastSuccessTimestamp ?? status.timestamp;
+  if (!referenceTimestamp) return true;
+  const timestamp = new Date(referenceTimestamp);
   if (Number.isNaN(timestamp.getTime())) return true;
   const ageMs = Date.now() - timestamp.getTime();
-  return ageMs > maxAgeHours * 60 * 60 * 1000;
+  if (ageMs > maxAgeHours * 60 * 60 * 1000) {
+    return true;
+  }
+  return false;
 }
 
 export async function invalidateMetricsForSources(sources: MetricSource[]) {

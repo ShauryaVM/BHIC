@@ -1,17 +1,173 @@
-node_modules
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
 
-# Environment files
+# Testing
+coverage/
+*.lcov
+.nyc_output
+
+# Next.js
+.next/
+out/
+build/
+dist/
+
+# Production
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Environment variables
 .env
-.env.local
+.env*.local
 .env.development
 .env.production
 .env.test
+.env.development.local
+.env.production.local
+.env.test.local
 
-# Local data exports
-BHIC Data Extraction.csv
-BHIC_Order_til11_12 - Sheet1.csv
-BHICData_20251122.csv
+# Vercel
+.vercel
 
-# Local Netlify folder
+# Netlify
+.netlify/
 .netlify
 
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# IDEs and editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.sublime-project
+*.sublime-workspace
+*.code-workspace
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Optional stylelint cache
+.stylelintcache
+
+# Microbundle cache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# parcel-bundler cache
+.cache
+.parcel-cache
+
+# Next.js cache
+.next/cache
+
+# Nuxt.js build / generate output
+.nuxt
+
+# Gatsby files
+.cache/
+public
+
+# Storybook build outputs
+.out
+.storybook-out
+storybook-static
+
+# Temporary folders
+tmp/
+temp/
+
+# Lock files (keep package-lock.json, ignore others)
+yarn.lock
+pnpm-lock.yaml
+deno.lock
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Local data exports (CSV files with sensitive data)
+*.csv
+!public/manual-import/*.csv
+
+# Documentation files for client deliverables
+DELIVERABLE_DOCUMENTATION.md
+PRESENTATION_SLIDES.md
+DEMO_VIDEO_SCRIPT.md
+DEMO_VIDEO_SCRIPT_SINGLE_PARAGRAPH.md
+PAGE_ONE_LINERS.md
+plan.md
+
+# WSDL files (may contain sensitive info)
+*.wsdl
+
+# Sample/test data files
+public/sample-csvs/
+
+# Prisma
+# Keep schema.prisma and migrations, but ignore generated client
+# (node_modules/.prisma is already ignored via node_modules/)
+
+# Build artifacts
+*.map
+*.min.js
+*.min.css
+
+# Misc
+.htaccess
+*.bak
+*.backup
+*.old
+*.orig
+*.tmp

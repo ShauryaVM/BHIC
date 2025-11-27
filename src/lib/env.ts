@@ -25,7 +25,7 @@ const envSchema = z.object({
   GA4_OAUTH_CLIENT_SECRET: z.string().optional(),
   GA4_OAUTH_REFRESH_TOKEN: z.string().optional(),
   GEMINI_API_KEY: z.string().min(1),
-  GEMINI_MODEL: z.string().default('gemini-pro'),
+  GEMINI_MODEL: z.string().default('gemini-2.5-flash'),
   SETTINGS_ENCRYPTION_KEY: z.string().min(44)
 });
 
@@ -54,7 +54,7 @@ const parsed = envSchema.safeParse({
   GA4_OAUTH_CLIENT_SECRET: process.env.GA4_OAUTH_CLIENT_SECRET,
   GA4_OAUTH_REFRESH_TOKEN: process.env.GA4_OAUTH_REFRESH_TOKEN,
   GEMINI_API_KEY: process.env.GEMINI_API_KEY,
-  GEMINI_MODEL: process.env.GEMINI_MODEL ?? 'models/gemini-1.5-flash',
+  GEMINI_MODEL: process.env.GEMINI_MODEL ?? 'gemini-2.5-flash',
   SETTINGS_ENCRYPTION_KEY: process.env.SETTINGS_ENCRYPTION_KEY
 });
 

@@ -180,7 +180,7 @@ const envSchema = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2
     GA4_OAUTH_CLIENT_SECRET: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().optional(),
     GA4_OAUTH_REFRESH_TOKEN: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().optional(),
     GEMINI_API_KEY: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().min(1),
-    GEMINI_MODEL: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().default('gemini-pro'),
+    GEMINI_MODEL: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().default('gemini-2.5-flash'),
     SETTINGS_ENCRYPTION_KEY: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().min(44)
 });
 const parsed = envSchema.safeParse({
@@ -208,7 +208,7 @@ const parsed = envSchema.safeParse({
     GA4_OAUTH_CLIENT_SECRET: process.env.GA4_OAUTH_CLIENT_SECRET,
     GA4_OAUTH_REFRESH_TOKEN: process.env.GA4_OAUTH_REFRESH_TOKEN,
     GEMINI_API_KEY: process.env.GEMINI_API_KEY,
-    GEMINI_MODEL: process.env.GEMINI_MODEL ?? 'models/gemini-1.5-flash',
+    GEMINI_MODEL: process.env.GEMINI_MODEL ?? 'gemini-2.5-flash',
     SETTINGS_ENCRYPTION_KEY: process.env.SETTINGS_ENCRYPTION_KEY
 });
 if (!parsed.success) {
@@ -348,13 +348,14 @@ async function RootLayout({ children }) {
         lang: "en",
         className: __TURBOPACK__imported__module__$5b$next$5d2f$internal$2f$font$2f$google$2f$inter_5901b7c6$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["default"].variable,
         children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("body", {
+            suppressHydrationWarning: true,
             className: "bg-slate-50 font-[family-name:var(--font-inter)] text-slate-900",
             children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$providers$2f$session$2d$provider$2e$tsx__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["AuthSessionProvider"], {
                 session: session,
                 children: children
             }, void 0, false, {
                 fileName: "[project]/src/app/layout.tsx",
-                lineNumber: 22,
+                lineNumber: 25,
                 columnNumber: 9
             }, this)
         }, void 0, false, {

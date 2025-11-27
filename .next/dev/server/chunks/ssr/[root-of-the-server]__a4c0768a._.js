@@ -247,7 +247,9 @@ __turbopack_context__.s([
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$addDays$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/date-fns/addDays.js [app-rsc] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$startOfDay$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/date-fns/startOfDay.js [app-rsc] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$subDays$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/date-fns/subDays.js [app-rsc] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$cache$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/cache.js [app-rsc] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/prisma.ts [app-rsc] (ecmascript)");
+;
 ;
 ;
 const toNumber = (value)=>Number(value ?? 0);
@@ -268,7 +270,7 @@ function buildWhere(filters) {
     }
     return where;
 }
-async function getEventsData(filters = {}, sortOptions = {}) {
+async function _getEventsData(filters = {}, sortOptions = {}) {
     const where = buildWhere(filters);
     const sortFieldMap = {
         name: 'name',
@@ -346,6 +348,29 @@ function buildFallbackEventsData() {
             topRevenue: []
         }
     };
+}
+async function getEventsData(filters = {}, sortOptions = {}) {
+    // Cache for 30 seconds to improve performance
+    // Only cache successful results, not errors
+    const cacheKey = `events-${JSON.stringify({
+        filters,
+        sortOptions
+    })}`;
+    return (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$cache$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["unstable_cache"])(async ()=>{
+        try {
+            return await _getEventsData(filters, sortOptions);
+        } catch (error) {
+            // Don't cache errors - throw them immediately
+            throw error;
+        }
+    }, [
+        cacheKey
+    ], {
+        revalidate: 30,
+        tags: [
+            'events'
+        ]
+    })();
 }
 function defaultEventFilters() {
     return {

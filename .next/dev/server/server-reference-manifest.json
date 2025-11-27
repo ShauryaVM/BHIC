@@ -1,35 +1,5 @@
 {
   "node": {
-    "00e796c46ae6800f9326b0250049149bc0be344449": {
-      "workers": {
-        "app/(dashboard)/page": {
-          "moduleId": "[project]/.next-internal/server/app/(dashboard)/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/app/(dashboard)/actions/sync-integrations.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/app/(dashboard)/actions/manual-import.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
-          "async": false,
-          "exportedName": "syncIntegrationsAction",
-          "filename": "src/app/(dashboard)/actions/sync-integrations.ts"
-        }
-      },
-      "layer": {
-        "app/(dashboard)/page": "action-browser"
-      },
-      "filename": "src/app/(dashboard)/actions/sync-integrations.ts",
-      "exportedName": "syncIntegrationsAction"
-    },
-    "600ed49537ea6f4783ff1d6d42249a3194c15ba525": {
-      "workers": {
-        "app/(dashboard)/page": {
-          "moduleId": "[project]/.next-internal/server/app/(dashboard)/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/app/(dashboard)/actions/sync-integrations.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/app/(dashboard)/actions/manual-import.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
-          "async": false,
-          "exportedName": "manualImportAction",
-          "filename": "src/app/(dashboard)/actions/manual-import.ts"
-        }
-      },
-      "layer": {
-        "app/(dashboard)/page": "action-browser"
-      },
-      "filename": "src/app/(dashboard)/actions/manual-import.ts",
-      "exportedName": "manualImportAction"
-    },
     "4023ad6113b819bf73a9d14a12532f433d8ca57f62": {
       "workers": {
         "app/(dashboard)/settings/page": {
@@ -59,6 +29,147 @@
       },
       "filename": "src/app/(dashboard)/settings/actions.ts",
       "exportedName": "updateUserRoleAction"
+    },
+    "6067e8136be9f0129da9ffa3a4a3ae81bce62f94c3": {
+      "workers": {
+        "app/(dashboard)/chat/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/chat/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/app/(dashboard)/actions/chat.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "sendChatMessage",
+          "filename": "src/app/(dashboard)/actions/chat.ts"
+        },
+        "app/(dashboard)/donors/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/donors/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/app/(dashboard)/actions/chat.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "sendChatMessage",
+          "filename": "src/app/(dashboard)/actions/chat.ts"
+        },
+        "app/(dashboard)/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/app/(dashboard)/actions/chat.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/app/(dashboard)/actions/sync-integrations.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/app/(dashboard)/actions/manual-import.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "sendChatMessage",
+          "filename": "src/app/(dashboard)/actions/chat.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/chat/page": "action-browser",
+        "app/(dashboard)/donors/page": "action-browser",
+        "app/(dashboard)/page": "action-browser"
+      },
+      "filename": "src/app/(dashboard)/actions/chat.ts",
+      "exportedName": "sendChatMessage"
+    },
+    "00e796c46ae6800f9326b0250049149bc0be344449": {
+      "workers": {
+        "app/(dashboard)/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/app/(dashboard)/actions/chat.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/app/(dashboard)/actions/sync-integrations.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/app/(dashboard)/actions/manual-import.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "syncIntegrationsAction",
+          "filename": "src/app/(dashboard)/actions/sync-integrations.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/page": "action-browser"
+      },
+      "filename": "src/app/(dashboard)/actions/sync-integrations.ts",
+      "exportedName": "syncIntegrationsAction"
+    },
+    "600ed49537ea6f4783ff1d6d42249a3194c15ba525": {
+      "workers": {
+        "app/(dashboard)/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/app/(dashboard)/actions/chat.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/app/(dashboard)/actions/sync-integrations.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/app/(dashboard)/actions/manual-import.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "manualImportAction",
+          "filename": "src/app/(dashboard)/actions/manual-import.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/page": "action-browser"
+      },
+      "filename": "src/app/(dashboard)/actions/manual-import.ts",
+      "exportedName": "manualImportAction"
+    },
+    "40db8406904a60f5b7df29555db12253f23f93ba89": {
+      "workers": {
+        "app/(dashboard)/settings/data-sources/[id]/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/settings/data-sources/[id]/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/app/(dashboard)/actions/delete-data-source.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "deleteCustomDataSourceAction",
+          "filename": "src/app/(dashboard)/actions/delete-data-source.ts"
+        },
+        "app/(dashboard)/settings/data-sources/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/settings/data-sources/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/app/(dashboard)/actions/delete-data-source.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "deleteCustomDataSourceAction",
+          "filename": "src/app/(dashboard)/actions/delete-data-source.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/settings/data-sources/[id]/page": "action-browser",
+        "app/(dashboard)/settings/data-sources/page": "action-browser"
+      },
+      "filename": "src/app/(dashboard)/actions/delete-data-source.ts",
+      "exportedName": "deleteCustomDataSourceAction"
+    },
+    "406cde576c6e433ed01432910fb3608441fb89cbd3": {
+      "workers": {
+        "app/(dashboard)/settings/data-sources/new/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/settings/data-sources/new/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/app/(dashboard)/actions/custom-data-source.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "detectCSVSchemaAction",
+          "filename": "src/app/(dashboard)/actions/custom-data-source.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/settings/data-sources/new/page": "action-browser"
+      },
+      "filename": "src/app/(dashboard)/actions/custom-data-source.ts",
+      "exportedName": "detectCSVSchemaAction"
+    },
+    "409f69e597fb310ce402a4c99cd8f88d8a59727f54": {
+      "workers": {
+        "app/(dashboard)/settings/data-sources/new/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/settings/data-sources/new/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/app/(dashboard)/actions/custom-data-source.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getAISuggestionsAction",
+          "filename": "src/app/(dashboard)/actions/custom-data-source.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/settings/data-sources/new/page": "action-browser"
+      },
+      "filename": "src/app/(dashboard)/actions/custom-data-source.ts",
+      "exportedName": "getAISuggestionsAction"
+    },
+    "603f298e61e2eeb119ddabb00572e83d5cfa16be79": {
+      "workers": {
+        "app/(dashboard)/settings/data-sources/new/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/settings/data-sources/new/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/app/(dashboard)/actions/custom-data-source.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "createCustomDataSourceAction",
+          "filename": "src/app/(dashboard)/actions/custom-data-source.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/settings/data-sources/new/page": "action-browser"
+      },
+      "filename": "src/app/(dashboard)/actions/custom-data-source.ts",
+      "exportedName": "createCustomDataSourceAction"
+    },
+    "607c714abe7e58a213f1869cb415ebe539a80b0037": {
+      "workers": {
+        "app/(dashboard)/settings/data-sources/[id]/upload/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/settings/data-sources/[id]/upload/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/app/(dashboard)/actions/custom-data-source.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "importCustomDataSourceCSVAction",
+          "filename": "src/app/(dashboard)/actions/custom-data-source.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/settings/data-sources/[id]/upload/page": "action-browser"
+      },
+      "filename": "src/app/(dashboard)/actions/custom-data-source.ts",
+      "exportedName": "importCustomDataSourceCSVAction"
     }
   },
   "edge": {},

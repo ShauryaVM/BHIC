@@ -31,6 +31,7 @@ enum MetricSource {
   EVENTBRITE
   GA4
   INTERNAL
+  CUSTOM
 }
 
 enum CampaignStatus {
@@ -61,6 +62,7 @@ model User {
   sessions    Session[]
   settings    SecureSetting[]        @relation("SecureSettingUpdatedBy")
   settingLogs SecureSettingHistory[] @relation("SecureSettingHistoryUpdatedBy")
+  customDataSources CustomDataSource[] @relation("CustomDataSourceCreatedBy")
 }
 
 model Donor {
@@ -280,4 +282,36 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+model CustomDataSource {
+  id              String   @id @default(cuid())
+  name            String
+  description     String?
+  detectedSchema  Json     // Auto-detected column names, types, samples
+  fieldMapping    Json     // Maps CSV columns to standard fields
+  transformations Json?    // Optional transformation rules
+  aiInsights      Json?    // Cached AI-generated insights (metrics, visualizations, etc.)
+  aiInsightsGeneratedAt DateTime? // When AI insights were last generated
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  createdById     String?
+  createdBy       User?    @relation("CustomDataSourceCreatedBy", fields: [createdById], references: [id])
+  records         CustomDataRecord[]
+
+  @@index([createdById])
+}
+
+model CustomDataRecord {
+  id          String   @id @default(cuid())
+  sourceId   String
+  source     CustomDataSource @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  externalId String?  // Unique ID from CSV (if available)
+  data       Json     // Flexible JSON storage of all fields
+  syncedAt   DateTime @default(now())
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([sourceId, externalId])
+  @@index([sourceId, syncedAt])
 }

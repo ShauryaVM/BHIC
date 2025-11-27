@@ -9,6 +9,7 @@ import { defaultAnalyticsFilters, getAnalyticsData } from '@/lib/analytics-data'
 import type { DonorListResult } from '@/lib/donor-data';
 import { getDonorList } from '@/lib/donor-data';
 import { getIntegrationStatuses, isIntegrationStale } from '@/lib/integration-sync';
+import { getCustomDataSourcesInsights, type CustomDataSourceInsight } from '@/lib/custom-data-insights';
 
 export type InsightImpact = 'positive' | 'neutral' | 'negative';
 
@@ -25,6 +26,7 @@ export interface InsightsData {
   donors: DonorListResult;
   events: { filters: EventFilters; data: EventsPageData };
   analytics: { filters: AnalyticsFilters; data: Awaited<ReturnType<typeof getAnalyticsData>> };
+  customDataSources: CustomDataSourceInsight[];
   metrics: {
     fundsMomentum: number;
     sessionsMomentum: number;
@@ -159,18 +161,25 @@ export async function getInsightsData(): Promise<InsightsData> {
   const eventFilters = defaultEventFilters();
   const analyticsFilters = defaultAnalyticsFilters();
 
-  const [dashboard, donors, eventsData, analyticsData, integrationStatuses] = await Promise.all([
+  const [dashboard, donors, eventsData, analyticsData, integrationStatuses, customDataSources] = await Promise.all([
     getDashboardData('12m'),
     getDonorList({ page: 1, pageSize: 5 }),
     getEventsData(eventFilters),
     getAnalyticsData(analyticsFilters),
-    getIntegrationStatuses()
+    getIntegrationStatuses(),
+    getCustomDataSourcesInsights(range)
   ]);
 
+  // Check if we have actual data, not just recent sync status
+  // If there's data in the database, show it even if sync is "stale"
   const hasEtapestryData =
-    integrationStatuses.etapestry && !isIntegrationStale(integrationStatuses.etapestry);
+    (integrationStatuses.etapestry && !isIntegrationStale(integrationStatuses.etapestry)) ||
+    donors.summary.totalDonors > 0 ||
+    dashboard.kpis.fundsYtd > 0;
   const hasEventbriteData =
-    integrationStatuses.eventbrite && !isIntegrationStale(integrationStatuses.eventbrite);
+    (integrationStatuses.eventbrite && !isIntegrationStale(integrationStatuses.eventbrite)) ||
+    eventsData.summary.ticketsSold > 0 ||
+    eventsData.events.length > 0;
 
   const sanitizedDashboard = sanitizeDashboardData(dashboard, {
     includeEtapestry: Boolean(hasEtapestryData),
@@ -217,6 +226,7 @@ export async function getInsightsData(): Promise<InsightsData> {
     donors: sanitizedDonors,
     events: { filters: eventFilters, data: sanitizedEvents },
     analytics: { filters: analyticsFilters, data: analyticsData },
+    customDataSources,
     metrics: {
       fundsMomentum,
       sessionsMomentum,

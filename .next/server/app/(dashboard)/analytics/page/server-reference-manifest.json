@@ -1,4 +1,20 @@
 {
-  "node": {},
+  "node": {
+    "601493cf293fd13ffca7ecda555c1ce3c8833dff6c": {
+      "workers": {
+        "app/(dashboard)/analytics/page": {
+          "moduleId": 70250,
+          "async": false,
+          "exportedName": "sendChatMessage",
+          "filename": "src/app/(dashboard)/actions/chat.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/analytics/page": "action-browser"
+      },
+      "exportedName": "sendChatMessage",
+      "filename": "src/app/(dashboard)/actions/chat.ts"
+    }
+  },
   "edge": {}
 }

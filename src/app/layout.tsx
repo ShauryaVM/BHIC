@@ -18,7 +18,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
   return (
     <html lang="en" className={inter.variable}>
-      <body className="bg-slate-50 font-[family-name:var(--font-inter)] text-slate-900">
+      <body
+        suppressHydrationWarning
+        className="bg-slate-50 font-[family-name:var(--font-inter)] text-slate-900"
+      >
         <AuthSessionProvider session={session}>{children}</AuthSessionProvider>
       </body>
     </html>

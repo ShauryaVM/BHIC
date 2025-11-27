@@ -49,7 +49,7 @@ const envSchema = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2
     GA4_OAUTH_CLIENT_SECRET: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$middleware$2d$edge$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().optional(),
     GA4_OAUTH_REFRESH_TOKEN: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$middleware$2d$edge$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().optional(),
     GEMINI_API_KEY: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$middleware$2d$edge$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().min(1),
-    GEMINI_MODEL: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$middleware$2d$edge$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().default('gemini-pro'),
+    GEMINI_MODEL: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$middleware$2d$edge$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().default('gemini-2.5-flash'),
     SETTINGS_ENCRYPTION_KEY: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$middleware$2d$edge$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().min(44)
 });
 const parsed = envSchema.safeParse({
@@ -77,7 +77,7 @@ const parsed = envSchema.safeParse({
     GA4_OAUTH_CLIENT_SECRET: process.env.GA4_OAUTH_CLIENT_SECRET,
     GA4_OAUTH_REFRESH_TOKEN: process.env.GA4_OAUTH_REFRESH_TOKEN,
     GEMINI_API_KEY: process.env.GEMINI_API_KEY,
-    GEMINI_MODEL: process.env.GEMINI_MODEL ?? 'models/gemini-1.5-flash',
+    GEMINI_MODEL: process.env.GEMINI_MODEL ?? 'gemini-2.5-flash',
     SETTINGS_ENCRYPTION_KEY: process.env.SETTINGS_ENCRYPTION_KEY
 });
 if (!parsed.success) {

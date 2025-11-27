@@ -70,6 +70,7 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__
 const STATUS_KEYS = {
     [__TURBOPACK__imported__module__$5b$externals$5d2f40$prisma$2f$client__$5b$external$5d$__$2840$prisma$2f$client$2c$__cjs$29$__["MetricSource"].ETAPESTRY]: 'integration:etapestry',
     [__TURBOPACK__imported__module__$5b$externals$5d2f40$prisma$2f$client__$5b$external$5d$__$2840$prisma$2f$client$2c$__cjs$29$__["MetricSource"].EVENTBRITE]: 'integration:eventbrite',
+    [__TURBOPACK__imported__module__$5b$externals$5d2f40$prisma$2f$client__$5b$external$5d$__$2840$prisma$2f$client$2c$__cjs$29$__["MetricSource"].CUSTOM]: 'integration:custom',
     [__TURBOPACK__imported__module__$5b$externals$5d2f40$prisma$2f$client__$5b$external$5d$__$2840$prisma$2f$client$2c$__cjs$29$__["MetricSource"].GA4]: null,
     [__TURBOPACK__imported__module__$5b$externals$5d2f40$prisma$2f$client__$5b$external$5d$__$2840$prisma$2f$client$2c$__cjs$29$__["MetricSource"].INTERNAL]: null
 };
@@ -115,9 +116,15 @@ async function getIntegrationStatuses() {
         }
     });
     const latest = new Map();
+    const lastSuccess = new Map();
     for (const row of rows){
         if (!latest.has(row.key)) {
             latest.set(row.key, row);
+        }
+        const value = row.value;
+        const isSuccess = !value?.error;
+        if (isSuccess && !lastSuccess.has(row.key)) {
+            lastSuccess.set(row.key, row);
         }
     }
     const formatStatus = (key)=>{
@@ -125,25 +132,35 @@ async function getIntegrationStatuses() {
         if (!entry) return null;
         const value = entry.value;
         const timestamp = value?.timestamp && typeof value.timestamp === 'string' ? value.timestamp : entry.createdAt.toISOString();
+        const successEntry = lastSuccess.get(key) ?? (!value?.error ? entry : undefined);
+        const successValue = successEntry?.value;
+        const lastSuccessTimestamp = successEntry && (successValue?.timestamp && typeof successValue.timestamp === 'string' ? successValue.timestamp : successEntry.createdAt.toISOString());
         return {
             synced: typeof value?.synced === 'number' ? value.synced : undefined,
             error: typeof value?.error === 'string' ? value.error : undefined,
-            timestamp
+            timestamp,
+            lastSuccessTimestamp,
+            lastSuccessSynced: typeof successValue?.synced === 'number' ? successValue.synced : !value?.error && typeof value?.synced === 'number' ? value.synced : undefined
         };
     };
     return {
         etapestry: formatStatus('integration:etapestry'),
-        eventbrite: formatStatus('integration:eventbrite')
+        eventbrite: formatStatus('integration:eventbrite'),
+        custom: formatStatus('integration:custom')
     };
 }
 function isIntegrationStale(status, options = {}) {
     const { maxAgeHours = 12 } = options;
     if (!status) return true;
-    if (status.error) return true;
-    const timestamp = new Date(status.timestamp);
+    const referenceTimestamp = status.lastSuccessTimestamp ?? status.timestamp;
+    if (!referenceTimestamp) return true;
+    const timestamp = new Date(referenceTimestamp);
     if (Number.isNaN(timestamp.getTime())) return true;
     const ageMs = Date.now() - timestamp.getTime();
-    return ageMs > maxAgeHours * 60 * 60 * 1000;
+    if (ageMs > maxAgeHours * 60 * 60 * 1000) {
+        return true;
+    }
+    return false;
 }
 async function invalidateMetricsForSources(sources) {
     if (!sources.length) return;
@@ -591,6 +608,21 @@ async function fetchPledges(range) {
 async function syncPledgesToDb(range) {
     const window = pledgeSyncRange(range);
     const pledges = await fetchPledges(window);
+    if (!pledges.length) {
+        const existingCount = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].pledge.count();
+        if (existingCount > 0) {
+            throw new Error('eTapestry returned zero pledges. Existing manual data was kept—verify API credentials or widen the sync date range.');
+        }
+        await (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$integration$2d$sync$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["invalidateMetricsForSources"])([
+            __TURBOPACK__imported__module__$5b$externals$5d2f40$prisma$2f$client__$5b$external$5d$__$2840$prisma$2f$client$2c$__cjs$29$__["MetricSource"].ETAPESTRY
+        ]);
+        await (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$integration$2d$sync$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["recordIntegrationSync"])(__TURBOPACK__imported__module__$5b$externals$5d2f40$prisma$2f$client__$5b$external$5d$__$2840$prisma$2f$client$2c$__cjs$29$__["MetricSource"].ETAPESTRY, {
+            synced: 0
+        });
+        return {
+            synced: 0
+        };
+    }
     for (const pledge of pledges){
         const donorExternalId = pledge.donor.externalId ?? pledge.donor.id ?? `etp-${pledge.donor.email ?? pledge.id}`;
         const donor = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].donor.upsert({
@@ -855,6 +887,21 @@ async function fetchEvents(range) {
 async function syncEventsToDb(range) {
     const window = rangeWithDefault(range);
     const events = await fetchEvents(window);
+    if (!events.length) {
+        const existingCount = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].event.count();
+        if (existingCount > 0) {
+            throw new Error('Eventbrite returned zero events. Existing manual uploads were preserved—check API credentials or adjust the sync window.');
+        }
+        await (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$integration$2d$sync$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["invalidateMetricsForSources"])([
+            __TURBOPACK__imported__module__$5b$externals$5d2f40$prisma$2f$client__$5b$external$5d$__$2840$prisma$2f$client$2c$__cjs$29$__["MetricSource"].EVENTBRITE
+        ]);
+        await (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$integration$2d$sync$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["recordIntegrationSync"])(__TURBOPACK__imported__module__$5b$externals$5d2f40$prisma$2f$client__$5b$external$5d$__$2840$prisma$2f$client$2c$__cjs$29$__["MetricSource"].EVENTBRITE, {
+            synced: 0
+        });
+        return {
+            synced: 0
+        };
+    }
     for (const event of events){
         const base = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].event.upsert({
             where: {

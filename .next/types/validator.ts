@@ -56,6 +56,15 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
   type __Unused = __Check
 }
 
+// Validate ../../src/app/(dashboard)/chat/page.tsx
+{
+  type __IsExpected<Specific extends AppPageConfig<"/chat">> = Specific
+  const handler = {} as typeof import("../../src/app/(dashboard)/chat/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
 // Validate ../../src/app/(dashboard)/donors/page.tsx
 {
   type __IsExpected<Specific extends AppPageConfig<"/donors">> = Specific
@@ -87,6 +96,42 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
 {
   type __IsExpected<Specific extends AppPageConfig<"/">> = Specific
   const handler = {} as typeof import("../../src/app/(dashboard)/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../src/app/(dashboard)/settings/data-sources/[id]/page.tsx
+{
+  type __IsExpected<Specific extends AppPageConfig<"/settings/data-sources/[id]">> = Specific
+  const handler = {} as typeof import("../../src/app/(dashboard)/settings/data-sources/[id]/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../src/app/(dashboard)/settings/data-sources/[id]/upload/page.tsx
+{
+  type __IsExpected<Specific extends AppPageConfig<"/settings/data-sources/[id]/upload">> = Specific
+  const handler = {} as typeof import("../../src/app/(dashboard)/settings/data-sources/[id]/upload/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../src/app/(dashboard)/settings/data-sources/new/page.tsx
+{
+  type __IsExpected<Specific extends AppPageConfig<"/settings/data-sources/new">> = Specific
+  const handler = {} as typeof import("../../src/app/(dashboard)/settings/data-sources/new/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../src/app/(dashboard)/settings/data-sources/page.tsx
+{
+  type __IsExpected<Specific extends AppPageConfig<"/settings/data-sources">> = Specific
+  const handler = {} as typeof import("../../src/app/(dashboard)/settings/data-sources/page.js")
   type __Check = __IsExpected<typeof handler>
   // @ts-ignore
   type __Unused = __Check

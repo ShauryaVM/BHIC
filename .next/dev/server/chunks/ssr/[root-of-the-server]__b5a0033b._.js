@@ -611,6 +611,7 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__
 const STATUS_KEYS = {
     [__TURBOPACK__imported__module__$5b$externals$5d2f40$prisma$2f$client__$5b$external$5d$__$2840$prisma$2f$client$2c$__cjs$29$__["MetricSource"].ETAPESTRY]: 'integration:etapestry',
     [__TURBOPACK__imported__module__$5b$externals$5d2f40$prisma$2f$client__$5b$external$5d$__$2840$prisma$2f$client$2c$__cjs$29$__["MetricSource"].EVENTBRITE]: 'integration:eventbrite',
+    [__TURBOPACK__imported__module__$5b$externals$5d2f40$prisma$2f$client__$5b$external$5d$__$2840$prisma$2f$client$2c$__cjs$29$__["MetricSource"].CUSTOM]: 'integration:custom',
     [__TURBOPACK__imported__module__$5b$externals$5d2f40$prisma$2f$client__$5b$external$5d$__$2840$prisma$2f$client$2c$__cjs$29$__["MetricSource"].GA4]: null,
     [__TURBOPACK__imported__module__$5b$externals$5d2f40$prisma$2f$client__$5b$external$5d$__$2840$prisma$2f$client$2c$__cjs$29$__["MetricSource"].INTERNAL]: null
 };
@@ -656,9 +657,15 @@ async function getIntegrationStatuses() {
         }
     });
     const latest = new Map();
+    const lastSuccess = new Map();
     for (const row of rows){
         if (!latest.has(row.key)) {
             latest.set(row.key, row);
+        }
+        const value = row.value;
+        const isSuccess = !value?.error;
+        if (isSuccess && !lastSuccess.has(row.key)) {
+            lastSuccess.set(row.key, row);
         }
     }
     const formatStatus = (key)=>{
@@ -666,25 +673,35 @@ async function getIntegrationStatuses() {
         if (!entry) return null;
         const value = entry.value;
         const timestamp = value?.timestamp && typeof value.timestamp === 'string' ? value.timestamp : entry.createdAt.toISOString();
+        const successEntry = lastSuccess.get(key) ?? (!value?.error ? entry : undefined);
+        const successValue = successEntry?.value;
+        const lastSuccessTimestamp = successEntry && (successValue?.timestamp && typeof successValue.timestamp === 'string' ? successValue.timestamp : successEntry.createdAt.toISOString());
         return {
             synced: typeof value?.synced === 'number' ? value.synced : undefined,
             error: typeof value?.error === 'string' ? value.error : undefined,
-            timestamp
+            timestamp,
+            lastSuccessTimestamp,
+            lastSuccessSynced: typeof successValue?.synced === 'number' ? successValue.synced : !value?.error && typeof value?.synced === 'number' ? value.synced : undefined
         };
     };
     return {
         etapestry: formatStatus('integration:etapestry'),
-        eventbrite: formatStatus('integration:eventbrite')
+        eventbrite: formatStatus('integration:eventbrite'),
+        custom: formatStatus('integration:custom')
     };
 }
 function isIntegrationStale(status, options = {}) {
     const { maxAgeHours = 12 } = options;
     if (!status) return true;
-    if (status.error) return true;
-    const timestamp = new Date(status.timestamp);
+    const referenceTimestamp = status.lastSuccessTimestamp ?? status.timestamp;
+    if (!referenceTimestamp) return true;
+    const timestamp = new Date(referenceTimestamp);
     if (Number.isNaN(timestamp.getTime())) return true;
     const ageMs = Date.now() - timestamp.getTime();
-    return ageMs > maxAgeHours * 60 * 60 * 1000;
+    if (ageMs > maxAgeHours * 60 * 60 * 1000) {
+        return true;
+    }
+    return false;
 }
 async function invalidateMetricsForSources(sources) {
     if (!sources.length) return;
@@ -1132,6 +1149,21 @@ async function fetchPledges(range) {
 async function syncPledgesToDb(range) {
     const window = pledgeSyncRange(range);
     const pledges = await fetchPledges(window);
+    if (!pledges.length) {
+        const existingCount = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].pledge.count();
+        if (existingCount > 0) {
+            throw new Error('eTapestry returned zero pledges. Existing manual data was kept—verify API credentials or widen the sync date range.');
+        }
+        await (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$integration$2d$sync$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["invalidateMetricsForSources"])([
+            __TURBOPACK__imported__module__$5b$externals$5d2f40$prisma$2f$client__$5b$external$5d$__$2840$prisma$2f$client$2c$__cjs$29$__["MetricSource"].ETAPESTRY
+        ]);
+        await (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$integration$2d$sync$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["recordIntegrationSync"])(__TURBOPACK__imported__module__$5b$externals$5d2f40$prisma$2f$client__$5b$external$5d$__$2840$prisma$2f$client$2c$__cjs$29$__["MetricSource"].ETAPESTRY, {
+            synced: 0
+        });
+        return {
+            synced: 0
+        };
+    }
     for (const pledge of pledges){
         const donorExternalId = pledge.donor.externalId ?? pledge.donor.id ?? `etp-${pledge.donor.email ?? pledge.id}`;
         const donor = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].donor.upsert({
@@ -1396,6 +1428,21 @@ async function fetchEvents(range) {
 async function syncEventsToDb(range) {
     const window = rangeWithDefault(range);
     const events = await fetchEvents(window);
+    if (!events.length) {
+        const existingCount = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].event.count();
+        if (existingCount > 0) {
+            throw new Error('Eventbrite returned zero events. Existing manual uploads were preserved—check API credentials or adjust the sync window.');
+        }
+        await (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$integration$2d$sync$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["invalidateMetricsForSources"])([
+            __TURBOPACK__imported__module__$5b$externals$5d2f40$prisma$2f$client__$5b$external$5d$__$2840$prisma$2f$client$2c$__cjs$29$__["MetricSource"].EVENTBRITE
+        ]);
+        await (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$integration$2d$sync$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["recordIntegrationSync"])(__TURBOPACK__imported__module__$5b$externals$5d2f40$prisma$2f$client__$5b$external$5d$__$2840$prisma$2f$client$2c$__cjs$29$__["MetricSource"].EVENTBRITE, {
+            synced: 0
+        });
+        return {
+            synced: 0
+        };
+    }
     for (const event of events){
         const base = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].event.upsert({
             where: {
@@ -1807,6 +1854,7 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$startOfYear$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/date-fns/startOfYear.js [app-rsc] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$subDays$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/date-fns/subDays.js [app-rsc] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$subMonths$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/date-fns/subMonths.js [app-rsc] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$cache$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/cache.js [app-rsc] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$etapestry$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/etapestry.ts [app-rsc] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$eventbrite$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/eventbrite.ts [app-rsc] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$ga4$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/ga4.ts [app-rsc] (ecmascript)");
@@ -1819,8 +1867,9 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$time$2d$series
 ;
 ;
 ;
+;
 const toNumber = (value)=>Number(value ?? 0);
-async function getDashboardData(range = 'ytd') {
+async function _getDashboardData(range = 'ytd') {
     const now = new Date();
     const summaryStart = range === '12m' ? (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$subMonths$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["subMonths"])((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$startOfMonth$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["startOfMonth"])(now), 11) : (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$startOfYear$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["startOfYear"])(now);
     const monthlyStart = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$subMonths$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["subMonths"])((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$startOfMonth$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["startOfMonth"])(now), 11);
@@ -1947,6 +1996,27 @@ function buildFallbackDashboardData(anchor) {
         }
     };
 }
+async function getDashboardData(range = 'ytd') {
+    // Cache for 60 seconds to improve performance
+    // Only cache successful results, not errors
+    return (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$cache$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["unstable_cache"])(async ()=>{
+        try {
+            return await _getDashboardData(range);
+        } catch (error) {
+            // Don't cache errors - throw them immediately
+            throw error;
+        }
+    }, [
+        `dashboard-${range}`
+    ], {
+        revalidate: 60,
+        tags: [
+            'dashboard',
+            'donors',
+            'events'
+        ]
+    })();
+}
 }),
 "[project]/src/lib/events-data.ts [app-rsc] (ecmascript)", ((__turbopack_context__) => {
 "use strict";
@@ -1960,7 +2030,9 @@ __turbopack_context__.s([
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$addDays$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/date-fns/addDays.js [app-rsc] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$startOfDay$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/date-fns/startOfDay.js [app-rsc] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$subDays$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/date-fns/subDays.js [app-rsc] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$cache$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/cache.js [app-rsc] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/prisma.ts [app-rsc] (ecmascript)");
+;
 ;
 ;
 const toNumber = (value)=>Number(value ?? 0);
@@ -1981,7 +2053,7 @@ function buildWhere(filters) {
     }
     return where;
 }
-async function getEventsData(filters = {}, sortOptions = {}) {
+async function _getEventsData(filters = {}, sortOptions = {}) {
     const where = buildWhere(filters);
     const sortFieldMap = {
         name: 'name',
@@ -2060,6 +2132,29 @@ function buildFallbackEventsData() {
         }
     };
 }
+async function getEventsData(filters = {}, sortOptions = {}) {
+    // Cache for 30 seconds to improve performance
+    // Only cache successful results, not errors
+    const cacheKey = `events-${JSON.stringify({
+        filters,
+        sortOptions
+    })}`;
+    return (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$cache$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["unstable_cache"])(async ()=>{
+        try {
+            return await _getEventsData(filters, sortOptions);
+        } catch (error) {
+            // Don't cache errors - throw them immediately
+            throw error;
+        }
+    }, [
+        cacheKey
+    ], {
+        revalidate: 30,
+        tags: [
+            'events'
+        ]
+    })();
+}
 function defaultEventFilters() {
     return {
         from: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$subDays$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["subDays"])((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$startOfDay$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["startOfDay"])(new Date()), 90),
@@ -2115,14 +2210,16 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$startOfYear$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/date-fns/startOfYear.js [app-rsc] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$subDays$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/date-fns/subDays.js [app-rsc] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$subMonths$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/date-fns/subMonths.js [app-rsc] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$cache$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/cache.js [app-rsc] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/prisma.ts [app-rsc] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$time$2d$series$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/time-series.ts [app-rsc] (ecmascript)");
 ;
 ;
 ;
 ;
+;
 const toNumber = (value)=>Number(value ?? 0);
-async function getDonorList(params) {
+async function _getDonorList(params) {
     const { page, pageSize, query, minTotalGiven, lastGiftFrom, lastGiftTo, status, sortBy, sortDir } = params;
     const where = {};
     const giftRanges = [
@@ -2207,7 +2304,7 @@ async function getDonorList(params) {
         const monthlyWindowStart = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$subMonths$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["subMonths"])((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$startOfMonth$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["startOfMonth"])(now), 11);
         const yearlyWindowStart = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$startOfYear$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["startOfYear"])(new Date(now.getFullYear() - 5, 0, 1));
         const allTimeStart = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$startOfYear$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["startOfYear"])(new Date(2006, 0, 1));
-        const [totalMatching, donors, totalDonors, activeDonors, averageLifetimeValue, monthlyGifts, yearlyGifts, lifetimeValues, allTimeGifts] = await Promise.all([
+        const [totalMatching, donors, totalDonors, activeDonors, averageLifetimeValue, monthlyGiftsRaw, yearlyGiftsRaw, giftDistributionRaw, allTimeGifts] = await Promise.all([
             __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].donor.count({
                 where
             }),
@@ -2244,35 +2341,37 @@ async function getDonorList(params) {
                     totalGiven: true
                 }
             }),
-            __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].pledge.findMany({
-                where: {
-                    date: {
-                        gte: monthlyWindowStart
-                    },
-                    status: __TURBOPACK__imported__module__$5b$externals$5d2f40$prisma$2f$client__$5b$external$5d$__$2840$prisma$2f$client$2c$__cjs$29$__["PledgeStatus"].RECEIVED
-                },
-                select: {
-                    date: true,
-                    amount: true
-                }
-            }),
-            __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].pledge.findMany({
-                where: {
-                    date: {
-                        gte: yearlyWindowStart
-                    },
-                    status: __TURBOPACK__imported__module__$5b$externals$5d2f40$prisma$2f$client__$5b$external$5d$__$2840$prisma$2f$client$2c$__cjs$29$__["PledgeStatus"].RECEIVED
-                },
-                select: {
-                    date: true,
-                    amount: true
-                }
-            }),
-            __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].donor.findMany({
-                select: {
-                    totalGiven: true
-                }
-            }),
+            __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].$queryRaw`
+        SELECT TO_CHAR("date", 'YYYY-MM') AS month,
+               SUM("amount") AS total,
+               COUNT(*)::bigint AS count
+        FROM "Pledge"
+        WHERE "status" = ${__TURBOPACK__imported__module__$5b$externals$5d2f40$prisma$2f$client__$5b$external$5d$__$2840$prisma$2f$client$2c$__cjs$29$__["PledgeStatus"].RECEIVED}::"PledgeStatus"
+          AND "date" >= ${monthlyWindowStart}
+        GROUP BY month
+        ORDER BY month ASC
+      `,
+            __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].$queryRaw`
+        SELECT EXTRACT(YEAR FROM "date")::int AS year,
+               SUM("amount") AS total,
+               COUNT(*)::bigint AS count
+        FROM "Pledge"
+        WHERE "status" = ${__TURBOPACK__imported__module__$5b$externals$5d2f40$prisma$2f$client__$5b$external$5d$__$2840$prisma$2f$client$2c$__cjs$29$__["PledgeStatus"].RECEIVED}::"PledgeStatus"
+          AND "date" >= ${yearlyWindowStart}
+        GROUP BY year
+        ORDER BY year ASC
+      `,
+            __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].$queryRaw`
+        SELECT CASE
+          WHEN "totalGiven" < 1000 THEN '< $1k'
+          WHEN "totalGiven" < 5000 THEN '$1k - $5k'
+          WHEN "totalGiven" < 10000 THEN '$5k - $10k'
+          ELSE '$10k+'
+        END AS range,
+        COUNT(*)::bigint AS count
+        FROM "Donor"
+        GROUP BY range
+      `,
             __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].$queryRaw`
         SELECT EXTRACT(YEAR FROM "date")::int AS year,
                SUM("amount") AS total,
@@ -2290,44 +2389,41 @@ async function getDonorList(params) {
                 totalGiven: toNumber(donor.totalGiven),
                 totalPledged: toNumber(donor.totalPledged)
             }));
+        const monthlyGiftsMap = new Map(monthlyGiftsRaw.map((row)=>[
+                row.month,
+                {
+                    total: toNumber(row.total),
+                    count: Number(row.count)
+                }
+            ]));
         const giftsMonthly = acquisitionBuckets.map((bucket)=>{
-            const entries = monthlyGifts.filter((entry)=>entry.date >= bucket.start && entry.date <= bucket.end);
-            const totalAmount = entries.reduce((sum, entry)=>sum + toNumber(entry.amount), 0);
+            const data = monthlyGiftsMap.get(bucket.key) ?? {
+                total: 0,
+                count: 0
+            };
             return {
                 label: bucket.label,
-                value: totalAmount,
-                count: entries.length
+                value: data.total,
+                count: data.count
             };
         });
-        const yearlyBuckets = new Map();
-        for (const entry of yearlyGifts){
-            const year = entry.date.getFullYear();
-            if (!yearlyBuckets.has(year)) {
-                yearlyBuckets.set(year, {
-                    value: 0,
-                    count: 0
-                });
-            }
-            const bucket = yearlyBuckets.get(year);
-            bucket.value += toNumber(entry.amount);
-            bucket.count += 1;
-        }
-        const giftsYearly = Array.from(yearlyBuckets.entries()).sort(([a], [b])=>a - b).map(([year, bucket])=>({
-                label: `${year}`,
-                value: bucket.value,
-                count: bucket.count
+        const giftsYearly = yearlyGiftsRaw.map((row)=>({
+                label: `${row.year}`,
+                value: toNumber(row.total),
+                count: Number(row.count)
             }));
         const giftsAllTime = allTimeGifts.map((row)=>({
                 label: `${row.year}`,
                 value: toNumber(row.total),
                 count: Number(row.count)
             }));
+        const giftDistributionMap = new Map(giftDistributionRaw.map((row)=>[
+                row.range,
+                Number(row.count)
+            ]));
         const giftDistribution = giftRanges.map((range)=>({
                 name: range.name,
-                value: lifetimeValues.filter((value)=>{
-                    const amount = toNumber(value.totalGiven);
-                    return amount >= range.min && amount < range.max;
-                }).length
+                value: giftDistributionMap.get(range.name) ?? 0
             }));
         return {
             donors: formattedDonors,
@@ -2387,6 +2483,26 @@ function buildFallbackDonorList({ page, pageSize, acquisitionBuckets, giftRanges
                 }))
         }
     };
+}
+async function getDonorList(params) {
+    // Cache for 30 seconds to improve performance
+    // Only cache successful results, not errors
+    const cacheKey = `donor-list-${JSON.stringify(params)}`;
+    return (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$cache$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["unstable_cache"])(async ()=>{
+        try {
+            return await _getDonorList(params);
+        } catch (error) {
+            // Don't cache errors - throw them immediately
+            throw error;
+        }
+    }, [
+        cacheKey
+    ], {
+        revalidate: 30,
+        tags: [
+            'donors'
+        ]
+    })();
 }
 }),
 "[project]/src/lib/insights-data.ts [app-rsc] (ecmascript)", ((__turbopack_context__) => {

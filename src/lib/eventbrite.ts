@@ -200,6 +200,18 @@ export async function syncEventsToDb(range?: Partial<FetchParams>) {
   const window = rangeWithDefault(range);
   const events = await fetchEvents(window);
 
+  if (!events.length) {
+    const existingCount = await prisma.event.count();
+    if (existingCount > 0) {
+      throw new Error(
+        'Eventbrite returned zero events. Existing manual uploads were preserved—check API credentials or adjust the sync window.'
+      );
+    }
+    await invalidateMetricsForSources([MetricSource.EVENTBRITE]);
+    await recordIntegrationSync(MetricSource.EVENTBRITE, { synced: 0 });
+    return { synced: 0 };
+  }
+
   for (const event of events) {
     const base = await prisma.event.upsert({
       where: { externalId: event.id },
