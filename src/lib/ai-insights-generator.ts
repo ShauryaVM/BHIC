@@ -3,19 +3,7 @@ import { env } from '@/lib/env';
 
 const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY);
 
-// Helper to get model with fallback
-function getModel() {
-  try {
-    // Try the configured model first
-    return genAI.getGenerativeModel({ model: env.GEMINI_MODEL });
-  } catch (error) {
-    // Fallback to gemini-pro if configured model fails
-    console.warn(`[AI Insights] Model ${env.GEMINI_MODEL} not available, falling back to gemini-pro`);
-    return genAI.getGenerativeModel({ model: 'gemini-pro' });
-  }
-}
-
-const model = getModel();
+// Note: getModel() is no longer used - we use modelsToTry array instead
 
 export interface DynamicMetric {
   label: string;
@@ -67,17 +55,11 @@ export async function generateDynamicInsights(params: {
   const limitedSample = sampleData.slice(0, 20);
 
   // The SDK uses v1beta API, but newer models (2.5, 2.0) work there
-  // Try models in order of preference (newer models first, they're available)
+  // Use gemini-2.0-flash-lite as primary, with fallbacks
   const modelsToTry = [
     env.GEMINI_MODEL,
-    // New models that work with v1beta
-    'gemini-2.5-flash',  // Fast, recommended
-    'gemini-2.5-pro',    // More capable
-    'gemini-2.0-flash',  // Alternative
-    // Legacy models (may be deprecated)
-    'gemini-1.5-flash',
-    'gemini-1.5-pro',
-    'gemini-pro',
+    'gemini-2.0-flash-lite',  // Primary model
+    'gemini-2.0-flash',        // Fallback
   ].filter((m, i, arr) => arr.indexOf(m) === i); // Remove duplicates
   
   let lastError: Error | null = null;

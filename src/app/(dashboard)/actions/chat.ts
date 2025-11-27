@@ -16,11 +16,16 @@ function getModel() {
   try {
     return genAI.getGenerativeModel({ model: env.GEMINI_MODEL });
   } catch (error) {
-    console.warn(`[Chat] Model ${env.GEMINI_MODEL} not available, falling back to gemini-2.5-flash`);
+    console.warn(`[Chat] Model ${env.GEMINI_MODEL} not available, falling back to gemini-2.0-flash-lite`);
     try {
-      return genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+      return genAI.getGenerativeModel({ model: 'gemini-2.0-flash-lite' });
     } catch {
-      return genAI.getGenerativeModel({ model: 'gemini-pro' });
+      try {
+        return genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+      } catch (fallbackError) {
+        console.error('[Chat] All model fallbacks failed');
+        throw new Error('Unable to initialize Gemini model. Please check your API key and model availability.');
+      }
     }
   }
 }
