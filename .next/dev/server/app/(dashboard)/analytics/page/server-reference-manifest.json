@@ -1,4 +1,20 @@
 {
-  "node": {},
+  "node": {
+    "6067e8136be9f0129da9ffa3a4a3ae81bce62f94c3": {
+      "workers": {
+        "app/(dashboard)/analytics/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/analytics/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/app/(dashboard)/actions/chat.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "sendChatMessage",
+          "filename": "src/app/(dashboard)/actions/chat.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/analytics/page": "action-browser"
+      },
+      "exportedName": "sendChatMessage",
+      "filename": "src/app/(dashboard)/actions/chat.ts"
+    }
+  },
   "edge": {}
 }

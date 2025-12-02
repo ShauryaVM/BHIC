@@ -1127,6 +1127,10 @@ body:after {
   top: -4rem;
 }
 
+.bottom-6 {
+  bottom: 1.5rem;
+}
+
 .bottom-\[-60px\] {
   bottom: -60px;
 }
@@ -1141,10 +1145,6 @@ body:after {
 
 .right-0 {
   right: 0;
-}
-
-.bottom-6 {
-  bottom: 1.5rem;
 }
 
 .right-6 {
@@ -1260,6 +1260,14 @@ body:after {
   height: 3rem;
 }
 
+.h-14 {
+  height: 3.5rem;
+}
+
+.h-16 {
+  height: 4rem;
+}
+
 .h-2 {
   height: .5rem;
 }
@@ -1288,6 +1296,10 @@ body:after {
   height: 1.25rem;
 }
 
+.h-6 {
+  height: 1.5rem;
+}
+
 .h-7 {
   height: 1.75rem;
 }
@@ -1300,32 +1312,16 @@ body:after {
   height: 320px;
 }
 
+.h-\[600px\] {
+  height: 600px;
+}
+
 .h-\[calc\(100vh-280px\)\] {
   height: calc(100vh - 280px);
 }
 
 .h-full {
   height: 100%;
-}
-
-.h-14 {
-  height: 3.5rem;
-}
-
-.h-16 {
-  height: 4rem;
-}
-
-.h-6 {
-  height: 1.5rem;
-}
-
-.h-\[600px\] {
-  height: 600px;
-}
-
-.h-9 {
-  height: 2.25rem;
 }
 
 .max-h-64 {
@@ -1346,6 +1342,10 @@ body:after {
 
 .w-12 {
   width: 3rem;
+}
+
+.w-14 {
+  width: 3.5rem;
 }
 
 .w-2 {
@@ -1384,24 +1384,16 @@ body:after {
   width: 13rem;
 }
 
+.w-6 {
+  width: 1.5rem;
+}
+
 .w-72 {
   width: 18rem;
 }
 
 .w-8 {
   width: 2rem;
-}
-
-.w-full {
-  width: 100%;
-}
-
-.w-14 {
-  width: 3.5rem;
-}
-
-.w-6 {
-  width: 1.5rem;
 }
 
 .w-80 {
@@ -1412,8 +1404,8 @@ body:after {
   width: 24rem;
 }
 
-.w-9 {
-  width: 2.25rem;
+.w-full {
+  width: 100%;
 }
 
 .min-w-full {
@@ -2526,10 +2518,6 @@ body:after {
   outline: 2px solid #0000;
 }
 
-.outline {
-  outline-style: solid;
-}
-
 .blur-3xl {
   --tw-blur: blur(64px);
   filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);
@@ -2692,12 +2680,12 @@ body:after {
   background-color: rgb(255 255 255 / var(--tw-bg-opacity));
 }
 
-.hover\:bg-white\/70:hover {
-  background-color: #ffffffb3;
-}
-
 .hover\:bg-white\/20:hover {
   background-color: #fff3;
+}
+
+.hover\:bg-white\/70:hover {
+  background-color: #ffffffb3;
 }
 
 .hover\:fill-blue-600:hover {

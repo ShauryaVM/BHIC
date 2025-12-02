@@ -164,7 +164,7 @@ const envSchema = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2
     GA4_OAUTH_CLIENT_SECRET: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().optional(),
     GA4_OAUTH_REFRESH_TOKEN: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().optional(),
     GEMINI_API_KEY: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().min(1),
-    GEMINI_MODEL: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().default('gemini-2.5-flash'),
+    GEMINI_MODEL: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().default('gemini-2.0-flash-lite'),
     SETTINGS_ENCRYPTION_KEY: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().min(44)
 });
 const parsed = envSchema.safeParse({
@@ -192,7 +192,7 @@ const parsed = envSchema.safeParse({
     GA4_OAUTH_CLIENT_SECRET: process.env.GA4_OAUTH_CLIENT_SECRET,
     GA4_OAUTH_REFRESH_TOKEN: process.env.GA4_OAUTH_REFRESH_TOKEN,
     GEMINI_API_KEY: process.env.GEMINI_API_KEY,
-    GEMINI_MODEL: process.env.GEMINI_MODEL ?? 'gemini-2.5-flash',
+    GEMINI_MODEL: process.env.GEMINI_MODEL ?? 'gemini-2.0-flash-lite',
     SETTINGS_ENCRYPTION_KEY: process.env.SETTINGS_ENCRYPTION_KEY
 });
 if (!parsed.success) {
@@ -211,10 +211,20 @@ if (encryptionKey.length !== 32) {
     throw new Error('SETTINGS_ENCRYPTION_KEY must be a base64-encoded 32-byte key (256 bits).');
 }
 const adminEmails = data.ADMIN_EMAILS.split(',').map((email)=>email.trim().toLowerCase()).filter(Boolean);
+// Parse service account JSON with better error handling
+let ga4ServiceAccount = null;
+if (data.GA4_SERVICE_ACCOUNT_JSON) {
+    try {
+        ga4ServiceAccount = JSON.parse(data.GA4_SERVICE_ACCOUNT_JSON);
+    } catch (error) {
+        const jsonPreview = data.GA4_SERVICE_ACCOUNT_JSON.substring(0, 100);
+        throw new Error(`Failed to parse GA4_SERVICE_ACCOUNT_JSON. Invalid JSON format. ` + `First 100 chars: ${jsonPreview}... ` + `Error: ${error instanceof Error ? error.message : String(error)}. ` + `Make sure the JSON is on a single line and properly escaped in your .env file.`);
+    }
+}
 const env = {
     ...data,
     ADMIN_EMAILS: adminEmails,
-    GA4_SERVICE_ACCOUNT: data.GA4_SERVICE_ACCOUNT_JSON ? JSON.parse(data.GA4_SERVICE_ACCOUNT_JSON) : null,
+    GA4_SERVICE_ACCOUNT: ga4ServiceAccount,
     SETTINGS_ENCRYPTION_KEY_BUFFER: encryptionKey
 };
 }),

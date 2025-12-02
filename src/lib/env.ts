@@ -83,14 +83,32 @@ if (encryptionKey.length !== 32) {
 
 const adminEmails = data.ADMIN_EMAILS.split(',').map((email) => email.trim().toLowerCase()).filter(Boolean);
 
-type ServiceAccountConfig = { client_email: string; private_key: string };
+type ServiceAccountConfig = { 
+  client_email: string; 
+  private_key: string;
+  project_id?: string;
+};
+
+// Parse service account JSON with better error handling
+let ga4ServiceAccount: ServiceAccountConfig | null = null;
+if (data.GA4_SERVICE_ACCOUNT_JSON) {
+  try {
+    ga4ServiceAccount = JSON.parse(data.GA4_SERVICE_ACCOUNT_JSON) as ServiceAccountConfig;
+  } catch (error) {
+    const jsonPreview = data.GA4_SERVICE_ACCOUNT_JSON.substring(0, 100);
+    throw new Error(
+      `Failed to parse GA4_SERVICE_ACCOUNT_JSON. Invalid JSON format. ` +
+      `First 100 chars: ${jsonPreview}... ` +
+      `Error: ${error instanceof Error ? error.message : String(error)}. ` +
+      `Make sure the JSON is on a single line and properly escaped in your .env file.`
+    );
+  }
+}
 
 export const env = {
   ...data,
   ADMIN_EMAILS: adminEmails,
-  GA4_SERVICE_ACCOUNT: data.GA4_SERVICE_ACCOUNT_JSON
-    ? (JSON.parse(data.GA4_SERVICE_ACCOUNT_JSON) as ServiceAccountConfig)
-    : null,
+  GA4_SERVICE_ACCOUNT: ga4ServiceAccount,
   SETTINGS_ENCRYPTION_KEY_BUFFER: encryptionKey
 } as const;
 
