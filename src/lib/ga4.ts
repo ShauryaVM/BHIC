@@ -1,5 +1,5 @@
 import { BetaAnalyticsDataClient } from '@google-analytics/data';
-import { OAuth2Client, GoogleAuth } from 'google-auth-library';
+import { OAuth2Client } from 'google-auth-library';
 import { MetricSource } from '@prisma/client';
 import { format } from 'date-fns';
 
@@ -8,7 +8,6 @@ import { env } from '@/lib/env';
 
 let client: BetaAnalyticsDataClient | null = null;
 let oauthClient: OAuth2Client | null = null;
-let googleAuth: GoogleAuth | null = null;
 
 function getOAuthClient() {
   if (oauthClient) {
@@ -36,28 +35,6 @@ function getOAuthClient() {
 
 function normalizePrivateKey(key: string) {
   return key.includes('\\n') ? key.replace(/\\n/g, '\n') : key;
-}
-
-function getServiceAccountAuth() {
-  if (googleAuth) {
-    return googleAuth;
-  }
-
-  if (!env.GA4_SERVICE_ACCOUNT) {
-    throw new Error('GA4 service account credentials missing');
-  }
-
-  // Create GoogleAuth with service account credentials
-  googleAuth = new GoogleAuth({
-    credentials: {
-      client_email: env.GA4_SERVICE_ACCOUNT.client_email,
-      private_key: normalizePrivateKey(env.GA4_SERVICE_ACCOUNT.private_key),
-      project_id: env.GA4_SERVICE_ACCOUNT.project_id
-    },
-    scopes: ['https://www.googleapis.com/auth/analytics.readonly']
-  });
-
-  return googleAuth;
 }
 
 function isGoogleAuthError(error: any): boolean {
@@ -122,9 +99,16 @@ function getClient() {
       authClient: getOAuthClient()
     });
   } else {
-    // Use GoogleAuth for service account (recommended approach)
+    if (!env.GA4_SERVICE_ACCOUNT) {
+      throw new Error('GA4 service account credentials missing');
+    }
+
+    // Pass service account credentials directly to the client
     client = new BetaAnalyticsDataClient({
-      authClient: getServiceAccountAuth()
+      credentials: {
+        client_email: env.GA4_SERVICE_ACCOUNT.client_email,
+        private_key: normalizePrivateKey(env.GA4_SERVICE_ACCOUNT.private_key)
+      }
     });
   }
 
